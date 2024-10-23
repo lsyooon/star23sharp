@@ -1,0 +1,2 @@
+# 모델 Parameter가 Git에 올라가는 것을 방지
+*.gguf
