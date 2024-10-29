@@ -31,7 +31,7 @@ def _open_image(input_file):
     image = Image.open(input_file)
     return ImageOps.exif_transpose(image).convert("RGB")
 
-@app.post("/images/pixelize")
+@app.post("/image/pixelize")
 async def pixelize_image(
     file: UploadFile = File(..., description="Image file to be pixelized"),
     kernel_size: int = Form(default=7, description="Kernel size for pixelization effect"),
@@ -63,7 +63,7 @@ async def pixelize_image(
     result_image.save(buf, format='PNG')
     return Response(content=buf.getvalue(), media_type="image/png")
 
-@app.post("/images/embedding")
+@app.post("/image/embedding")
 async def embed_image(
     file: UploadFile = File(..., description="Image file to generate embedding")
 ):
@@ -82,7 +82,7 @@ async def embed_image(
     embedding_list = embedding_tensor.cpu().numpy().tolist()
     return {"embedding": embedding_list}
 
-@app.post("/images/embeddings")
+@app.post("/image/embeddings")
 async def embed_images(
     files: List[UploadFile] = File(..., description="List of image files to generate embeddings")
 ):
