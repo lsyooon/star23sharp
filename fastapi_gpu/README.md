@@ -8,7 +8,6 @@ SSAFY GPU 서버 특성상 Docker를 활용할 수 없으므로, tmux를 활용�
 ## Python
 - python 3.11
 - pytorch >= 2.4.0
-- langchain = 0.3.4
 - fastapi 0.115.2
 - python-multipart 0.0.12
-<!-- - uvicorn 0.32.0 -->
+- uvicorn 0.32.0
