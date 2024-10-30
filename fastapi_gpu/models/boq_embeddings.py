@@ -4,6 +4,7 @@ import torch
 from torch import Tensor
 import torchvision.transforms as T
 from enum import Enum
+from.trained_boq import get_trained_boq
 
 class _BackboneName(Enum):
     RESNET = "resnet50"
@@ -47,17 +48,16 @@ class BOQEmbeddings():
             T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-    @staticmethod
-    def _load_vpr_model(backbone_name: _BackboneName):
+    def _load_vpr_model(self, backbone_name: _BackboneName):
         if not isinstance(backbone_name, _BackboneName):
             raise ValueError("Invalid backbone name! Must be either 'resnet50' or 'dinov2'.")
-        
-        vpr_model = torch.hub.load(
-            "amaralibey/bag-of-queries", 
-            "get_trained_boq", 
-            backbone_name=backbone_name.value, 
-            output_dim=_MODEL_INFO[backbone_name][0]
+
+        vpr_model = get_trained_boq(
+            backbone_name=backbone_name.value,
+            output_dim=_MODEL_INFO[backbone_name][0],
+            map_location = self.device
         )
+        
         return vpr_model
 
     def embed_chunk(self, img_tensor: Tensor) -> Tensor:
