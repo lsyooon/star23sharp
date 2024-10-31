@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from entity.message import TreasureMessage, Message
+from entity.message import Message
 from .simple_find import find_by_attribute
 from .member_service import find_member_by_id
 from utils.distance_util import get_l2_distance, get_cosine_distance, get_degree_for_radius
@@ -12,73 +12,69 @@ from utils.distance_util import get_l2_distance, get_cosine_distance, get_degree
 logger = logging.getLogger(__name__)
 
 def insert_new_treasure_message(
-    writer_id: int,
-    title: str,
-    content: str,
-    hint_image: str,
-    hint_vector: List[float],
-    hint_text: str,
+    sender_id: int,
+    hint_image_first: str,
+    hint_image_second: str,
     dot_hint_image: str,
+    title: str,
+    hint: str,
     coordinate: List[float],
+    vector: List[float],
     session: Session,
-) -> Optional[TreasureMessage]:
+) -> Optional[Message]:
     """
+    디버깅용 함수.
     새로운 보물 메시지를 데이터베이스에 삽입합니다.
 
     Args:
-        writer_id (int): 작성자 회원의 ID.
+        sender_id (int): 작성자 회원의 ID.
+        hint_image_first (str): 첫 번째 힌트 이미지의 경로 또는 URL.
+        hint_image_second (str): 두 번째 힌트 이미지의 경로 또는 URL.
+        dot_hint_image (str): 도트 힌트 이미지의 경로 또는 URL.
         title (str): 메시지 제목.
         content (str): 메시지 내용.
-        hint_image (str): 힌트 이미지의 경로 또는 URL.
-        hint_vector (List[float]): 힌트 이미지의 벡터 표현.
-        hint_text (str): 텍스트 힌트.
-        dot_hint_image (str): 도트 힌트 이미지의 경로 또는 URL.
+        hint (str): 텍스트 힌트.
         coordinate (List[float]): 위치 좌표 [위도, 경도].
+        vector (List[float]): 힌트 이미지의 벡터 표현.
         session (Session): 데이터베이스 세션 객체.
 
     Returns:
-        Optional[TreasureMessage]: 생성된 TreasureMessage 객체 또는 None.
+        Optional[Message]: 생성된 Message 객체 또는 None.
     """
-    target_member = find_member_by_id(writer_id, session)
+    target_member = find_member_by_id(sender_id, session)
     if target_member is None:
-        logger.warning(f"insert_new_treasure_message: 존재하지 않는 회원 ID = {writer_id}")
+        logger.warning(f"insert_new_treasure_message: 존재하지 않는 회원 ID = {sender_id}")
         return None
 
     new_msg = Message(
-        writer_id=target_member.id,
-        is_treasure=True,
+        sender_id=target_member.id,
+        hint_image_first=hint_image_first,
+        hint_image_second=hint_image_second,
+        dot_hint_image=dot_hint_image,
         title=title,
-        content=content
+        hint=hint,
+        coordinate=coordinate,
+        is_treasure=True,
+        vector=vector,
     )
 
     session.add(new_msg)
-    session.flush()  # DB에 적용하여 ID를 가져옴 (COMMIT 아님)
+    return new_msg
 
-    new_treasure = TreasureMessage(
-        message_id=new_msg.id,
-        hint_image=hint_image,
-        hint_vector=hint_vector,
-        hint_text=hint_text,
-        dot_hint_image=dot_hint_image,
-        coordinate=coordinate
-    )
-    session.add(new_treasure)
-    return new_treasure
-
-def find_treasure_by_id(treasure_id: int, session: Session) -> Optional[TreasureMessage]:
+def find_treasure_by_id(treasure_id: int, session: Session) -> Optional[Message]:
     """
-    TreasureMessage ID로 보물 메시지를 조회합니다.
+    Message ID로 보물 메시지를 조회합니다.
 
     Args:
-        treasure_id (int): TreasureMessage의 ID.
+        treasure_id (int): Message의 ID.
         session (Session): 데이터베이스 세션 객체.
 
     Returns:
-        Optional[TreasureMessage]: 조회된 TreasureMessage 객체 또는 None.
+        Optional[Message]: 조회된 Message 객체 또는 None.
     """
-    return find_by_attribute(TreasureMessage, TreasureMessage.id, treasure_id, session)
+    return find_by_attribute(Message, Message.id, treasure_id, session)
 
-def find_similar(vector: List[float], limit: int, session: Session) -> List[TreasureMessage]:
+def find_similar(vector: List[float], limit: int, session: Session) -> List[Message]:
     """
     주어진 벡터와 유사한 보물 메시지를 찾습니다.
 
@@ -88,11 +84,11 @@ def find_similar(vector: List[float], limit: int, session: Session) -> List[Trea
         session (Session): 데이터베이스 세션 객체.
 
     Returns:
-        List[TreasureMessage]: 유사한 TreasureMessage 객체들의 리스트.
+        List[Message]: 유사한 Message 객체들의 리스트.
     """
     stmt = (
-        select(TreasureMessage)
-        .order_by(TreasureMessage.hint_vector.cosine_distance(vector))
+        select(Message)
+        .order_by(Message.vector.cosine_distance(vector))
         .limit(limit)
     )
     return session.scalars(stmt).all()
@@ -131,7 +127,7 @@ def authorize_treasure_message(
     if distance >= threshold:
         return False, None
 
-    cosine_distance = get_cosine_distance(target.hint_vector, vector)
+    cosine_distance = get_cosine_distance(target.vector, vector)
     logger.debug(f"authorize_treasure_message: 코사인 거리 = {cosine_distance}")
 
     if cosine_distance >= cos_distance_threshold:

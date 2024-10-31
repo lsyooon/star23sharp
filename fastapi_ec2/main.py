@@ -10,6 +10,8 @@ from router.treasure_router import treasure_router
 
 import logging
 
+# logging.basicConfig(level=logging.DEBUG)
+
 app = FastAPI()
 
 app.include_router(treasure_router, prefix="/fastapi_ec2/treasure")

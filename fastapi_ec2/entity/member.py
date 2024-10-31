@@ -4,7 +4,7 @@ from .base import Base
 
 # Models
 class Member(Base):
-    __tablename__ = 'members'
+    __tablename__ = 'member'
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     member_name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     state: Mapped[int] = mapped_column(SmallInteger, default=0, nullable=False)

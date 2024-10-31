@@ -9,8 +9,6 @@ from fastapi import UploadFile, File, Form, Response
 from utils.security import get_current_member
 from utils.distance_util import get_cosine_distance
 
-logging.basicConfig(level=logging.DEBUG)
-
 # 서버 CONFIG
 GPU_URL = os.environ.get("GPU_URL", None)
 
