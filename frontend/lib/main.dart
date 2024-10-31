@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:star23sharp/screens/index.dart';
 import 'package:star23sharp/providers/index.dart';
-import 'package:star23sharp/widgets/layouts/MainLayout.dart';
+import 'package:star23sharp/widgets/index.dart';
 
 //TODO - 카카오 연결
 //TODO - 카메라 연결
@@ -14,6 +14,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
       child: const MyApp(),
     ),

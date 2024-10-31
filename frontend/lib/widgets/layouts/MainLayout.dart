@@ -12,7 +12,7 @@ class MainLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final double bottomNavHeight = MediaQuery.of(context).size.height * 0.25;
+    final double bottomNavHeight = MediaQuery.of(context).size.height * 0.2;
     final double deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
