@@ -1,64 +1,58 @@
 import logging
+import datetime
+import numpy as np
+
 from typing import List, Optional, Tuple
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from entity.group import MemberGroup
+from entity.member import Member
 from entity.message import Message
 from .simple_find import find_by_attribute
-from .member_service import find_member_by_id
-from utils.distance_util import get_l2_distance, get_cosine_distance, get_degree_for_radius
+from utils.distance_util import get_cosine_distance, get_degree_from_distance, get_distance_from_degree, convert_lat_lng_to_xyz
 
 logger = logging.getLogger(__name__)
 
 def insert_new_treasure_message(
-    sender_id: int,
+    sender: Member,
+    receiver_type: int,
     hint_image_first: str,
     hint_image_second: str,
     dot_hint_image: str,
     title: str,
-    hint: str,
-    coordinate: List[float],
+    content: Optional[str],
+    hint: Optional[str],
+    lat: float,
+    lng: float,
+    image: Optional[str],
+    created_at: datetime.datetime,
     vector: List[float],
+    group: Optional[MemberGroup],
     session: Session,
-) -> Optional[Message]:
-    """
-    디버깅용 함수.
-    새로운 보물 메시지를 데이터베이스에 삽입합니다.
-
-    Args:
-        sender_id (int): 작성자 회원의 ID.
-        hint_image_first (str): 첫 번째 힌트 이미지의 경로 또는 URL.
-        hint_image_second (str): 두 번째 힌트 이미지의 경로 또는 URL.
-        dot_hint_image (str): 도트 힌트 이미지의 경로 또는 URL.
-        title (str): 메시지 제목.
-        content (str): 메시지 내용.
-        hint (str): 텍스트 힌트.
-        coordinate (List[float]): 위치 좌표 [위도, 경도].
-        vector (List[float]): 힌트 이미지의 벡터 표현.
-        session (Session): 데이터베이스 세션 객체.
-
-    Returns:
-        Optional[Message]: 생성된 Message 객체 또는 None.
-    """
-    target_member = find_member_by_id(sender_id, session)
-    if target_member is None:
-        logger.warning(f"insert_new_treasure_message: 존재하지 않는 회원 ID = {sender_id}")
-        return None
-
+) -> Message:
     new_msg = Message(
-        sender_id=target_member.id,
+        sender_id=sender.id,
+        receiver_type=receiver_type,
         hint_image_first=hint_image_first,
         hint_image_second=hint_image_second,
         dot_hint_image=dot_hint_image,
         title=title,
+        content=content,
         hint=hint,
-        coordinate=coordinate,
+        lat=lat,
+        lng=lng,
+        coordinate=convert_lat_lng_to_xyz(lat,lng),
         is_treasure=True,
+        created_at=created_at,
+        image=image,
         vector=vector,
+        group_id = group.id if group is not None else None,
     )
 
     session.add(new_msg)
+    session.flush()
     return new_msg
 
 def find_treasure_by_id(treasure_id: int, session: Session) -> Optional[Message]:
@@ -96,7 +90,8 @@ def find_similar(vector: List[float], limit: int, session: Session) -> List[Mess
 def authorize_treasure_message(
     target_message_id: int,
     vector: List[float],
-    coordinate: List[float],
+    lat: float,
+    lng: float,
     session: Session,
     cos_distance_threshold: float = 0.8,  # 코사인 거리 임계값 (0 ~ 2)
     linear_distance_threshold: float = 20,  # 거리 임계값 (미터 단위)
@@ -120,14 +115,15 @@ def authorize_treasure_message(
         logger.warning(f"authorize_treasure_message: 존재하지 않는 보물 메시지 ID = {target_message_id}")
         raise ValueError(f"보물 메시지 ID {target_message_id}를 찾을 수 없습니다.")
 
-    distance = get_l2_distance(target.coordinate, coordinate)
-    threshold = get_degree_for_radius(linear_distance_threshold)
-    logger.debug(f"authorize_treasure_message: 거리 = {distance}, 임계값 = {threshold}")
+    xyz_coord = convert_lat_lng_to_xyz(lat,lng)
+    current_degree_between_points = float((180/np.pi) * np.arccos(1 - get_cosine_distance(target.coordinate, xyz_coord, dtype=np.float128)))
+    threshold = get_degree_from_distance(linear_distance_threshold)
+    logger.debug(f"authorize_treasure_message: 지구 위치상 각도 = {current_degree_between_points}, 거리 = {get_distance_from_degree(current_degree_between_points)}, 임계값 = {threshold}")
 
-    if distance >= threshold:
+    if current_degree_between_points >= threshold:
         return False, None
 
-    cosine_distance = get_cosine_distance(target.vector, vector)
+    cosine_distance = float(get_cosine_distance(target.vector, vector))
     logger.debug(f"authorize_treasure_message: 코사인 거리 = {cosine_distance}")
 
     if cosine_distance >= cos_distance_threshold:

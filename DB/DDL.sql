@@ -17,7 +17,7 @@ CREATE TABLE member (
   state             SMALLINT         NOT NULL DEFAULT 0 CHECK (state IN (0, 1, 2)), -- 0: Active, 1: Suspended, 2: Deleted
   nickname          VARCHAR(20)      NOT NULL UNIQUE,
   reactivation_date TIMESTAMP        NULL,
-  created_at       TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at       TIMESTAMP         NOT NULL
 );
 
 CREATE TABLE member_group (
@@ -26,7 +26,7 @@ CREATE TABLE member_group (
     creator_id    BIGINT        NOT NULL REFERENCES member(id) ON DELETE CASCADE, -- 회원이 삭제되면 그 회원이 저장하고 있던 그룹도 삭제됨
     is_favorite      BOOLEAN    NOT NULL DEFAULT FALSE,
     is_constructed   BOOLEAN    NOT NULL DEFAULT FALSE,
-    created_at       TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at       TIMESTAMP  NOT NULL
 );
 
 CREATE TABLE message (
@@ -35,16 +35,18 @@ CREATE TABLE message (
    receiver_type    SMALLINT        NOT NULL DEFAULT 0 CHECK (receiver_type IN (0, 1, 2)), -- 0: 개인, 1: 단체, 2: 불특정 다수
    hint_image_first VARCHAR(255)    NULL,
    hint_image_second VARCHAR(255)   NULL,
-   dot_hint_image   VARCHAR(255)    NOT NULL,
+   dot_hint_image   VARCHAR(255)    NULL,
    title            VARCHAR(15)     NOT NULL,
    content          TEXT            NULL,
    hint             VARCHAR(20)     NULL,
-   coordinate       VECTOR(2)       NOT NULL,
+   lat              FLOAT8          NULL, --위도 latitude
+   lng              FLOAT8          NULL, --경도 longitude
+   coordinate       VECTOR(3)       NULL, --xyz
    is_treasure      BOOLEAN         NOT NULL DEFAULT FALSE,
-   is_found         BOOLEAN         NULL,
-   created_at       TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   is_found         BOOLEAN         NOT NULL DEFAULT FALSE,
+   created_at       TIMESTAMP       NOT NULL,
    image            VARCHAR(255)    NULL,
-   vector           VECTOR(12288)   NOT NULL,
+   vector           VECTOR(12288)   NULL,
    group_id         BIGINT          NULL REFERENCES member_group(id) ON DELETE SET NULL
 );
 
@@ -55,7 +57,7 @@ CREATE TABLE message_box (
    is_deleted        BOOLEAN       NOT NULL DEFAULT FALSE,
    message_direction SMALLINT      NOT NULL CHECK (message_direction IN (0, 1)), -- 발신: 0, 수신: 1
    state             BOOLEAN       NULL DEFAULT FALSE, -- 메시지 확인 시 true
-   created_at       TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
+   created_at       TIMESTAMP      NOT NULL
 );
 
 CREATE TABLE notification (
@@ -87,7 +89,7 @@ CREATE TABLE complaint (
     state                SMALLINT       NOT NULL CHECK (state IN (0, 1, 2)), -- 0: 미처리, 1: 반려, 2: 처리
     message_id           BIGINT         NOT NULL REFERENCES message(id),
     complaint_reason_id  SMALLINT      NOT NULL REFERENCES complaint_reason(id),
-    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP       NOT NULL
 );
 
 CREATE TABLE group_member (

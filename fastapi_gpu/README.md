@@ -1,6 +1,7 @@
 # 목적
-SSAFY GPU 서버에서 AI 모델 구동
-SSAFY GPU 서버 특성상 Docker를 활용할 수 없으므로, tmux를 활용하여 서버를 직접 구동해야 함
+SSAFY GPU 서버에서 AI 모델 구동.
+SSAFY GPU 서버 특성상 Docker를 활용할 수 없으므로, tmux를 활용하여 서버를 직접 구동해야 함.
+**인가를 확인하는 기능이 없으므로, nginx 등 프록시 없이 구동할 때에는 주의해야 함**
 ## CPU 서버 사용 시
 사용하는 Image Model의 크기가 작으므로, CPU로도 구동이 가능함.
 동봉된 dockerfile로 빌드한 후, Port Mapping 만 해서 docker run 하면 됨.

@@ -4,13 +4,16 @@ from fastapi import FastAPI, Request
 from fastapi import FastAPI, UploadFile, File, Form, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+from fastapi.openapi.utils import get_openapi
 from router.image_router import image_router
 from router.treasure_router import treasure_router
+from swagger.fix.swagger_monkeypatch import apply_swaggerfix
 
 import logging
 
 # logging.basicConfig(level=logging.DEBUG)
+
+apply_swaggerfix()
 
 app = FastAPI()
 
