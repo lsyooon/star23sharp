@@ -12,6 +12,6 @@ import java.util.List;
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
     @Query("SELECT new com.ssafy.star.message.dto.response.ReceiveMessageListResponse(m.id, m.title, m.sender.nickname, m.createdAt, m.isTreasure) " +
-            "FROM Message m WHERE m.id = :id")
+            "FROM Message m WHERE m.id = :id ORDER BY m.createdAt DESC")
     List<ReceiveMessageListResponse> findReceiveMessageListById(Long id);
 }
