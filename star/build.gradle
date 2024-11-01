@@ -32,6 +32,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// 벡터
+	implementation group: 'org.hibernate.orm', name: 'hibernate-vector', version: '6.4.10.Final'
 }
 
 tasks.named('test') {
