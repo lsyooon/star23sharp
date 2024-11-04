@@ -105,7 +105,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         res.setContentType("application/json");
         res.setCharacterEncoding("UTF-8");
-        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 상태 코드 설정
+        res.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 상태 코드 설정
         res.getWriter().write(responseBody);
 
     }

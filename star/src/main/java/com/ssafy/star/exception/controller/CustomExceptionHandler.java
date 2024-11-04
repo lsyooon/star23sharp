@@ -3,6 +3,7 @@ package com.ssafy.star.exception.controller;
 import com.ssafy.star.exception.CustomException;
 import com.ssafy.star.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,6 +20,15 @@ public class CustomExceptionHandler {
         return ResponseEntity
                 .status(e.getStatus())
                 .body(new ApiResponse<Void>(errorCode, message));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+        log.info("[handleException] = {}", e.getMessage());
+        String message = "서버에서 에러가 발생했습니다.";
+        String errorCode = "E0000";
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(errorCode, message,e.getMessage()));
+
     }
 
 //    @ExceptionHandler(MaxUploadSizeExceededException.class)

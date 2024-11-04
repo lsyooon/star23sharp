@@ -125,6 +125,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK); // 상태 코드 설정
-        response.getWriter().write("{\"code\": \"200\", \"message\": \"로그아웃 성공\"}, \"data\": null ");
+        response.getWriter().write("{\"code\": \"200\", \"message\": \"로그아웃 성공\", \"data\": null }");
     }
 }
