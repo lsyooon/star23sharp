@@ -17,6 +17,7 @@ public enum CustomErrorCode {
     UNAUTHORIZED_MESSAGE_ACCESS("L0002", "쪽지에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
     NICKNAME_ALREADY_EXISTS("M0002","이미 사용된 닉네임 입니다.", HttpStatus.BAD_REQUEST),
     MEMBER_ALREADY_EXISTS("M0001","이미 사용된 회원 ID 입니다.", HttpStatus.BAD_REQUEST),
+    METHOD_NOT_ALLOWED("L0003", "지원하지 않는 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
     ;
     private final String code;
     private final String message;
