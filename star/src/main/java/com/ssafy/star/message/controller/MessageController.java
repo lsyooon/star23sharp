@@ -22,7 +22,7 @@ public class MessageController {
 
     @GetMapping("/reception/list")
     public ResponseEntity<ApiResponse<List<ReceiveMessageListResponse>>> getReceptionList(){
-        Long userId = 4L;
+        Long userId = 1L;
         List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(userId);
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
@@ -32,7 +32,7 @@ public class MessageController {
 
     @GetMapping("/send/list")
     public ResponseEntity<ApiResponse<List<SendMessageListResponse>>> getSendMessageList(){
-        Long userId = 3L;
+        Long userId = 2L;
         List<SendMessageListResponse> response = messageService.getSendMessageList(userId);
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 보낸 편지가 없습니다."));

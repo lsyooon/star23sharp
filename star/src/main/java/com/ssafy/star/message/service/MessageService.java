@@ -33,8 +33,6 @@ public class MessageService {
         }
 
         List<ReceiveMessageListResponse> list = new ArrayList<>();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
         LocalDateTime now = LocalDateTime.now();
 
         for (Long messageId : messageIdList) {
@@ -44,19 +42,14 @@ public class MessageService {
                 messages = new ArrayList<>();
             }
 
-            // 날짜 포맷 처리
             for (ReceiveMessageListResponse message : messages) {
-                LocalDateTime createdAt = message.getCreatedAt();
-                String formattedDate = createdAt.toLocalDate().isEqual(now.toLocalDate())
-                        ? createdAt.format(timeFormatter) // 오늘 날짜면 시간만
-                        : createdAt.format(dateFormatter); // 오늘 이전 날짜면 날짜만
-                message.setCreatedDate(formattedDate); // 변환된 날짜 설정
+                String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
+                message.setCreatedDate(formattedDate);
             }
             list.addAll(messages);
         }
         return list;
     }
-
 
     public List<SendMessageListResponse> getSendMessageList(Long userId) {
         List<Long> messageIdList = messageBoxRepository.getMessageIdByMemberId(userId, (short) 0);
@@ -65,8 +58,6 @@ public class MessageService {
         }
 
         List<SendMessageListResponse> list = new ArrayList<>();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
         LocalDateTime now = LocalDateTime.now();
 
         for (Long messageId : messageIdList) {
@@ -76,13 +67,10 @@ public class MessageService {
                 messages = new ArrayList<>();
             }
 
-            // 날짜 포맷 처리
             for (SendMessageListResponse message : messages) {
-                LocalDateTime createdAt = message.getCreatedAt();
-                String formattedDate = createdAt.toLocalDate().isEqual(now.toLocalDate())
-                        ? createdAt.format(timeFormatter) // 오늘 날짜면 시간만
-                        : createdAt.format(dateFormatter); // 오늘 이전 날짜면 날짜만
-                message.setCreatedDate(formattedDate); // 변환된 날짜 설정
+                String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
+                message.setCreatedDate(formattedDate);
+
                 if (message.getReceiverType() == (short) 0) {
                     message.setRecipient(messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(), (short) 1));
                 } else if (message.getReceiverType() == (short) 1) {
@@ -104,4 +92,14 @@ public class MessageService {
         return list;
     }
 
+
+    /* 중복 코드 */
+    // 날짜 포맷 메서드
+    private String formatCreatedDate(LocalDateTime createdAt, LocalDateTime now) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        return createdAt.toLocalDate().isEqual(now.toLocalDate())
+                ? createdAt.format(timeFormatter) // 오늘 날짜면 시간만
+                : createdAt.format(dateFormatter); // 오늘 이전 날짜면 날짜만
+    }
 }
