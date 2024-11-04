@@ -60,7 +60,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
             // 응답 메시지 작성
             try (PrintWriter writer = response.getWriter()) {
-                writer.write("{\"code\": \"M0007\", \"message\": \"Refresh Token이 비어있습니다.\"}");
+                writer.write("{\"code\": \"M0007\", \"message\": \"Refresh Token이 비어있습니다.\", \"data\": null}");
             }
             return; // 필터 체인 종료
 
@@ -73,7 +73,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
             // 응답 메시지 작성
             try (PrintWriter writer = response.getWriter()) {
-                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\"}");
+                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\", \"data\": null }");
             }
             return;
         }
@@ -96,7 +96,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             response.setCharacterEncoding("UTF-8");
 
             try (PrintWriter writer = response.getWriter()) {
-                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다\"}");
+                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다\", \"data\": null }");
             }
             return; // 필터 체인 종료
         }
@@ -113,7 +113,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             response.setCharacterEncoding("UTF-8");
 
             try (PrintWriter writer = response.getWriter()) {
-                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\"}");
+                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\", \"data\": null }");
             }
             return;
         }
@@ -125,6 +125,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK); // 상태 코드 설정
-        response.getWriter().write("{\"code\": \"200\", \"message\": \"로그아웃 성공\"}");
+        response.getWriter().write("{\"code\": \"200\", \"message\": \"로그아웃 성공\"}, \"data\": null ");
     }
 }
