@@ -5,6 +5,7 @@ import com.ssafy.star.exception.CustomException;
 import com.ssafy.star.member.repository.MemberGroupRepository;
 import com.ssafy.star.message.dto.response.ReceiveMessage;
 import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
+import com.ssafy.star.message.dto.response.SendMessage;
 import com.ssafy.star.message.dto.response.SendMessageListResponse;
 import com.ssafy.star.message.repository.MessageBoxRepository;
 import com.ssafy.star.message.repository.MessageRepository;
@@ -75,7 +76,7 @@ public class MessageService {
             for (SendMessageListResponse message : messages) {
                 String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
                 message.setCreatedDate(formattedDate);
-                
+
                 if (message.getReceiverType() == (short) 0) {   // 한명 전송
                     message.setRecipient(messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(), (short) 1));
                 } else if (message.getReceiverType() == (short) 1) {    // 단체 or 그룹 전송
@@ -99,7 +100,7 @@ public class MessageService {
         }
         return list;
     }
-    
+
     // 수신 쪽지 상세조회
     public ReceiveMessage getReceiveMessage(Long userId, Long messageId) {
         // 쪽지가 존재하는지 확인
@@ -117,6 +118,55 @@ public class MessageService {
         receiveMessage.setCreatedDate(formattedDate);
 
         return receiveMessage;
+    }
+
+    // 송신 쪽지 상세조회
+    public SendMessage getSendMessage(Long userId, Long messageId) {
+        if (!messageRepository.existsById(messageId)) {
+            throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
+        }
+        if (!messageBoxRepository.existsByMemberIdAndMessageId(userId, messageId)) {
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        SendMessage sendMessage = messageRepository.findSendMessageById(messageId);
+        String formattedDate = formatCreatedDate(sendMessage.getCreatedAt(), now);
+        sendMessage.setCreatedDate(formattedDate);
+
+        // 받는 사람 리스트 설정
+        if (sendMessage.getReceiverType() == (short) 0) {   // 한명 전송
+            // 한 명 이름을 리스트로 변환 후 설정
+            sendMessage.setReceiverNames(List.of(messageBoxRepository.getRecipientNameByMessageId(sendMessage.getMessageId(), (short) 0)));
+        } else if (sendMessage.getReceiverType() == (short) 1) {    // 단체 or 그룹 전송
+            List<String> recipients = messageBoxRepository.getRecipientNamesByMessageId(messageId, (short) 1);
+            sendMessage.setReceiverNames(recipients);
+
+            // 그룹 전송일 경우
+            if (sendMessage.getGroupId() != null) {
+                Boolean isConstructed = memberGroupRepository.findIsConstructedByGroupId(sendMessage.getGroupId());
+
+                // 내가 만든 그룹이라면 그룹 이름을 설정
+                if (isConstructed != null && isConstructed) {
+                    String groupName = memberGroupRepository.findGroupNameById(sendMessage.getGroupId());
+                    sendMessage.setReceiverNames(List.of(groupName));
+                } else {
+                    // 내가 만든 그룹이 아닐 경우, 기존 recipients 리스트 설정
+                    sendMessage.setReceiverNames(recipients);
+                }
+            } else {
+                // 단체 전송일 경우 recipients 리스트 설정
+                sendMessage.setReceiverNames(recipients);
+            }
+        } else {    // 불특정 다수
+            sendMessage.setReceiverNames(List.of("모두에게"));
+            if (sendMessage.isKind()) { // 보물 쪽지의 경우
+                if (sendMessage.isState()) {   // 누군가 쪽지를 열었을 경우
+                    sendMessage.setReceiverNames(List.of(messageBoxRepository.getRecipientNameByMessageIdAndState(sendMessage.getMessageId(), (short) 1, true)));
+                }
+            }
+        }
+        return sendMessage;
     }
 
 
