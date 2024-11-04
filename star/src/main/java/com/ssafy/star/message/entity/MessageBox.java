@@ -39,4 +39,7 @@ public class MessageBox {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "is_reported")
+    private boolean isReported = false;
 }
