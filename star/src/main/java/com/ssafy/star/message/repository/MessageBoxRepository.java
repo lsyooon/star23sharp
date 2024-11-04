@@ -2,11 +2,12 @@ package com.ssafy.star.message.repository;
 
 import com.ssafy.star.message.entity.MessageBox;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     @Query("SELECT mb.message.id FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.messageDirection = :type")
@@ -32,4 +33,8 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     @Query("SELECT mb.isDeleted FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
     boolean existsByMessageIdAndMemberIdAndIsDeletedFalse(Long messageId, Long memberId);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE MessageBox mb SET mb.isDeleted = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
+    void updateIsDeletedByMessageIdAndMemberId(Long messageId, Long memberId);
 }

@@ -178,6 +178,18 @@ public class MessageService {
         return sendMessage;
     }
 
+    // 내 쪽지함에서 쪽지 삭제
+    @Transactional
+    public void removeMessage(Long userId, Long messageId) {
+        if (!messageRepository.existsById(messageId)) {
+            throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
+        }
+        if (!messageBoxRepository.existsByMemberIdAndMessageId(userId, messageId)) {
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
+        }
+        messageBoxRepository.updateIsDeletedByMessageIdAndMemberId(messageId, userId);
+    }
+
 
     /* 중복 코드 */
     // 날짜 포맷 메서드
