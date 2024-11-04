@@ -51,14 +51,16 @@ public class RefreshService {
 
         String username = jwtUtil.getMemberName(refresh);
         String role = jwtUtil.getRole(refresh);
+        Long id = jwtUtil.getId(refresh);
 
         // redis에 refresh 토큰이 없는 경우
         if(!tokenService.validateToken(username,refresh)){
             throw new CustomException(CustomErrorCode.INVALID_TOKEN);
         };
         //새로운 access 토큰 생성
-        String newAccess = jwtUtil.createJwt("access", username, role, accessTokenExpiration);
-        String newRefresh = jwtUtil.createJwt("refresh", username, role, refreshTokenExpiration);
+        String newAccess = jwtUtil.createJwt("access", username,id, role, accessTokenExpiration);
+        String newRefresh = jwtUtil.createJwt("refresh", username,id, role, refreshTokenExpiration);
+
 
         tokenService.updateRefreshToken(username, newRefresh,refreshTokenExpiration);
 

@@ -32,7 +32,7 @@ public class JWTUtil {
                     .parseClaimsJws(token)
                     .getPayload()
                     .keySet()
-                    .containsAll(List.of("memberName", "role", "category"));
+                    .containsAll(List.of("memberName", "role", "category","memberId"));
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
 
             log.info("Invalid JWT Token", e.getMessage());
@@ -90,6 +90,19 @@ public class JWTUtil {
         }
     }
 
+    public Long getId(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("memberId", Long.class);
+        } catch (JwtException e) {
+            throw new CustomException(CustomErrorCode.INVALID_TOKEN);
+        }
+    }
+
     // 토큰 만료 확인
     public Boolean isExpired(String token) {
 
@@ -104,11 +117,12 @@ public class JWTUtil {
 
     }
 
-    public String createJwt(String category, String memberName, String role, Long expiredMs) {
+    public String createJwt(String category, String memberName,Long memberId, String role, Long expiredMs) {
         return Jwts.builder()
                 .claim("category", category)
                 .claim("memberName", memberName)
                 .claim("role", role)
+                .claim("memberId", memberId)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
