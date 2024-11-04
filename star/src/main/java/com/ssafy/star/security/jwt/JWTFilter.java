@@ -28,11 +28,10 @@ public class JWTFilter extends OncePerRequestFilter {
     // 화이트리스트 URL 목록
     private final List<String> whiteListedPaths = List.of(
             "/api/v1/login",
-            "/api/v1/join",
+            "/api/v1/member/join",
             "/api/v1/refresh",
             "/api/v1/logout",
-            "/api/v1/check-memberId",
-            "/api/v1/check-nickname"
+            "/api/v1/member/duplicate"
     );
 
     public JWTFilter(JWTUtil jwtUtil) {
