@@ -24,7 +24,6 @@ public class CustomExceptionHandler {
                 .body(new ApiResponse<Void>(errorCode, message));
     }
 
-
     // 잘못된 HTTP 메서드 요청 처리
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<?> handleMethodNotAllowed(HttpRequestMethodNotSupportedException e) {
@@ -34,6 +33,7 @@ public class CustomExceptionHandler {
                 .status(405)
                 .body(new ApiResponse<Void>(errorCode.getCode(), errorCode.getMessage()));
     }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleException(Exception e) {
         log.info("[handleException] = {}", e.getMessage());
