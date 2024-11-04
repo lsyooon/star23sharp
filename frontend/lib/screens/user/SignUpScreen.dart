@@ -11,8 +11,8 @@ class SignUpScreen extends StatelessWidget {
         // 배경 이미지
         Center(
           child: SizedBox(
-            width: double.infinity,
-            height: double.infinity,
+            width: UIhelper.deviceWidth(context) * 0.85,
+            height: UIhelper.deviceHeight(context) * 0.67,
             child: Image.asset(
               'assets/img/main_bg.png',
               fit: BoxFit.cover,

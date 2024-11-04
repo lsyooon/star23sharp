@@ -29,7 +29,7 @@ class LoginScreen extends StatelessWidget {
                 "로그인",
                 style: TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),

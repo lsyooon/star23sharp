@@ -23,7 +23,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     void onSignupPressed() {
       // 회원가입 로직
-      Navigator.pushNamed(context, '/signup');
+      // Navigator.pushNamed(context, '/signup');
+      Navigator.pushNamed(context, '/starlist');
     }
 
     final List<Map<String, dynamic>> buttons = [

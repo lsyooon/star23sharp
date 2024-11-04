@@ -6,6 +6,7 @@ import 'package:star23sharp/screens/index.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/screens/user/LoginScreen.dart';
 import 'package:star23sharp/screens/user/SignUpScreen.dart';
+import 'package:star23sharp/screens/StartListScreen.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 //TODO - 카카오 연결
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const MainLayout(child: HomeScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
+        '/starlist' : (context) => MainLayout(child: StarListScreen())
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
