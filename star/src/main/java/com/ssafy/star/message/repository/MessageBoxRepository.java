@@ -20,4 +20,6 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
 
     @Query("SELECT count(*) FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :type")
     int getMemberCountByMessageId(Long messageId, short type);
+
+    boolean existsByMemberIdAndMessageId(Long memberId, Long messageId);
 }
