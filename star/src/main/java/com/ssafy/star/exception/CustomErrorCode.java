@@ -15,7 +15,7 @@ public enum CustomErrorCode {
     MEMBER_INFO_NOT_MATCH("M0004", "회원정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
     NOT_FOUND_MESSAGE("L0001", "쪽지가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_MESSAGE_ACCESS("L0002", "쪽지에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
-
+    METHOD_NOT_ALLOWED("L0003", "지원하지 않는 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
     ;
     private final String code;
     private final String message;
