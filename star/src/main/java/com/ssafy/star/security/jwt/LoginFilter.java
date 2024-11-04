@@ -2,6 +2,7 @@ package com.ssafy.star.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.star.response.ApiResponse;
+import com.ssafy.star.security.dto.CustomUserDetails;
 import com.ssafy.star.security.dto.LoginDto;
 import com.ssafy.star.security.service.TokenService;
 import jakarta.servlet.FilterChain;
@@ -72,15 +73,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication authentication) throws IOException {
         //유저 정보
         String memberName = authentication.getName();
-
+// UserDetails 객체에서 사용자 정보를 가져오기
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = userDetails.getId(); // ID 가져오기
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
         //토큰 생성
-        String access = jwtUtil.createJwt("access", memberName, role, accessTokenExpiration);
-        String refresh = jwtUtil.createJwt("refresh", memberName, role, refreshTokenExpiration);
+        String access = jwtUtil.createJwt("access", memberName,memberId, role, accessTokenExpiration);
+        String refresh = jwtUtil.createJwt("refresh", memberName,memberId, role, refreshTokenExpiration);
 
 
         tokenService.updateRefreshToken(memberName, refresh, refreshTokenExpiration);
