@@ -28,4 +28,8 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     List<String> getRecipientNamesByMessageId(Long messageId, short type);
 
     boolean existsByMemberIdAndMessageId(Long memberId, Long messageId);
+
+    @Query("SELECT mb.isDeleted FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
+    boolean existsByMessageIdAndMemberIdAndIsDeletedFalse(Long messageId, Long memberId);
+
 }

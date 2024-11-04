@@ -24,10 +24,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "WHERE m.id = :messageId AND mb.member.id = :memberId AND mb.isDeleted = false ORDER BY m.createdAt DESC")
     List<SendMessageListResponse> findSendMessageListByMessageIdAndMemberId(Long messageId, Long memberId);
 
-    //    @Query("SELECT new com.ssafy.star.message.dto.response.SendMessageListResponse(m.id, m.title, m.receiverType, m.createdAt, m.isTreasure, m.isFound, m.group.id) " +
-//            "FROM Message m WHERE m.id = :id ORDER BY m.createdAt DESC")
-//    List<SendMessageListResponse> findMessageListById(Long id);
-
     @Query("SELECT new com.ssafy.star.message.dto.response.ReceiveMessage(m.id, m.sender.nickname, m.createdAt, m.title, m.content, m.image, m.isTreasure, m.receiverType)" +
             "FROM Message m WHERE m.id = :id")
     ReceiveMessage findReceiveMessageById(Long id);
