@@ -39,5 +39,8 @@ public class Member {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name= "role", nullable = false)
+    private String role;
 }
 
