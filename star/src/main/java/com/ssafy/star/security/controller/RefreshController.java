@@ -43,7 +43,8 @@ public class RefreshController {
             res.setHeader("access", tokens.get("access"));
             res.setHeader("refresh" ,tokens.get("refresh"));
 
-            return new ResponseEntity<>(tokens,HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse<>("200","Token 재발급 성공"),HttpStatus.OK);
+
 //            System.out.println(e.getMessage());
 //            return new ResponseEntity<>(new ApiResponse<>("E0000","서버 에러가 발생했습니다.", null), HttpStatus.INTERNAL_SERVER_ERROR);
 
