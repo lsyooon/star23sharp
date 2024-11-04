@@ -22,7 +22,7 @@ class LoginScreen extends StatelessWidget {
         // 로그인 타이틀과 입력 폼을 묶는 Column
         Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center, 
             children: [
               // 로그인 타이틀
               const Text(
@@ -51,7 +51,7 @@ class LoginScreen extends StatelessWidget {
                         "아이디",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 18,
                         ),
                       ),
                     ),
@@ -76,7 +76,7 @@ class LoginScreen extends StatelessWidget {
                         "비밀번호",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 18,
                         ),
                       ),
                     ),

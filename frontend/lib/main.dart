@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => const MainLayout(child: HomeScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
-        '/signup': (context) => const MainLayout(child: SignUpScreen())
+        '/signup': (context) => const MainLayout(child: SignUpScreen()),
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
