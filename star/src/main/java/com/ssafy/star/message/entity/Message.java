@@ -48,13 +48,13 @@ public class Message {
     private String hint;
 
     @Column
-    private float lat;
+    private Float lat;
     @Column
-    private float lng;
+    private Float lng;
     @Column
     @JdbcTypeCode(SqlTypes.VECTOR)
     @Array(length = 3)
-    private float[] coordinate;
+    private Float[] coordinate;
 
     @Column(name = "is_treasure", nullable = false)
     private boolean isTreasure = false;
@@ -71,7 +71,7 @@ public class Message {
     @Column
     @JdbcTypeCode(SqlTypes.VECTOR)
     @Array(length = 12288)
-    private float[] vector;
+    private Float[] vector;
 
     @ManyToOne
     @JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "fk_message_group"))

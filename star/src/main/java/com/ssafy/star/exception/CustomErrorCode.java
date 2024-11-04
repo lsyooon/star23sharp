@@ -18,6 +18,9 @@ public enum CustomErrorCode {
     NICKNAME_ALREADY_EXISTS("M0002","이미 사용된 닉네임 입니다.", HttpStatus.BAD_REQUEST),
     MEMBER_ALREADY_EXISTS("M0001","이미 사용된 회원 ID 입니다.", HttpStatus.BAD_REQUEST),
     METHOD_NOT_ALLOWED("L0003", "지원하지 않는 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
+    ALREADY_REPORTED_MESSAGE("L0003", "이미 신고된 쪽지입니다.", HttpStatus.BAD_REQUEST),
+    NOT_FOUND_COMPLAINT_REASON("L0017", "해당 신고 사유를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    INVALID_DATE_FORMAT("L0018", "날짜 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
     ;
     private final String code;
     private final String message;

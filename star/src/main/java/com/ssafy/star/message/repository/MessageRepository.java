@@ -33,5 +33,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "FROM Message m WHERE m.id = :id")
     SendMessage findSendMessageById(Long id);
 
+    @Query("SELECT m.sender.id FROM Message m WHERE m.id = :messageId")
+    Long findSenderIdByMessageId(Long messageId);
+
     boolean existsById(Long id);
+
+    Message findMessageById(Long id);
 }

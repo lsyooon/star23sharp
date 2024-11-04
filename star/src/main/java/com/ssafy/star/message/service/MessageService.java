@@ -2,11 +2,19 @@ package com.ssafy.star.message.service;
 
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
+import com.ssafy.star.member.entity.Member;
 import com.ssafy.star.member.repository.MemberGroupRepository;
+import com.ssafy.star.member.repository.MemberRepository;
+import com.ssafy.star.message.dto.request.ComplaintMessageRequest;
 import com.ssafy.star.message.dto.response.ReceiveMessage;
 import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
 import com.ssafy.star.message.dto.response.SendMessage;
 import com.ssafy.star.message.dto.response.SendMessageListResponse;
+import com.ssafy.star.message.entity.Complaint;
+import com.ssafy.star.message.entity.ComplaintReason;
+import com.ssafy.star.message.entity.Message;
+import com.ssafy.star.message.repository.ComplaintReasonRepository;
+import com.ssafy.star.message.repository.ComplaintRepository;
 import com.ssafy.star.message.repository.MessageBoxRepository;
 import com.ssafy.star.message.repository.MessageRepository;
 import org.springframework.stereotype.Service;
@@ -14,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,11 +32,17 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final MessageBoxRepository messageBoxRepository;
     private final MemberGroupRepository memberGroupRepository;
+    private final MemberRepository memberRepository;
+    private final ComplaintRepository complaintRepository;
+    private final ComplaintReasonRepository complaintReasonRepository;
 
-    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository) {
+    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository, ComplaintRepository complaintRepository, MemberRepository memberRepository, ComplaintReasonRepository complaintReasonRepository) {
         this.messageRepository = messageRepository;
         this.messageBoxRepository = messageBoxRepository;
         this.memberGroupRepository = memberGroupRepository;
+        this.complaintReasonRepository = complaintReasonRepository;
+        this.memberRepository = memberRepository;
+        this.complaintRepository = complaintRepository;
     }
 
     // 수신 쪽지 리스트
@@ -188,6 +203,36 @@ public class MessageService {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
         }
         messageBoxRepository.updateIsDeletedByMessageIdAndMemberId(messageId, userId);
+    }
+
+    // 수신 쪽지 신고하기
+    @Transactional
+    public void complaintMessage(Long userId, ComplaintMessageRequest request) {
+        if (!messageRepository.existsById(request.getMessageId())) {
+            throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
+        }
+        if (!messageBoxRepository.existsByMemberIdAndMessageId(userId, request.getMessageId())) {
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
+        }
+        if (messageBoxRepository.existsByMemberIdAndMessageIdAndIsReportedTrue(userId, request.getMessageId())) {
+            throw new CustomException(CustomErrorCode.ALREADY_REPORTED_MESSAGE);
+        }
+
+        Complaint complaint = new Complaint();
+        ComplaintReason complaintReason = complaintReasonRepository.findById(request.getComplaintType())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_COMPLAINT_REASON));
+        complaint.setReporter(memberRepository.findMemberById(userId));
+        complaint.setReported(memberRepository.findMemberById(messageRepository.findSenderIdByMessageId(request.getMessageId())));
+        complaint.setMessage(messageRepository.findMessageById(request.getMessageId()));
+        complaint.setComplaintReason(complaintReason);
+        try {
+            complaint.setCreatedAt(request.getComplaintTime());
+        } catch (DateTimeParseException e) {
+            throw new CustomException(CustomErrorCode.INVALID_DATE_FORMAT);
+        }
+
+        complaintRepository.save(complaint);
+        messageBoxRepository.updateIsReportedByMessageIdAndMemberId(request.getMessageId(), userId);
     }
 
 

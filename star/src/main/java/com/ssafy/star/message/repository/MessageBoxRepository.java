@@ -39,4 +39,13 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     @Modifying
     @Query("UPDATE MessageBox mb SET mb.isDeleted = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
     void updateIsDeletedByMessageIdAndMemberId(Long messageId, Long memberId);
+
+    @Query("SELECT mb.isReported FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.message.id = :messageId")
+    boolean existsByMemberIdAndMessageIdAndIsReportedTrue(Long memberId, Long messageId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE MessageBox mb SET mb.isReported = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
+    void updateIsReportedByMessageIdAndMemberId(Long messageId, Long memberId);
+
 }

@@ -1,14 +1,12 @@
 package com.ssafy.star.message.entity;
 
 import com.ssafy.star.member.entity.Member;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
