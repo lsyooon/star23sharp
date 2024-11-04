@@ -20,4 +20,10 @@ public class CustomException extends RuntimeException {
         this.status = customErrorCode.getStatus();
     }
 
+    public CustomException(String errorCode, String message, HttpStatus httpStatus) {
+       super(message);
+        this.errorCode = errorCode;
+        this.status = httpStatus;
+
+    }
 }
