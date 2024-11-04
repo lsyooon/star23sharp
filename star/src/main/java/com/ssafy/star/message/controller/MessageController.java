@@ -1,10 +1,14 @@
 package com.ssafy.star.message.controller;
 
+import com.ssafy.star.message.dto.response.ReceiveMessage;
 import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
+import com.ssafy.star.message.dto.response.SendMessage;
+import com.ssafy.star.message.dto.response.SendMessageListResponse;
 import com.ssafy.star.message.service.MessageService;
 import org.springframework.http.ResponseEntity;
 import com.ssafy.star.response.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,12 +34,26 @@ public class MessageController {
     }
 
     @GetMapping("/send/list")
-    public ResponseEntity<ApiResponse<List<ReceiveMessageListResponse>>> getSendMessageList(){
+    public ResponseEntity<ApiResponse<List<SendMessageListResponse>>> getSendMessageList(){
         Long userId = 2L;
-        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(userId);
+        List<SendMessageListResponse> response = messageService.getSendMessageList(userId);
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 보낸 편지가 없습니다."));
         }
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
+    }
+
+    @GetMapping("/reception/{messageId}")
+    public ResponseEntity<ApiResponse<ReceiveMessage>> getReceptionMessage(@PathVariable Long messageId){
+        Long userId = 1L;
+        ReceiveMessage response = messageService.getReceiveMessage(userId, messageId);
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
+    }
+
+    @GetMapping("/send/{messageId}")
+    public ResponseEntity<ApiResponse<SendMessage>> getSendMessage(@PathVariable Long messageId){
+        Long userId = 2L;
+        SendMessage response = messageService.getSendMessage(userId, messageId);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 }

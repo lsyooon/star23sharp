@@ -9,34 +9,38 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class SendMessageListResponse {
+public class SendMessage {
     private Long messageId;
-    private String title;
-    private String recipient;
-    private String createdDate;
-    private boolean kind;
-    private boolean state;
-    private short receiverType;
+    private List<String> receiverNames;
     @JsonIgnore
     private LocalDateTime createdAt;
+    private String createdDate;
+    private String title;
+    private String content;
+    private String image;
+    private boolean kind;
+    private short receiverType;
+    private boolean state;
     @JsonIgnore
     private Long groupId;
 
-    public SendMessageListResponse(Long messageId, String title, short receiverType, LocalDateTime createdAt, boolean kind, boolean state, Long groupId) {
+    public SendMessage(Long messageId, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean state, Long groupId) {
         this.messageId = messageId;
-        this.title = title;
-        this.receiverType = receiverType;
         this.createdAt = createdAt;
+        this.title = title;
+        this.content = content;
+        this.image = image;
         this.kind = kind;
+        this.receiverType = receiverType;
         this.state = state;
         this.groupId = groupId;
-    }
-    public void setRecipient(String recipient) {
-        this.recipient = recipient;
     }
 
     public void setCreatedDate(String createdDate) {
         this.createdDate = createdDate;
     }
 
+    public void setReceiverNames(List<String> recipients) {
+        this.receiverNames = recipients;
+    }
 }
