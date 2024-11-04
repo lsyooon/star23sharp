@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:star23sharp/widgets/index.dart';
+import 'package:star23sharp/widgets/modals/star_write_type_modal.dart';
 import 'package:star23sharp/providers/index.dart';
 
 class Home extends StatefulWidget {
@@ -36,6 +37,24 @@ class _HomeScreenState extends State<Home> {
         'onPressed': onSignupPressed,
       },
     ];
+    final List<Map<String, dynamic>> menuList = [
+      {
+        'text': '별 보관함',
+        'goto': '/starstorage',
+        'img': 'assets/img/planet/planet1.png',
+      },
+      {
+        'text': '별 숨기기',
+        'goto': '/starwriteform',
+        'img': 'assets/img/planet/planet2.png',
+      },
+      {
+        'text': '내 정보',
+        'goto': '/profile',
+        'img': 'assets/img/planet/planet3.png',
+      },
+    ];
+
     return Stack(
       children: [
         // 배경 이미지
@@ -58,9 +77,65 @@ class _HomeScreenState extends State<Home> {
               const SizedBox(height: 20),
               // 로그인 여부에 따른 UI 변경
               authProvider.isLoggedIn
-                  ? const Text(
-                      "Welcome",
-                      style: TextStyle(color: Colors.white, fontSize: 24),
+                  ? Column(
+                      children: [
+                        // menuList 표시
+                        ...menuList.map((menu) {
+                          return GestureDetector(
+                            onTap: () {
+                              String url = menu['goto'];
+                              if (menu['text'] == "별 숨기기") {
+                                showModalBottomSheet(
+                                  context: context,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (BuildContext context) {
+                                    return const CustomModal();
+                                  },
+                                ).then((selectedUrl) {
+                                  if (selectedUrl != null) {
+                                    url = selectedUrl;
+                                    Navigator.pushNamed(context, url);
+                                  }
+                                });
+                              } else {
+                                Navigator.pushNamed(context, url);
+                              }
+                            },
+                            child: Column(
+                              children: [
+                                Image.asset(
+                                  menu['img'],
+                                  width: 60,
+                                ),
+                                Text(
+                                  menu['text'],
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                const SizedBox(height: 20),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        // 하단 메시지
+                        const Padding(
+                          padding: EdgeInsets.only(top: 40),
+                          child: Column(
+                            children: [
+                              Text(
+                                "모든 별을 확인했어요.",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                "새로운 별을 전달해 보는건 어떨까요?",
+                                style: TextStyle(
+                                    color: Colors.yellow, fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     )
                   : Column(
                       children: buttons.map((button) {

@@ -109,9 +109,12 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => const MainLayout(child: Home()),
         '/starstorage': (context) => const MainLayout(child: Star_storagebox()),
-        '/starform': (context) => const MainLayout(child: Profile()),
+        '/starwriteform': (context) => const MainLayout(child: Profile()),
         '/profile': (context) => const MainLayout(child: Profile()),
         '/notification': (context) => const MainLayout(child: PushAlam()),
+        '/signin': (context) => const MainLayout(child: LoginScreen()),
+        '/signup': (context) => const MainLayout(child: SignUpScreen()),
+
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
