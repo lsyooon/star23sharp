@@ -29,7 +29,10 @@ public class JWTFilter extends OncePerRequestFilter {
     private final List<String> whiteListedPaths = List.of(
             "/api/v1/login",
             "/api/v1/join",
-            "/api/v1/refresh"
+            "/api/v1/refresh",
+            "/api/v1/logout",
+            "/api/v1/check-memberId",
+            "/api/v1/check-nickname"
     );
 
     public JWTFilter(JWTUtil jwtUtil) {
@@ -51,7 +54,15 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
-            throw new CustomException(CustomErrorCode.EMPTY_ACCESS_TOKEN);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            // 응답 메시지 작성
+            try (PrintWriter writer = response.getWriter()) {
+                writer.write("{\"code\": \"M0008\", \"message\": \"Access Token이 비어있습니다.\",\"data\": null }");
+            }
+            return;
         }
 
         if(!jwtUtil.validateToken(accessToken)) {
@@ -62,7 +73,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
             // 응답 메시지 작성
             try (PrintWriter writer = response.getWriter()) {
-                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\"}");
+                writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\", \"data\": null }");
             }
             return;
         }
