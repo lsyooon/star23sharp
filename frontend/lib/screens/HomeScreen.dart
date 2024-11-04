@@ -18,11 +18,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     void onLoginPressed() {
       // 로그인 로직
+      Navigator.pushNamed(context, '/signin');
     }
 
     void onSignupPressed() {
       // 회원가입 로직
+      Navigator.pushNamed(context, '/signup');
     }
+
     final List<Map<String, dynamic>> buttons = [
       {
         'text': '로그인',

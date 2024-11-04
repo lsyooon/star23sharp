@@ -20,13 +20,20 @@ class MainLayout extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              themeProvider.backgroundImage,
-              fit: BoxFit.fill,
-            ),
-          ),
-          Positioned(
             child: child,
+          ),
+          IgnorePointer(
+            ignoring: true,
+            child: Positioned.fill( 
+              child: Container( 
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(themeProvider.backgroundImage),
+                    fit: BoxFit.fill, 
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
