@@ -49,7 +49,11 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String accessToken = request.getHeader("access");
+        String accessToken = null;
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            accessToken = authorizationHeader.substring(7);
+        }
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
