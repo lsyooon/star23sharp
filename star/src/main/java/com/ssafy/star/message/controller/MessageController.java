@@ -7,10 +7,7 @@ import com.ssafy.star.message.dto.response.SendMessageListResponse;
 import com.ssafy.star.message.service.MessageService;
 import org.springframework.http.ResponseEntity;
 import com.ssafy.star.response.ApiResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -55,5 +52,12 @@ public class MessageController {
         Long userId = 2L;
         SendMessage response = messageService.getSendMessage(userId, messageId);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
+    }
+
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<ApiResponse<?>> deleteMessage(@PathVariable Long messageId){
+        Long userId = 1L;
+        messageService.removeMessage(userId, messageId);
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "메시지가 삭제되었습니다."));
     }
 }
