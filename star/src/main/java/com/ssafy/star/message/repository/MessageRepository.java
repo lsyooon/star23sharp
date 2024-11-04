@@ -14,12 +14,19 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("SELECT new com.ssafy.star.message.dto.response.ReceiveMessageListResponse(m.id, m.title, m.receiverType, m.sender.nickname, m.createdAt, m.isTreasure) " +
-            "FROM Message m WHERE m.id = :id ORDER BY m.createdAt DESC")
-    List<ReceiveMessageListResponse> findReceiveMessageListById(Long id);
+            "FROM Message m JOIN MessageBox mb ON m.id = mb.message.id " +
+            "WHERE m.id = :messageId AND mb.member.id = :memberId AND mb.isDeleted = false ORDER BY m.createdAt DESC")
+    List<ReceiveMessageListResponse> findReceiveMessageListByMessageIdAndMemberId(Long messageId, Long memberId);
+
 
     @Query("SELECT new com.ssafy.star.message.dto.response.SendMessageListResponse(m.id, m.title, m.receiverType, m.createdAt, m.isTreasure, m.isFound, m.group.id) " +
-            "FROM Message m WHERE m.id = :id ORDER BY m.createdAt DESC")
-    List<SendMessageListResponse> findSendMessageListById(Long id);
+            "FROM Message m JOIN MessageBox mb ON m.id = mb.message.id " +
+            "WHERE m.id = :messageId AND mb.member.id = :memberId AND mb.isDeleted = false ORDER BY m.createdAt DESC")
+    List<SendMessageListResponse> findSendMessageListByMessageIdAndMemberId(Long messageId, Long memberId);
+
+    //    @Query("SELECT new com.ssafy.star.message.dto.response.SendMessageListResponse(m.id, m.title, m.receiverType, m.createdAt, m.isTreasure, m.isFound, m.group.id) " +
+//            "FROM Message m WHERE m.id = :id ORDER BY m.createdAt DESC")
+//    List<SendMessageListResponse> findMessageListById(Long id);
 
     @Query("SELECT new com.ssafy.star.message.dto.response.ReceiveMessage(m.id, m.sender.nickname, m.createdAt, m.title, m.content, m.image, m.isTreasure, m.receiverType)" +
             "FROM Message m WHERE m.id = :id")

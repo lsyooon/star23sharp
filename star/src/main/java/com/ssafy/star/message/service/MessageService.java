@@ -41,7 +41,7 @@ public class MessageService {
         LocalDateTime now = LocalDateTime.now();
 
         for (Long messageId : messageIdList) {
-            List<ReceiveMessageListResponse> messages = messageRepository.findReceiveMessageListById(messageId);
+            List<ReceiveMessageListResponse> messages = messageRepository.findReceiveMessageListByMessageIdAndMemberId(messageId, userId);
 
             if (messages == null) {
                 messages = new ArrayList<>();
@@ -53,6 +53,10 @@ public class MessageService {
             }
             list.addAll(messages);
         }
+
+        // 날짜 기준 재정렬
+        list.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+
         return list;
     }
 
@@ -67,7 +71,7 @@ public class MessageService {
         LocalDateTime now = LocalDateTime.now();
 
         for (Long messageId : messageIdList) {
-            List<SendMessageListResponse> messages = messageRepository.findSendMessageListById(messageId);
+            List<SendMessageListResponse> messages = messageRepository.findSendMessageListByMessageIdAndMemberId(messageId, userId);
 
             if (messages == null) {
                 messages = new ArrayList<>();
@@ -98,8 +102,13 @@ public class MessageService {
             }
             list.addAll(messages);
         }
+
+        // 날짜 기준 재정렬
+        list.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+
         return list;
     }
+
 
     // 수신 쪽지 상세조회
     public ReceiveMessage getReceiveMessage(Long userId, Long messageId) {
