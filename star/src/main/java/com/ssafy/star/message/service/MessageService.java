@@ -117,7 +117,7 @@ public class MessageService {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
         // userId가 받은 쪽지 맞는지 확인
-        if (!messageBoxRepository.existsByMemberIdAndMessageId(userId, messageId)) {
+        if (!messageBoxRepository.existsByMemberIdAndMessageIdAndMessageDirection(userId, messageId, (short) 1)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
         }
 
@@ -134,7 +134,7 @@ public class MessageService {
         if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
-        if (!messageBoxRepository.existsByMemberIdAndMessageId(userId, messageId)) {
+        if (!messageBoxRepository.existsByMemberIdAndMessageIdAndMessageDirection(userId, messageId, (short) 0)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
         }
 
