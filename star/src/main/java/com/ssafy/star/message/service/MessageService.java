@@ -112,8 +112,8 @@ public class MessageService {
 
     // 수신 쪽지 상세조회
     public ReceiveMessage getReceiveMessage(Long userId, Long messageId) {
-        // 쪽지가 존재하는지 확인
-        if (!messageRepository.existsById(messageId)) {
+        // 쪽지가 존재하는지 확인 & 리스트에서 삭제한 쪽지인지 확인
+        if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
         // userId가 받은 쪽지 맞는지 확인
@@ -131,7 +131,7 @@ public class MessageService {
 
     // 송신 쪽지 상세조회
     public SendMessage getSendMessage(Long userId, Long messageId) {
-        if (!messageRepository.existsById(messageId)) {
+        if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
         if (!messageBoxRepository.existsByMemberIdAndMessageId(userId, messageId)) {
