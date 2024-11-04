@@ -29,7 +29,7 @@ public class Message {
     private Member sender;
 
     @Column(name="receiver_type", nullable = false)
-    private int receiverType = 0;
+    private short receiverType = 0;
 
     @Column(name = "hint_image_first")
     private String hintImageFirst;

@@ -1,6 +1,7 @@
 package com.ssafy.star.message.controller;
 
 import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
+import com.ssafy.star.message.dto.response.SendMessageListResponse;
 import com.ssafy.star.message.service.MessageService;
 import org.springframework.http.ResponseEntity;
 import com.ssafy.star.response.ApiResponse;
@@ -21,7 +22,7 @@ public class MessageController {
 
     @GetMapping("/reception/list")
     public ResponseEntity<ApiResponse<List<ReceiveMessageListResponse>>> getReceptionList(){
-        Long userId = 1L;
+        Long userId = 4L;
         List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(userId);
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
@@ -30,9 +31,9 @@ public class MessageController {
     }
 
     @GetMapping("/send/list")
-    public ResponseEntity<ApiResponse<List<ReceiveMessageListResponse>>> getSendMessageList(){
-        Long userId = 2L;
-        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(userId);
+    public ResponseEntity<ApiResponse<List<SendMessageListResponse>>> getSendMessageList(){
+        Long userId = 3L;
+        List<SendMessageListResponse> response = messageService.getSendMessageList(userId);
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 보낸 편지가 없습니다."));
         }
