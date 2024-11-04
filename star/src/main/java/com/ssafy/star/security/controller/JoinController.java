@@ -2,6 +2,7 @@ package com.ssafy.star.security.controller;
 
 
 import com.ssafy.star.response.ApiResponse;
+import com.ssafy.star.security.dto.DuplicateDto;
 import com.ssafy.star.security.dto.JoinDTO;
 import com.ssafy.star.security.service.JoinService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/member")
 public class JoinController {
 
 
@@ -24,16 +25,14 @@ public class JoinController {
         return ResponseEntity.ok().body(new ApiResponse<>("200","회원가입 성공"));
     }
 
-    @GetMapping("/check-nickname")
-    public ResponseEntity<?> checkNickname(@RequestParam("nickname") String nickname) {
-        joinService.checkNickname(nickname);
+    @PostMapping("/duplicate")
+    public ResponseEntity<?> checkNickname(@RequestBody DuplicateDto req) {
+        if(req.getCheckType() == 0){
+            joinService.checkMemberId(req.getValue());
+            return ResponseEntity.ok().body(new ApiResponse<>("200", "사용 가능한 아이디입니다."));
+        }
+        joinService.checkNickname(req.getValue());
         return ResponseEntity.ok().body(new ApiResponse<>("200","사용 가능한 닉네임입니다."));
-    }
-
-    @GetMapping("/check-memberId")
-    public ResponseEntity<?> checkId(@RequestParam("memberId") String memberId) {
-        joinService.checkMemberId(memberId);
-        return ResponseEntity.ok().body(new ApiResponse<>("200", "사용 가능한 아이디입니다."));
     }
 
 

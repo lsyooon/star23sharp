@@ -103,8 +103,7 @@ public class SecurityConfig {
         http.httpBasic((auth) -> auth.disable());
 
         http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("api/v1/login", "/", "api/v1/join","/api/v1/refresh",
-                        "/api/v1/check-memberId","api/v1/check-nickname").permitAll()
+                .requestMatchers("/api/v1/login", "/", "/api/v1/member/join","/api/v1/refresh","api/v1/member/duplicate").permitAll()
                 .requestMatchers("/api/v1/admin").hasRole("ADMIN")
                 .anyRequest().authenticated()
         );
