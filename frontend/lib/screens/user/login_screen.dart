@@ -29,7 +29,7 @@ class LoginScreen extends StatelessWidget {
                 "로그인",
                 style: TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
+                    fontSize: FontSizes.title,
                     fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
@@ -51,7 +51,7 @@ class LoginScreen extends StatelessWidget {
                         "아이디",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: FontSizes.label,
                         ),
                       ),
                     ),
@@ -76,7 +76,7 @@ class LoginScreen extends StatelessWidget {
                         "비밀번호",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: FontSizes.label,
                         ),
                       ),
                     ),
@@ -113,7 +113,7 @@ class LoginScreen extends StatelessWidget {
                           ),
                           child: const Text(
                             '로그인',
-                            style: TextStyle(fontSize: 18, color: Colors.white),
+                            style: TextStyle(fontSize: FontSizes.label, color: Colors.white),
                           ),
                         ),
                       ),

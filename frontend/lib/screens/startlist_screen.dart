@@ -4,8 +4,8 @@ import 'package:star23sharp/widgets/list_item.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 
-class StarStoragebox extends StatelessWidget {
-  StarStoragebox({super.key});
+class StarListScreen extends StatelessWidget {
+  StarListScreen({super.key});
 
   final List<ReceivedStarModel> items = [
     {
