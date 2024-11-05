@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Star_storagebox extends StatelessWidget {
-  const Star_storagebox({super.key});
+class StarStoragebox extends StatelessWidget {
+  const StarStoragebox({super.key});
 
   @override
   Widget build(BuildContext context) {

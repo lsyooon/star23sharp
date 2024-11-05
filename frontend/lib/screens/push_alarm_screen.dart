@@ -5,14 +5,14 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:star23sharp/utilities/index.dart';
 
-class PushAlam extends StatefulWidget {
-  const PushAlam({super.key});
+class PushAlarmScreen extends StatefulWidget {
+  const PushAlarmScreen({super.key});
 
   @override
-  State<PushAlam> createState() => _PushAlamState();
+  State<PushAlarmScreen> createState() => _PushAlarmScreenState();
 }
 
-class _PushAlamState extends State<PushAlam> {
+class _PushAlarmScreenState extends State<PushAlarmScreen> {
   @override
   BuildContext context = AppGlobal.navigatorKey.currentState!
       .context; // use context from navigator key in app global class

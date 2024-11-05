@@ -5,14 +5,14 @@ import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/widgets/modals/star_write_type_modal.dart';
 import 'package:star23sharp/providers/index.dart';
 
-class Home extends StatefulWidget {
-  const Home({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<Home> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenScreenState();
 }
 
-class _HomeScreenState extends State<Home> {
+class _HomeScreenScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -76,7 +76,7 @@ class _HomeScreenState extends State<Home> {
               const Logo(),
               const SizedBox(height: 20),
               // 로그인 여부에 따른 UI 변경
-              authProvider.isLoggedIn
+              !authProvider.isLoggedIn
                   ? Column(
                       children: [
                         // menuList 표시
@@ -115,7 +115,7 @@ class _HomeScreenState extends State<Home> {
                               ],
                             ),
                           );
-                        }).toList(),
+                        }),
                         // 하단 메시지
                         const Padding(
                           padding: EdgeInsets.only(top: 40),

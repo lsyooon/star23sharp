@@ -107,11 +107,12 @@ class MyApp extends StatelessWidget {
       navigatorObservers: <NavigatorObserver>[observer],
       initialRoute: '/home',
       routes: {
-        '/home': (context) => const MainLayout(child: Home()),
-        '/starstorage': (context) => const MainLayout(child: Star_storagebox()),
-        '/starwriteform': (context) => const MainLayout(child: Profile()),
-        '/profile': (context) => const MainLayout(child: Profile()),
-        '/notification': (context) => const MainLayout(child: PushAlam()),
+        '/home': (context) => const MainLayout(child: HomeScreen()),
+        '/starstorage': (context) => const MainLayout(child: StarStoragebox()),
+        '/starwriteform': (context) => const MainLayout(child: ProfileScreen()),
+        '/profile': (context) => const MainLayout(child: ProfileScreen()),
+        '/notification': (context) =>
+            const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
 
