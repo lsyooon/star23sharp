@@ -2,7 +2,6 @@ package com.ssafy.star.message.service;
 
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
-import com.ssafy.star.member.entity.Member;
 import com.ssafy.star.member.repository.MemberGroupRepository;
 import com.ssafy.star.member.repository.MemberRepository;
 import com.ssafy.star.message.dto.request.ComplaintMessageRequest;
@@ -12,7 +11,6 @@ import com.ssafy.star.message.dto.response.SendMessage;
 import com.ssafy.star.message.dto.response.SendMessageListResponse;
 import com.ssafy.star.message.entity.Complaint;
 import com.ssafy.star.message.entity.ComplaintReason;
-import com.ssafy.star.message.entity.Message;
 import com.ssafy.star.message.repository.ComplaintReasonRepository;
 import com.ssafy.star.message.repository.ComplaintRepository;
 import com.ssafy.star.message.repository.MessageBoxRepository;
@@ -137,7 +135,7 @@ public class MessageService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        ReceiveMessage receiveMessage = messageRepository.findReceiveMessageById(messageId);
+        ReceiveMessage receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
         String formattedDate = formatCreatedDate(receiveMessage.getCreatedAt(), now);
         receiveMessage.setCreatedDate(formattedDate);
 
