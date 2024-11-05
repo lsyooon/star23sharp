@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -61,6 +63,14 @@ final logger = Logger(
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: "assets/env/.env");
+
+  final appKey = dotenv.env['APP_KEY'] ?? '';
+  AuthRepository.initialize(
+    appKey: appKey,
+  );
+
+//firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //FCM 푸시 알림 관련 초기화
   PushNotification.init();
@@ -114,23 +124,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       navigatorKey: AppGlobal.navigatorKey,
       theme: ThemeData(
-        primaryColor: themeProvider.backgroundColor,
-        fontFamily: 'Hakgyoansim Chilpanjiugae'
-      ),
+          primaryColor: themeProvider.backgroundColor,
+          fontFamily: 'Hakgyoansim Chilpanjiugae'),
       navigatorObservers: <NavigatorObserver>[observer],
       initialRoute: '/home',
       routes: {
         '/home': (context) => const MainLayout(child: HomeScreen()),
+        '/map': (context) => const MainLayout(child: MapScreen()),
         '/starstorage': (context) => MainLayout(child: StarStoragebox()),
-        '/starwriteform': (context) => const MainLayout(child: ProfileScreen()),
+        '/starwriteform': (context) =>
+            const MainLayout(child: StarFormScreen()),
         '/profile': (context) => const MainLayout(child: ProfileScreen()),
         '/notification': (context) =>
             const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
+
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
