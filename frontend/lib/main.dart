@@ -102,15 +102,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: AppGlobal.navigatorKey,
       theme: ThemeData(
-        primaryColor: themeProvider.backgroundColor,
-        fontFamily: 'Hakgyoansim Chilpanjiugae'
-      ),
+          primaryColor: themeProvider.backgroundColor,
+          fontFamily: 'Hakgyoansim Chilpanjiugae'),
       navigatorObservers: <NavigatorObserver>[observer],
       initialRoute: '/home',
       routes: {
         '/home': (context) => const MainLayout(child: HomeScreen()),
         '/starstorage': (context) => MainLayout(child: StarStoragebox()),
-        '/starwriteform': (context) => const MainLayout(child: ProfileScreen()),
+        '/starwriteform': (context) =>
+            const MainLayout(child: StarFormScreen()),
         '/profile': (context) => const MainLayout(child: ProfileScreen()),
         '/notification': (context) =>
             const MainLayout(child: PushAlarmScreen()),
