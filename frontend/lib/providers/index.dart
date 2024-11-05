@@ -1,2 +1,2 @@
-export 'package:star23sharp/providers/ThemeProvider.dart';
-export 'package:star23sharp/providers/AuthProvider.dart';
+export 'package:star23sharp/providers/theme_provider.dart';
+export 'package:star23sharp/providers/auth_provider.dart';

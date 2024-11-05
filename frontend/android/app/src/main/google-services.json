@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "435311257389",
+    "project_id": "star23sharp-fc78b",
+    "storage_bucket": "star23sharp-fc78b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:435311257389:android:1ce10277b913a90bd555a4",
+        "android_client_info": {
+          "package_name": "com.example.star23sharp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBq_8coWrsvIZoxGLROPLtiZhUhXtPpyXI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
