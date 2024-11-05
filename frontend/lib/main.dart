@@ -108,7 +108,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/home',
       routes: {
         '/home': (context) => const MainLayout(child: HomeScreen()),
-        '/starstorage': (context) => const MainLayout(child: StarStoragebox()),
+        '/starstorage': (context) => MainLayout(child: StarStoragebox()),
         '/starwriteform': (context) =>
             const MainLayout(child: StarFormScreen()),
         '/profile': (context) => const MainLayout(child: ProfileScreen()),
