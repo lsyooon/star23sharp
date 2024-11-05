@@ -171,3 +171,39 @@ class ExpiredTokenException(AppException):
 
     status_code = status.HTTP_401_UNAUTHORIZED
     code = "M0000"
+
+
+class TitleLengthExceededException(AppException):
+    """
+    쪽지 제목이 너무 깁니다.
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "L0019"
+
+
+class ContentLengthExceededException(AppException):
+    """
+    쪽지 내용이 너무 깁니다.
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "L0020"
+
+
+class HintLengthExceededException(AppException):
+    """
+    보물 쪽지 힌트가 너무 깁니다.
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "L0021"
+
+
+class SelfRecipientException(AppException):
+    """
+    쪽지 수신자 중에 자기 자신이 존재합니다.
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "L0022"

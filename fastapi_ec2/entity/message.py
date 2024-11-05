@@ -1,4 +1,5 @@
 import datetime
+from enum import Enum
 from typing import Optional
 
 from pgvector.sqlalchemy import Vector
@@ -11,7 +12,6 @@ from sqlalchemy import (
     ForeignKey,
     SmallInteger,
     String,
-    Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -21,6 +21,12 @@ MESSAGE_RECEIVER_INDIVIDUAL = 0
 MESSAGE_RECEIVER_GROUP = 1
 MESSAGE_RECEIVER_PUBLIC = 2
 IMAGE_VECTOR_SIZE = 12288
+
+
+class VarcharLimit(Enum):
+    TITLE: int = 15
+    CONTENT: int = 100
+    HINT: int = 20
 
 
 class Message(Base):
@@ -40,9 +46,13 @@ class Message(Base):
     hint_image_first: Mapped[str] = mapped_column(String(255), nullable=True)
     hint_image_second: Mapped[str] = mapped_column(String(255), nullable=True)
     dot_hint_image: Mapped[str] = mapped_column(String(255), nullable=True)
-    title: Mapped[str] = mapped_column(String(15), nullable=False)
-    content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    hint: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    title: Mapped[str] = mapped_column(String(VarcharLimit.TITLE), nullable=False)
+    content: Mapped[Optional[str]] = mapped_column(
+        String(VarcharLimit.CONTENT), nullable=True
+    )
+    hint: Mapped[Optional[str]] = mapped_column(
+        String(VarcharLimit.HINT), nullable=True
+    )
     lat: Mapped[float] = mapped_column(Double, nullable=True)
     lng: Mapped[float] = mapped_column(Double, nullable=True)
     coordinate: Mapped[list[float]] = mapped_column(Vector(3), nullable=True)

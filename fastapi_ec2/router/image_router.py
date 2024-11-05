@@ -79,14 +79,14 @@ async def compare_image(
     _=Depends(get_current_member),
 ):
     """
-    두 이미지의 유사도를 계산하여 반환합니다.
+    두 이미지의 AI모델에 대한 코사인 유사도를 계산하여 반환합니다.
 
     매개변수:
         file_1 (UploadFile): 첫번째 이미지 파일.
         file_2 (UploadFile): 두번째 이미지 파일.
 
     반환값:
-        float: 두 이미지 임베딩의 코사인 거리.
+        ResponseModel: 두 이미지 임베딩의 코사인 거리가 적혀있음.
     """
     embedding_1, embedding_2 = await get_embedding_of_two_images(file_1, file_2)
     distance = float(get_cosine_distance(embedding_1, embedding_2))

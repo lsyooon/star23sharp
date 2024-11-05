@@ -11,11 +11,11 @@ DROP TABLE IF EXISTS member;
 
 CREATE TABLE member (
   id                BIGSERIAL        PRIMARY KEY,
-  member_name       VARCHAR(255)     NOT NULL UNIQUE,
+  member_name       VARCHAR(16)     NOT NULL UNIQUE,
   password          VARCHAR(255)     NOT NULL,
   complaint_count   INT              NOT NULL DEFAULT 0,
   state             SMALLINT         NOT NULL DEFAULT 0 CHECK (state IN (0, 1, 2)), -- 0: Active, 1: Suspended, 2: Deleted
-  nickname          VARCHAR(20)      NOT NULL UNIQUE,
+  nickname          VARCHAR(16)      NOT NULL UNIQUE,
   reactivation_date TIMESTAMP        NULL,
   created_at       TIMESTAMP         NOT NULL,
   role             VARCHAR(255)      NOT NULL DEFAULT ROLE_USER,
@@ -39,7 +39,7 @@ CREATE TABLE message (
    hint_image_second VARCHAR(255)   NULL,
    dot_hint_image   VARCHAR(255)    NULL,
    title            VARCHAR(15)     NOT NULL,
-   content          TEXT            NULL,
+   content          VARCHAR(100)    NULL,
    hint             VARCHAR(20)     NULL,
    lat              FLOAT8          NULL, --위도 latitude
    lng              FLOAT8          NULL, --경도 longitude
@@ -70,7 +70,8 @@ CREATE TABLE notification (
     content     TEXT            NOT NULL,
     is_read     BOOLEAN         NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    message_id  BIGINT          DEFAULT NULL REFERENCES message(id) ON DELETE CASCADE -- 메시지 삭제 시 알림도 삭제
+    message_id  BIGINT          DEFAULT NULL REFERENCES message(id) ON DELETE CASCADE, -- 메시지 삭제 시 알림도 삭제
+    image       VARCHAR(255)
 );
 
 CREATE TABLE nick_book (
