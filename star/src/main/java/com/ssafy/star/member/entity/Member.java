@@ -42,5 +42,8 @@ public class Member {
 
     @Column(name= "role", nullable = false)
     private String role;
+
+    @Column(name = "is_push_notification_enabled")
+    private boolean isPushNotificationEnabled = false;
 }
 

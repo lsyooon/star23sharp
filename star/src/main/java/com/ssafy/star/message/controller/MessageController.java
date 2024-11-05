@@ -25,8 +25,7 @@ public class MessageController {
 
     @GetMapping("/reception/list")
     public ResponseEntity<ApiResponse<List<ReceiveMessageListResponse>>> getReceptionList(@AuthenticationPrincipal CustomUserDetails user){
-        Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(userId);
+        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(user.getId());
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
         }
@@ -35,8 +34,7 @@ public class MessageController {
 
     @GetMapping("/send/list")
     public ResponseEntity<ApiResponse<List<SendMessageListResponse>>> getSendMessageList(@AuthenticationPrincipal CustomUserDetails user){
-        Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        List<SendMessageListResponse> response = messageService.getSendMessageList(userId);
+        List<SendMessageListResponse> response = messageService.getSendMessageList(user.getId());
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 보낸 편지가 없습니다."));
         }
@@ -46,32 +44,28 @@ public class MessageController {
     @GetMapping("/reception/{messageId}")
     public ResponseEntity<ApiResponse<ReceiveMessageResponse>> getReceptionMessage(@AuthenticationPrincipal CustomUserDetails user,
                                                                                    @PathVariable Long messageId){
-        Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        ReceiveMessageResponse response = messageService.getReceiveMessage(userId, messageId);
+        ReceiveMessageResponse response = messageService.getReceiveMessage(user.getId(), messageId);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 
     @GetMapping("/send/{messageId}")
     public ResponseEntity<ApiResponse<SendMessageResponse>> getSendMessage(@AuthenticationPrincipal CustomUserDetails user,
                                                                            @PathVariable Long messageId){
-        Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        SendMessageResponse response = messageService.getSendMessage(userId, messageId);
+        SendMessageResponse response = messageService.getSendMessage(user.getId(), messageId);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 
     @DeleteMapping("/{messageId}")
     public ResponseEntity<ApiResponse<?>> deleteMessage(@AuthenticationPrincipal CustomUserDetails user,
                                                         @PathVariable Long messageId){
-        Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        messageService.removeMessage(userId, messageId);
+        messageService.removeMessage(user.getId(), messageId);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "메시지가 삭제되었습니다."));
     }
 
     @PostMapping("/report")
     public ResponseEntity<ApiResponse<?>> reportMessage(@AuthenticationPrincipal CustomUserDetails user,
                                                         @RequestBody ComplaintMessageRequest request){
-        Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        messageService.complaintMessage(userId, request);
+        messageService.complaintMessage(user.getId(), request);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "메시지 신고가 완료되었습니다."));
     }
 
@@ -82,8 +76,7 @@ public class MessageController {
 
     @GetMapping("/unread-state")
     public ResponseEntity<ApiResponse<Boolean>> messageListState(@AuthenticationPrincipal CustomUserDetails user){
-        Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        boolean result = messageService.stateFalse(userId);
+        boolean result = messageService.stateFalse(user.getId());
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회가 완료되었습니다.", result));
     }
 }
