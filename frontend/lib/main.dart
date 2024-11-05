@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 
 import 'package:star23sharp/screens/index.dart';
 import 'package:star23sharp/providers/index.dart';
-import 'package:star23sharp/screens/user/LoginScreen.dart';
-import 'package:star23sharp/screens/user/SignUpScreen.dart';
-import 'package:star23sharp/screens/StartListScreen.dart';
+import 'package:star23sharp/screens/user/login_screen.dart';
+import 'package:star23sharp/screens/user/signup_screen.dart';
+import 'package:star23sharp/screens/startlist_screen.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 //TODO - 카카오 연결
@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         primaryColor: themeProvider.backgroundColor,
+        fontFamily: 'Hakgyoansim Chilpanjiugae'
       ),
       initialRoute: '/home',
       routes: {

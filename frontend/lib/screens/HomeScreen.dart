@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Text(
                                 button['text'],
                                 style: const TextStyle(
-                                    color: Colors.white, fontSize: 18),
+                                    color: Colors.white, fontSize: FontSizes.label),
                               ),
                             ),
                             const SizedBox(height: 10),

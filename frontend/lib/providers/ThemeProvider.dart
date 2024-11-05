@@ -28,7 +28,7 @@ class ThemeProvider with ChangeNotifier {
         return 'assets/red_background.jpg';
       case AppTheme.black:
       default:
-        return 'assets/img/blackTheme/black_border_bg.png';
+        return 'assets/img/blackTheme/black_bg.png';
     }
   }
 
