@@ -13,6 +13,8 @@ import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 //TODO - 카카오 연결
 //TODO - 카메라 연결
 
@@ -78,6 +80,8 @@ void main() async {
   //메시지 상호작용 함수 호출
   setupInteractedMessage();
 
+  // env 파일 설정
+  await dotenv.load(fileName: '.env');
   runApp(
     MultiProvider(
       providers: [
