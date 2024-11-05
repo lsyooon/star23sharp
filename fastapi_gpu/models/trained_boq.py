@@ -1,19 +1,18 @@
-#original file: https://github.com/amaralibey/Bag-of-Queries/blob/main/hubconf.py
+# original file: https://github.com/amaralibey/Bag-of-Queries/blob/main/hubconf.py
 
 import torch
 from .backbones import ResNet, DinoV2
 from .boq import BoQ
-    
-dependencies = ['torch', 'torchvision']
+
+dependencies = ["torch", "torchvision"]
+
 
 class VPRModel(torch.nn.Module):
-    def __init__(self, 
-                 backbone,
-                 aggregator):
+    def __init__(self, backbone, aggregator):
         super().__init__()
         self.backbone = backbone
         self.aggregator = aggregator
-        
+
     def forward(self, x):
         x = self.backbone(x)
         x, attns = self.aggregator(x)
@@ -33,16 +32,25 @@ MODEL_URLS = {
     # "resnet50_4096": "",
 }
 
-def get_trained_boq(backbone_name="resnet50", output_dim=16384, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
+
+def get_trained_boq(
+    backbone_name="resnet50",
+    output_dim=16384,
+    map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+):
     if backbone_name not in AVAILABLE_BACKBONES:
-        raise ValueError(f"backbone_name should be one of {list(AVAILABLE_BACKBONES.keys())}")
+        raise ValueError(
+            f"backbone_name should be one of {list(AVAILABLE_BACKBONES.keys())}"
+        )
     try:
         output_dim = int(output_dim)
     except:
         raise ValueError(f"output_dim should be an integer, not a {type(output_dim)}")
     if output_dim not in AVAILABLE_BACKBONES[backbone_name]:
-        raise ValueError(f"output_dim should be one of {AVAILABLE_BACKBONES[backbone_name]}")
-    
+        raise ValueError(
+            f"output_dim should be one of {AVAILABLE_BACKBONES[backbone_name]}"
+        )
+
     if "dinov2" in backbone_name:
         # load the backbone
         backbone = DinoV2()
@@ -52,26 +60,27 @@ def get_trained_boq(backbone_name="resnet50", output_dim=16384, map_location=tor
             proj_channels=384,
             num_queries=64,
             num_layers=2,
-            row_dim=output_dim//384, # 32 for dinov2
+            row_dim=output_dim // 384,  # 32 for dinov2
         )
-        
+
     elif "resnet" in backbone_name:
         backbone = ResNet(
-                backbone_name=backbone_name,
-                crop_last_block=True,
-            )
-        aggregator = BoQ(
-                in_channels=backbone.out_channels,  # make sure the backbone has out_channels attribute
-                proj_channels=512,
-                num_queries=64,
-                num_layers=2,
-                row_dim=output_dim//512, # 32 for resnet
-            )
-
-    vpr_model = VPRModel(
-            backbone=backbone,
-            aggregator=aggregator
+            backbone_name=backbone_name,
+            crop_last_block=True,
         )
-    
-    vpr_model.load_state_dict(torch.hub.load_state_dict_from_url(MODEL_URLS[f"{backbone_name}_{output_dim}"], map_location=map_location))
+        aggregator = BoQ(
+            in_channels=backbone.out_channels,  # make sure the backbone has out_channels attribute
+            proj_channels=512,
+            num_queries=64,
+            num_layers=2,
+            row_dim=output_dim // 512,  # 32 for resnet
+        )
+
+    vpr_model = VPRModel(backbone=backbone, aggregator=aggregator)
+
+    vpr_model.load_state_dict(
+        torch.hub.load_state_dict_from_url(
+            MODEL_URLS[f"{backbone_name}_{output_dim}"], map_location=map_location
+        )
+    )
     return vpr_model

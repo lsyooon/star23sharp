@@ -18,11 +18,12 @@ _FILEMODEL_INDEX_FILETYPE = 2
 # Define the file model
 FileModel = RootModel[
     Tuple[
-        str,         # File name
-        bytes,       # File content
-        Union[str, None]  # File type (e.g., 'image/jpeg')
+        str,  # File name
+        bytes,  # File content
+        Union[str, None],  # File type (e.g., 'image/jpeg')
     ]
 ]
+
 
 async def download_file(file: UploadFile) -> FileModel:
     """
@@ -36,6 +37,7 @@ async def download_file(file: UploadFile) -> FileModel:
     """
     file_content = await file.read()
     return FileModel((file.filename, file_content, file.content_type))
+
 
 def save_image_to_storage(image: FileModel, storage_dir: str) -> str:
     """
@@ -80,23 +82,23 @@ def save_image_to_storage(image: FileModel, storage_dir: str) -> str:
             if img_format is None:
                 # Map content type to PIL format
                 CONTENT_TYPE_TO_PIL_FORMAT = {
-                    'image/jpeg': 'JPEG',
-                    'image/png': 'PNG',
-                    'image/gif': 'GIF',
-                    'image/bmp': 'BMP',
-                    'image/tiff': 'TIFF',
+                    "image/jpeg": "JPEG",
+                    "image/png": "PNG",
+                    "image/gif": "GIF",
+                    "image/bmp": "BMP",
+                    "image/tiff": "TIFF",
                     # Add other mappings if necessary
                 }
-                img_format = CONTENT_TYPE_TO_PIL_FORMAT.get(image_content_type, 'JPEG')
+                img_format = CONTENT_TYPE_TO_PIL_FORMAT.get(image_content_type, "JPEG")
 
             # Set compression options
             save_kwargs = {}
-            if img_format == 'JPEG':
-                save_kwargs['quality'] = 85  # Compression quality
-                save_kwargs['optimize'] = True
-            elif img_format == 'PNG':
-                save_kwargs['optimize'] = True
-                save_kwargs['compress_level'] = 9  # Maximum compression
+            if img_format == "JPEG":
+                save_kwargs["quality"] = 85  # Compression quality
+                save_kwargs["optimize"] = True
+            elif img_format == "PNG":
+                save_kwargs["optimize"] = True
+                save_kwargs["compress_level"] = 9  # Maximum compression
 
             # Save the image
             img.save(file_path, format=img_format, **save_kwargs)
@@ -109,6 +111,7 @@ def save_image_to_storage(image: FileModel, storage_dir: str) -> str:
     # Remove RESOURCE_ROOT prefix, making it a relative path
     relative_path = os.path.relpath(file_path, RESOURCE_ROOT)
     return relative_path
+
 
 def delete_image_from_storage(path: str):
     """
@@ -126,7 +129,9 @@ def delete_image_from_storage(path: str):
     # Ensure that the absolute path is within RESOURCE_ROOT
     resource_root_realpath = os.path.realpath(RESOURCE_ROOT)
     if not abs_path.startswith(resource_root_realpath):
-        raise ValueError("Attempted to delete a file outside of the resource root directory.")
+        raise ValueError(
+            "Attempted to delete a file outside of the resource root directory."
+        )
 
     # Delete the file if it exists
     if os.path.exists(abs_path):

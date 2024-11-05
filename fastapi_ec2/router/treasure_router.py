@@ -1,28 +1,53 @@
 import os
 import logging
 import httpx
-import jwt
 import numpy as np
 import datetime
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 
-from entity.member import Member
-from entity.message import MESSAGE_RECEIVER_GROUP, MESSAGE_RECEIVER_INDIVIDUAL, MESSAGE_RECEIVER_PUBLIC
-from entity.message_box import MESSAGE_DIRECTION_SENT
 from dto.member_dto import MemberDTO
+from dto.treasure_dto import (
+    ResponseTresureDTO_Own,
+    TreasureDTO_Own,
+    ResponseTreasureDTO_Opened,
+    TreasureDTO_Opened,
+)
+from entity.member import Member
+from entity.message import (
+    MESSAGE_RECEIVER_GROUP,
+    MESSAGE_RECEIVER_INDIVIDUAL,
+    MESSAGE_RECEIVER_PUBLIC,
+)
+from entity.message_box import MESSAGE_DIRECTION_SENT, MESSAGE_DIRECTION_RECIEVED
 from service.member_service import find_member_by_id
-from service.message_box_service import insert_multiple_new_recieved_message_boxs_to_a_message, insert_new_message_box
-from service.message_service import authorize_treasure_message, insert_new_treasure_message
-from service.image_service import pixelize_image_service, get_embedding_of_two_images, get_embedding_service
+from service.message_box_service import (
+    delete_message_trace,
+    insert_multiple_new_recieved_message_boxs_to_a_message,
+    insert_new_message_box,
+    get_authorizable_nonpublic_treasure_message,
+)
+from service.message_service import (
+    authorize_treasure_message,
+    insert_new_treasure_message,
+    is_message_public,
+    find_treasure_by_id,
+)
+from service.image_service import (
+    pixelize_image_service,
+    get_embedding_of_two_images,
+    get_embedding_service,
+    PIXELIZE_DEFAULT_KERNEL,
+    PIXELIZE_DEFAULT_PIXEL_SIZE,
+)
 from service.group_service import find_group_by_id, insert_new_group
 from utils.resource import download_file
 from utils.connection_pool import get_db
 from utils.security import get_current_member
 from utils.resource import save_image_to_storage, delete_image_from_storage
-from utils.distance_util import get_cosine_distance
+from utils.distance_util import is_lat_lng_valid
+from response.response_model import ResponseModel
 
 logger = logging.getLogger(__name__)
 
@@ -34,35 +59,57 @@ JWT_SECRET_MESSAGE_KEY = os.environ.get("JWT_SECRET_MESSAGE_KEY")
 ALGORITHM = os.environ.get("JWT_ALGORITHM")
 
 # 코사인 거리 임계값
-THRESHOLD_COSINE_DISTANCE_LOW = 0.55  # 코사인 거리가 이 값 미만이면 지나치게 유사해서 저장 불가
+THRESHOLD_COSINE_DISTANCE_LOW = (
+    0.55  # 코사인 거리가 이 값 미만이면 지나치게 유사해서 저장 불가
+)
 THRESHOLD_COSINE_DISTANCE_HIGH = 0.85  # 코사인 거리가 이 값 이상이면 다른 장소로 판단
+
+# 반경 범위 임계값
+THRESHOLD_LINEAR_DISTANCE = 20  # meter
 
 treasure_router = APIRouter()
 
-class TreasureMessageAuthResultModel(BaseModel):
-    authorized: bool
-    cosine_distance: Optional[float]
-    token: Optional[str]
 
-@treasure_router.post("/insert", response_model=dict, summary="새 보물 메시지 등록", description="새로운 보물 메시지를 생성하고 저장합니다.")
+@treasure_router.post(
+    "/insert",
+    response_model=ResponseTresureDTO_Own,
+    summary="새 보물 메시지 등록",
+    description="새로운 보물 메시지를 생성하고 저장합니다.",
+)
 async def insert_new_treasure(
     hint_image_first: UploadFile = File(..., description="첫 번째 힌트 이미지"),
     hint_image_second: UploadFile = File(..., description="두 번째 힌트 이미지"),
-    dot_hint_image: Optional[UploadFile]  = File(
+    dot_hint_image: Optional[UploadFile] = File(
         None,
-        description="픽셀 힌트 이미지. 제공되지 않을 경우, 기본 설정(Pixelize Endpoint 참조)을 사용하여 첫 번째 이미지를 픽셀화합니다."
+        description="픽셀 힌트 이미지. 제공되지 않을 경우, 기본 설정(Pixelize Endpoint 참조)을 사용하여 첫 번째 이미지를 픽셀화합니다.",
+    ),
+    dot_target: Optional[int] = Form(
+        None,
+        description="dot_hint_image를 제공하지 않을 때 자동 도트화시킬 힌트 이미지. 1(첫번째) 또는 2(두번째)만 가능. 미제공시 첫 번째 이미지 사용.",
+    ),
+    kernel_size: Optional[int] = Form(
+        None,
+        description=f"dot_hint_image를 제공하지 않을 때 파라메터. 미제공시 기본값({PIXELIZE_DEFAULT_KERNEL}) 사용. 상세내용은 도트화 API 참고",
+    ),
+    pixel_size: Optional[int] = Form(
+        None,
+        description=f"dot_hint_image를 제공하지 않을 때 파라메터. 미제공시 기본값{PIXELIZE_DEFAULT_PIXEL_SIZE}) 사용. 상세내용은 도트화 API 참고",
     ),
     title: str = Form(..., description="메시지 제목"),
-    content: Optional[UploadFile] = Form(None, description="메시지 내용"),
+    content: Optional[str] = Form(None, description="메시지 내용"),
     content_image: Optional[UploadFile] = File(None, description="메시지 첨부 이미지"),
-    hint: Optional[UploadFile] = Form(None, description="텍스트 힌트"),
-    group_id: Optional[int] = Form(None, description="그룹을 지정해서 보낼 경우 해당 그룹 ID"),
+    hint: Optional[str] = Form(None, description="텍스트 힌트"),
+    group_id: Optional[int] = Form(
+        None, description="그룹을 지정해서 보낼 경우 해당 그룹 ID"
+    ),
     receivers: Optional[List[int]] = Form(None, description="수신자들의 멤버 ID 목록"),
     lat: float = Form(..., description="위도"),
     lng: float = Form(..., description="경도"),
-    created_at: Optional[datetime.datetime] = Form(None, description="메세지 송신 시각. 제공되지 않으면 현재 시각으로 저장됨"),
+    created_at: Optional[datetime.datetime] = Form(
+        None, description="메세지 송신 시각. 제공되지 않으면 현재 시각으로 저장됩니다."
+    ),
     current_member: MemberDTO = Depends(get_current_member),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     새로운 보물 메시지를 생성하고 저장합니다.
@@ -95,6 +142,59 @@ async def insert_new_treasure(
     content_image_url = None
 
     try:
+        # 입력값 검증
+        if not is_lat_lng_valid(lat, lng):
+            raise HTTPException(status_code=400, detail=ResponseModel(code="L0007"))
+
+        # 송신 시각 처리
+        if created_at is None:
+            created_at = datetime.datetime.now()
+
+        # 수신 대상 파악
+        if receivers is not None and group_id is not None:
+            raise HTTPException(status_code=400, detail=ResponseModel(code="L0008"))
+        elif receivers is not None:
+            if len(receivers) == 1:
+                result_receiver_type = MESSAGE_RECEIVER_INDIVIDUAL
+                recieving_group = None
+            else:
+                result_receiver_type = MESSAGE_RECEIVER_GROUP
+                # 새로운 그룹 생성
+                try:
+                    recieving_group = insert_new_group(
+                        None, current_member, False, False, receivers, created_at, db
+                    )
+                except RuntimeError as e:
+                    try:
+                        raise HTTPException(
+                            status_code=500, detail=ResponseModel(code=str(e))
+                        )
+                    except Exception as e:
+                        logging.error(e)
+                        raise
+        elif group_id is not None:
+            result_receiver_type = MESSAGE_RECEIVER_GROUP
+            recieving_group = find_group_by_id(group_id, db)
+            if recieving_group is None:
+                raise HTTPException(status_code=404, detail=ResponseModel(code="G0002"))
+        else:
+            result_receiver_type = MESSAGE_RECEIVER_PUBLIC
+            recieving_group = None
+
+        result_recieving_members: List[Member] = []
+        if recieving_group:
+            result_recieving_members.extend(
+                [group_member.member for group_member in recieving_group.members]
+            )
+        elif result_receiver_type != MESSAGE_RECEIVER_PUBLIC:
+            _recieving_member = find_member_by_id(receivers[0], db)
+            if _recieving_member is None:
+                logging.error(
+                    f"수신자 id={receivers[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다."
+                )
+                raise HTTPException(status_code=404, detail=ResponseModel(code="L0006"))
+            result_recieving_members.append(_recieving_member)
+
         # 이미지 내용 읽기
         hint_image_first = await download_file(hint_image_first)
         hint_image_second = await download_file(hint_image_second)
@@ -103,13 +203,31 @@ async def insert_new_treasure(
         if dot_hint_image:
             dot_hint_image = await download_file(dot_hint_image)
         else:
-            # dot_hint_image가 제공되지 않은 경우, 첫 번째 이미지를 픽셀화
-            dot_hint_image = await pixelize_image_service(hint_image_first,7,48)
+            # dot_hint_image가 제공되지 않은 경우, 픽셀화
+            if dot_target is None or dot_target == 1:
+                _to_dot = hint_image_first
+            elif dot_target == 2:
+                _to_dot = hint_image_second
+            else:
+                raise HTTPException(status_code=404, detail=ResponseModel(code="L0013"))
+            try:
+                dot_hint_image = await pixelize_image_service(
+                    _to_dot,
+                    PIXELIZE_DEFAULT_PIXEL_SIZE if kernel_size is None else kernel_size,
+                    PIXELIZE_DEFAULT_PIXEL_SIZE if pixel_size is None else pixel_size,
+                )
+            except Exception as e:
+                try:
+                    raise HTTPException(
+                        status_code=400, detail=ResponseModel(code=str(e))
+                    )
+                except Exception:
+                    raise
 
         # 메시지 첨부 이미지 읽기
         if content_image:
             content_image = await download_file(content_image)
-        
+
         # 이미지 저장
         try:
             hint_image_first_url = save_image_to_storage(hint_image_first, IMAGE_DIR)
@@ -120,60 +238,18 @@ async def insert_new_treasure(
                 content_image_url = save_image_to_storage(content_image, IMAGE_DIR)
         except Exception as e:
             logger.error(f"이미지 저장 중 오류 발생: {str(e)}")
-            raise HTTPException(status_code=500, detail="이미지 저장 중 오류가 발생했습니다.")
+            raise HTTPException(status_code=500, detail=ResponseModel(code="L0005"))
 
         # 힌트 이미지 임베딩 생성
-        try:
-            embeddings = await get_embedding_of_two_images(hint_image_first, hint_image_second)
-        except Exception as e:
-            logger.error(f"임베딩 생성 중 오류 발생: {str(e)}")
-            raise HTTPException(status_code=500, detail="임베딩 생성 중 오류가 발생했습니다.")
-
-        distance = float(get_cosine_distance(embeddings[0], embeddings[1]))
-        # if distance < THRESHOLD_COSINE_DISTANCE_LOW:
-        #     raise HTTPException(status_code=400, detail=f"두 사진이 지나치게 유사합니다. 코사인 거리: {distance}")
-        # if distance >= THRESHOLD_COSINE_DISTANCE_HIGH:
-        #     raise HTTPException(status_code=400, detail=f"두 사진이 지나치게 다릅니다. 코사인 거리: {distance}")
+        embeddings = await get_embedding_of_two_images(
+            hint_image_first, hint_image_second
+        )
 
         # 평균 벡터 계산
         # Based on Suggestion of https://superfastpython.com/benchmark-mean-numpy-array/
         embeddings_array = np.array(embeddings)
         result_vector = (embeddings_array[0] + embeddings_array[1]) / 2
         result_vector = result_vector.tolist()
-
-
-        # 송신 시각 처리
-        if(created_at is None):
-            created_at = datetime.datetime.now()
-        
-        # 수신 대상 파악
-        if receivers is not None and group_id is not None:
-            raise HTTPException(status_code=400, detail="수신 대상이 불분명합니다.")
-        elif receivers is not None:
-            if len(receivers) == 1:
-                result_receiver_type = MESSAGE_RECEIVER_INDIVIDUAL
-                recieving_group = None
-            else:
-                result_receiver_type = MESSAGE_RECEIVER_GROUP
-                # 새로운 그룹 생성
-                recieving_group = insert_new_group(None, current_member, False, False, receivers, created_at, db)
-        elif group_id is not None:
-            result_receiver_type = MESSAGE_RECEIVER_GROUP
-            recieving_group = find_group_by_id(group_id, db)
-            if recieving_group is None:
-                raise HTTPException(status_code=404, detail=f"수신 그룹 id={group_id} 가 존재하지 않습니다.")
-        else:
-            result_receiver_type = MESSAGE_RECEIVER_PUBLIC
-            recieving_group = None
-
-        result_recieving_members: List[Member] = []
-        if recieving_group:
-            result_recieving_members.extend([group_member.member for group_member in recieving_group.members])
-        elif result_receiver_type != MESSAGE_RECEIVER_PUBLIC:
-            _recieving_member = find_member_by_id(receivers[0])
-            if _recieving_member is None:
-                raise HTTPException(status_code=404, detail=f"수신자 id={receivers[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다.")
-            result_recieving_members.append(_recieving_member)
 
         # 새 보물 메시지 생성 및 저장
         new_message = insert_new_treasure_message(
@@ -205,12 +281,11 @@ async def insert_new_treasure(
 
         # 수신함에 추가
         insert_multiple_new_recieved_message_boxs_to_a_message(
-            new_message,
-            result_recieving_members,
-            created_at,
-            db
+            new_message, result_recieving_members, created_at, db
         )
-
+        result_model = TreasureDTO_Own.get_dto(new_message)
+        db.commit()
+        return ResponseTresureDTO_Own(code="200", data=result_model)
     except Exception as e:
         db.rollback()
         if hint_image_first_url is not None:
@@ -221,20 +296,21 @@ async def insert_new_treasure(
             delete_image_from_storage(dot_hint_image_url)
         if content_image_url is not None:
             delete_image_from_storage(content_image_url)
-        logger.error(f"오류 발생: {str(e)}")
-        raise #propagate Error
-    else:
-        db.commit()
-    return {"distance": distance}
+        if isinstance(e, HTTPException):
+            raise
+        else:
+            logger.error(f"오류 발생:\n{str(e)}")
+            raise HTTPException(status_code=500, detail=ResponseModel(code="L0009"))
 
-@treasure_router.post("/authorize", response_model = TreasureMessageAuthResultModel)
+
+@treasure_router.post("/authorize", response_model=ResponseTreasureDTO_Opened)
 async def authorize_treasure(
     file: UploadFile = File(..., description="테스트할 이미지"),
     id: int = Form(..., description="보물 메시지의 ID"),
     lat: float = Form(..., description="현재 위도"),
     lng: float = Form(..., description="현재 경도"),
-    _ = Depends(get_current_member),
-    db: Session = Depends(get_db)
+    member: MemberDTO = Depends(get_current_member),
+    db: Session = Depends(get_db),
 ):
     """
     보물 메시지 인증을 처리하는 엔드포인트.
@@ -255,32 +331,84 @@ async def authorize_treasure(
             token: Optional[str] 인증 성공 시 반환되는 token 값. 보물 메세지 내용을 요청하는데 사용할 수 있습니다.
         }
     """
-    
+    # 인증 시도 시각
+    created_at = datetime.datetime.now()
     try:
+        # 좌표 입력값 검증
+        if not is_lat_lng_valid(lat, lng):
+            raise HTTPException(status_code=400, detail=ResponseModel(code="L0007"))
+
+        # 메세지 검증
+        current_member = find_member_by_id(member.id, db)
+        if current_member is None:
+            raise HTTPException(status_code=404, detail=ResponseModel(code="M0006"))
+
+        target_treasure = find_treasure_by_id(id, db)
+        if target_treasure is None:
+            logger.warning(
+                f"authorize_treasure_message: 존재하지 않는 보물 메시지 ID = {id}"
+            )
+            raise HTTPException(status_code=404, detail=ResponseModel(code="L0011"))
+
+        is_public = is_message_public(target_treasure)
+        if not is_public:
+            box_row = get_authorizable_nonpublic_treasure_message(
+                current_member, target_treasure, db
+            )
+            if box_row is None:
+                raise HTTPException(status_code=403, detail=ResponseModel(code="L0012"))
+
+        # 임베딩 얻음
         response = await get_embedding_service(file)
         response_json = response.json()
         embedding: List[float] = response_json.get("embedding")
         if not embedding:
             logger.error("임베딩 서버에서 임베딩을 반환하지 않았습니다.")
-            raise HTTPException(status_code=500, detail="임베딩 서버 오류")
-    except httpx.HTTPError as e:
-        logger.error(f"임베딩을 가져오는 중 오류 발생: {str(e)}")
-        raise HTTPException(status_code=500, detail="임베딩 서버 연결 오류")
+            raise HTTPException(status_code=500, detail=ResponseModel(code="L0014"))
 
-    response_dict = {}
-    # 보물 메시지 인증 서비스 호출
-    auth_result = authorize_treasure_message(
-        id,
-        embedding,
-        lat,
-        lng,
-        db,
-        cos_distance_threshold= THRESHOLD_COSINE_DISTANCE_HIGH
-    )
-    response_dict["authorized"] = auth_result[0]
-    if(auth_result[0] is True):
-        response_dict["token"] = jwt.encode({"sub":id}, JWT_SECRET_MESSAGE_KEY, ALGORITHM)
-    if(auth_result[1] is not None):
-        response_dict["cosine_distance"] = auth_result[1]
-    
-    return TreasureMessageAuthResultModel.model_construct(**response_dict)
+        # 보물 메시지 인증
+        auth_result = authorize_treasure_message(
+            target_treasure,
+            embedding,
+            lat,
+            lng,
+            cos_distance_threshold=THRESHOLD_COSINE_DISTANCE_HIGH,
+            linear_distance_threshold=THRESHOLD_LINEAR_DISTANCE,
+        )
+
+        treasure_result = None
+        
+        if auth_result[0]:
+            target_treasure.is_found = True  # 메세지 발견 처리
+            treasure_result = TreasureDTO_Opened.get_dto(target_treasure)
+            if is_public:
+                box_row = insert_new_message_box(
+                    target_treasure,
+                    current_member,
+                    MESSAGE_DIRECTION_RECIEVED,
+                    created_at=created_at,
+                    session=db,
+                )
+            box_row.state = True  # 열람 처리
+            db.flush()  # 세션 동기화
+            delete_message_trace(target_treasure, db)
+            db.commit()
+            result_message = "success"
+        else:
+            if(auth_result[1] is None):
+                result_message = "member_too_far"
+            else:
+                result_message = "image_not_similar"
+        return ResponseTreasureDTO_Opened(
+            code="200", message=result_message, data=treasure_result
+        )
+
+    except Exception as e:
+        # httpx.HTTPError as e:
+        logger.error(f"{str(e)}")
+        if isinstance(e, httpx.HTTPError):
+            raise HTTPException(status_code=500, detail=ResponseModel(code="L0010"))
+        if isinstance(e, HTTPException):
+            raise
+        else:
+            raise HTTPException(status_code=500, detail=ResponseModel(code="L0009"))

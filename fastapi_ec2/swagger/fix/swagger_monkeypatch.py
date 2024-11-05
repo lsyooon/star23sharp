@@ -1,4 +1,4 @@
-#To Resolve Known FastAPI with Swagger Issue: https://github.com/fastapi/fastapi/discussions/8741:
+# To Resolve Known FastAPI with Swagger Issue: https://github.com/fastapi/fastapi/discussions/8741:
 # Swagger UI 에서 Array 형식을 Form Data에 넣어서 보내려 할 경우 각 원소를 따로따로 보내는 것이 아니라 한 String으로 합쳐서 보낸다. 이것을 해결할 수 있게 Swagger UI 를 수정하는 fix.
 from fastapi.openapi.utils import get_openapi
 from fastapi._compat import (
@@ -13,14 +13,9 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 # Store the original function, IN GLOBAL
-ORIG_GET_REQUEST_BODY = get_openapi.__globals__['get_openapi_operation_request_body']
+ORIG_GET_REQUEST_BODY = get_openapi.__globals__["get_openapi_operation_request_body"]
 
-from fastapi._compat import (
-    GenerateJsonSchema,
-    JsonSchemaValue,
-    ModelField,
-)
-from fastapi.types import ModelNameMap
+
 
 def _get_request_body_with_explode(
     *,
@@ -43,14 +38,15 @@ def _get_request_body_with_explode(
         return original
     content = original.get("content", {})
     if form_patch := (
-        content.get("application/x-www-form-urlencoded") or content.get("multipart/form-data")
+        content.get("application/x-www-form-urlencoded")
+        or content.get("multipart/form-data")
     ):
         array_props = []
         schema = body_field._type_adapter.json_schema()
         for prop, prop_schema in schema.get("properties", {}).items():
             if prop_schema.get("anyOf"):
                 for union_item in prop_schema.get("anyOf"):
-                    if(union_item.get("type") == "array"):
+                    if union_item.get("type") == "array":
                         array_props.append(prop)
                         break
             elif prop_schema.get("type") == "array":
@@ -58,6 +54,9 @@ def _get_request_body_with_explode(
         form_patch["encoding"] = {prop: {"style": "form"} for prop in array_props}
     return original
 
+
 def apply_swaggerfix():
     # Apply the monkeypatch, REPLACING the ORIGINAL FUNCTION
-    get_openapi.__globals__['get_openapi_operation_request_body'] = _get_request_body_with_explode
+    get_openapi.__globals__["get_openapi_operation_request_body"] = (
+        _get_request_body_with_explode
+    )

@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from .base_dto import BaseDTO
 
-# Models
-class MemberDTO(BaseModel):
-    id: int 
+
+class MemberDTO(BaseDTO):
+    id: int
     member_name: str
     state: int

@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import Optional, List
 from sqlalchemy.orm.session import Session as Session_Object
 
@@ -7,8 +8,10 @@ from entity.group import MemberGroup, GroupMember
 from .member_service import find_members_by_id, is_member_valid
 from .simple_find import find_by_attribute
 
+
 def find_group_by_id(id: int, session: Session_Object) -> Optional[MemberGroup]:
     return find_by_attribute(MemberGroup, MemberGroup.id, id, session=session)
+
 
 def insert_new_group(
     group_name: Optional[str],
@@ -20,35 +23,32 @@ def insert_new_group(
     session: Session_Object,
 ) -> MemberGroup:
     new_member_group = MemberGroup(
-        group_name = group_name,
-        creator_id = creator.id,
+        group_name=group_name,
+        creator_id=creator.id,
         is_favorite=is_favorite,
         is_constructed=is_constructed,
-        created_at = created_at
+        created_at=created_at,
     )
     session.add(new_member_group)
     session.flush()
 
     members = find_members_by_id(member_ids, session)
-    if(len(members) != len(member_ids)):
-        raise RuntimeError("insert_new_group: Some of members for new group to be inserted are does not exist")
-    
+    if len(members) != len(member_ids):
+        logging.error("insert_new_group: 멤버들 중 일부가 존재하지 않음")
+        raise RuntimeError("G0001")
+
     result = []
     for member in members:
-        if(not is_member_valid(member)):
-            raise RuntimeError(f"insert_new_group: The Member with id: {member.id} is suspended or deleted Member. state: {member.state}")
-        
-        result.append(GroupMember(
-            group_id=new_member_group.id,
-            member_id=member.id
-        ))
-    
+        if not is_member_valid(member):
+            logging.error(
+                f"insert_new_group: Member with id {member.id} is deleted or inactive"
+            )
+            raise RuntimeError("G0001")
+
+        result.append(GroupMember(group_id=new_member_group.id, member_id=member.id))
+
     session.add_all(result)
-    
+
     session.flush()
-    
+
     return new_member_group
-
-        
-
-

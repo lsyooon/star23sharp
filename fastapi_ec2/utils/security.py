@@ -19,9 +19,13 @@ ALGORITHM = os.environ.get("JWT_ALGORITHM")
 # Security scheme
 security = HTTPBearer()
 
-#TODO: 모든 API try-catch pattern으로 바꿀 것.
-async def get_current_member(credentials: HTTPAuthorizationCredentials = Depends(security), Session: Session = Depends(get_db)) -> MemberDTO:
-    token = credentials.credentials # Bearer blabla의 blabla 부분
+
+# TODO: 모든 API try-catch pattern으로 바꿀 것.
+async def get_current_member(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    Session: Session = Depends(get_db),
+) -> MemberDTO:
+    token = credentials.credentials  # Bearer blabla의 blabla 부분
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         id: Optional[str] = payload.get("sub")
@@ -47,20 +51,17 @@ async def get_current_member(credentials: HTTPAuthorizationCredentials = Depends
             detail="Internal Server Error",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     member = find_member_by_id(id, Session)
 
-    if(member is None):
-        logging.warning(f"get_current_user: Got a valid Token with unvalid user id: {id}")
+    if member is None:
+        logging.warning(
+            f"get_current_user: Got a valid Token with unvalid user id: {id}"
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unvalid User",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    member_dto = MemberDTO(
-        id = member.id,
-        member_name=member.member_name,
-        state=member.state,
-        )
+    member_dto = MemberDTO.get_dto(member)
     return member_dto
-

@@ -11,12 +11,13 @@ from models.pixel_effect_module import PixelEffectModule
 app = FastAPI()
 
 # Initialize the models
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 embedding_model = BOQEmbeddings(device=device)
 pixel_effect_model = PixelEffectModule(device=device)
 
 # Transformation to convert tensors to PIL Images
 to_pil = T.ToPILImage()
+
 
 def _open_image(input_file):
     """
@@ -31,11 +32,16 @@ def _open_image(input_file):
     image = Image.open(input_file)
     return ImageOps.exif_transpose(image).convert("RGB")
 
+
 @app.post("/image/pixelize")
 async def pixelize_image(
     file: UploadFile = File(..., description="Image file to be pixelized"),
-    kernel_size: int = Form(default=7, description="Kernel size for pixelization effect"),
-    pixel_size: int = Form(default=48, description="Pixel size for pixelization effect"),
+    kernel_size: int = Form(
+        default=7, description="Kernel size for pixelization effect"
+    ),
+    pixel_size: int = Form(
+        default=48, description="Pixel size for pixelization effect"
+    ),
 ):
     """
     Apply a pixelization effect to an uploaded image.
@@ -54,14 +60,13 @@ async def pixelize_image(
     image = _open_image(io.BytesIO(contents))
     with torch.no_grad():
         result_tensor = pixel_effect_model.filter_img(
-            image,
-            param_kernel_size=kernel_size,
-            param_pixel_size=pixel_size
+            image, param_kernel_size=kernel_size, param_pixel_size=pixel_size
         )
     result_image = to_pil(result_tensor.cpu().clamp(0, 1))
     buf = io.BytesIO()
-    result_image.save(buf, format='PNG')
+    result_image.save(buf, format="PNG")
     return Response(content=buf.getvalue(), media_type="image/png")
+
 
 @app.post("/image/embedding")
 async def embed_image(
@@ -82,9 +87,12 @@ async def embed_image(
     embedding_list = embedding_tensor.cpu().numpy().tolist()
     return {"embedding": embedding_list}
 
+
 @app.post("/image/embeddings")
 async def embed_images(
-    files: List[UploadFile] = File(..., description="List of image files to generate embeddings")
+    files: List[UploadFile] = File(
+        ..., description="List of image files to generate embeddings"
+    )
 ):
     """
     Generate embedding vectors for multiple uploaded images.
@@ -110,8 +118,5 @@ async def embed_images(
     embeddings = []
     for idx in range(len(images)):
         embedding_list = embeddings_tensor[idx].cpu().numpy().tolist()
-        embeddings.append({
-            "filename": filenames[idx],
-            "embedding": embedding_list
-        })
+        embeddings.append({"filename": filenames[idx], "embedding": embedding_list})
     return {"embeddings": embeddings}
