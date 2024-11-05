@@ -2,8 +2,10 @@ package com.ssafy.star.member.repository;
 
 import com.ssafy.star.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -18,4 +20,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Long findIdByMemberName(String memberName);
 
     Member findMemberById(long id);
+
+    @Query("SELECT m.memberName FROM Member m WHERE m.id = :id")
+    String findMemberNameById(Long id);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Member m SET m.isPushNotificationEnabled = :isPushNotificationEnabled WHERE m.id = :id")
+    void updatePushNotificationEnabledById(Long id, boolean isPushNotificationEnabled);
 }

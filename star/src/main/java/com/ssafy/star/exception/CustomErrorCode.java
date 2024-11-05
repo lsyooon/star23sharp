@@ -21,6 +21,8 @@ public enum CustomErrorCode {
     ALREADY_REPORTED_MESSAGE("L0003", "이미 신고된 쪽지입니다.", HttpStatus.BAD_REQUEST),
     NOT_FOUND_COMPLAINT_REASON("L0017", "해당 신고 사유를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_DATE_FORMAT("L0018", "날짜 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_DEVICE_TOKEN("M0010", "잘못된 디바이스 토큰입니다.", HttpStatus.BAD_REQUEST),
+    DEVICE_TOKEN_NOT_FOUND("M0011", "디바이스 토큰을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     ;
     private final String code;
     private final String message;

@@ -41,7 +41,7 @@ public class Message {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     private String content;
 
     @Column
