@@ -13,6 +13,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenScreenState extends State<HomeScreen> {
+  BoxDecoration _commonContainerDecoration() {
+    return BoxDecoration(
+      color: Colors.black.withOpacity(0.5),
+      borderRadius: BorderRadius.circular(12), // 둥근 모서리
+    );
+  }
+
+//TODO - 쪽지 다 확인했는지 api 연결..
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -41,16 +50,19 @@ class _HomeScreenScreenState extends State<HomeScreen> {
       {
         'text': '별 보관함',
         'goto': '/starstorage',
+        'position': const Offset(250, 0),
         'img': 'assets/img/planet/planet1.png',
       },
       {
         'text': '별 숨기기',
-        'goto': '/starwriteform',
+        'goto': '/starform',
+        'position': const Offset(70, 80),
         'img': 'assets/img/planet/planet2.png',
       },
       {
         'text': '내 정보',
         'goto': '/profile',
+        'position': const Offset(230, 170),
         'img': 'assets/img/planet/planet3.png',
       },
     ];
@@ -68,105 +80,123 @@ class _HomeScreenScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 30),
-              const Logo(),
-              const SizedBox(height: 20),
-              // 로그인 여부에 따른 UI 변경
-              !authProvider.isLoggedIn
-                  ? Column(
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 30),
+            const Logo(),
+            // 로그인 여부에 따른 UI 변경
+            !authProvider.isLoggedIn
+                ? Expanded(
+                    child: Stack(
                       children: [
                         // menuList 표시
                         ...menuList.map((menu) {
-                          return GestureDetector(
-                            onTap: () {
-                              String url = menu['goto'];
-                              if (menu['text'] == "별 숨기기") {
-                                showModalBottomSheet(
-                                  context: context,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (BuildContext context) {
-                                    return const CustomModal();
-                                  },
-                                ).then((selectedUrl) {
-                                  if (selectedUrl != null) {
-                                    url = selectedUrl;
-                                    Navigator.pushNamed(context, url);
-                                  }
-                                });
-                              } else {
-                                Navigator.pushNamed(context, url);
-                              }
-                            },
-                            child: Column(
-                              children: [
-                                Image.asset(
-                                  menu['img'],
-                                  width: 60,
-                                ),
-                                Text(
-                                  menu['text'],
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                const SizedBox(height: 20),
-                              ],
+                          return Positioned(
+                            left: menu['position'].dx,
+                            top: menu['position'].dy,
+                            child: GestureDetector(
+                              onTap: () {
+                                String url = menu['goto'];
+                                if (menu['text'] == "별 숨기기") {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (BuildContext context) {
+                                      return const CustomModal();
+                                    },
+                                  ).then((selectedUrl) {
+                                    if (selectedUrl != null) {
+                                      url = selectedUrl;
+                                      Navigator.pushNamed(context, url);
+                                    }
+                                  });
+                                } else {
+                                  Navigator.pushNamed(context, url);
+                                }
+                              },
+                              child: Column(
+                                children: [
+                                  Image.asset(
+                                    menu['img'],
+                                    // width: 70,
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Container(
+                                    decoration: _commonContainerDecoration(),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    child: Text(
+                                      menu['text'],
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         }),
                         // 하단 메시지
-                        const Padding(
-                          padding: EdgeInsets.only(top: 40),
+                        Positioned(
+                          bottom: 50,
+                          left: 20,
+                          right: 20,
                           child: Column(
                             children: [
-                              Text(
-                                "모든 별을 확인했어요.",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                              ),
-                              SizedBox(height: 5),
-                              Text(
-                                "새로운 별을 전달해 보는건 어떨까요?",
-                                style: TextStyle(
-                                    color: Colors.yellow, fontSize: 14),
+                              Container(
+                                decoration: _commonContainerDecoration(),
+                                padding: const EdgeInsets.all(8),
+                                child: const Column(children: [
+                                  Text(
+                                    "모든 쪽지를 확인했어요",
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 16),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    "새로운 쪽지를 전달해 보는건 어떨까요?",
+                                    style: TextStyle(
+                                        color: Colors.yellow, fontSize: 13),
+                                  ),
+                                ]),
                               ),
                             ],
                           ),
                         ),
                       ],
-                    )
-                  : Column(
-                      children: buttons.map((button) {
-                        return Column(
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: Size(
-                                    MediaQuery.of(context).size.width * 0.5,
-                                    50),
-                                backgroundColor: Colors.white.withOpacity(0.2),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 60, vertical: 15),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              onPressed: button['onPressed'],
-                              child: Text(
-                                button['text'],
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 18),
+                    ),
+                  )
+                : Column(
+                    children: buttons.map((button) {
+                      return Column(
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(
+                                  MediaQuery.of(context).size.width * 0.5, 50),
+                              backgroundColor: Colors.white.withOpacity(0.2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 60, vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            const SizedBox(height: 10),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-            ],
-          ),
+                            onPressed: button['onPressed'],
+                            child: Text(
+                              button['text'],
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 18),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+          ],
         ),
       ],
     );
