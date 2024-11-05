@@ -9,10 +9,10 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   BoxDecoration _commonContainerDecoration() {
     return BoxDecoration(
       color: Colors.black.withOpacity(0.5),
@@ -96,21 +96,23 @@ class _HomeScreenScreenState extends State<HomeScreen> {
                             left: menu['position'].dx,
                             top: menu['position'].dy,
                             child: GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 String url = menu['goto'];
                                 if (menu['text'] == "별 숨기기") {
-                                  showModalBottomSheet(
+                                  final selectedUrl =
+                                      await showModalBottomSheet<String>(
                                     context: context,
                                     backgroundColor: Colors.transparent,
                                     builder: (BuildContext context) {
-                                      return const CustomModal();
+                                      return const StarWriteTypeModal();
                                     },
-                                  ).then((selectedUrl) {
-                                    if (selectedUrl != null) {
-                                      url = selectedUrl;
-                                      Navigator.pushNamed(context, url);
-                                    }
-                                  });
+                                  );
+
+                                  // 선택된 URL이 null이 아닌 경우 페이지 이동
+                                  if (selectedUrl != null) {
+                                    url = selectedUrl;
+                                    Navigator.pushNamed(context, url);
+                                  }
                                 } else {
                                   Navigator.pushNamed(context, url);
                                 }
