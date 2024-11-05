@@ -2,13 +2,9 @@ package com.ssafy.star.message.controller;
 
 import com.ssafy.star.member.repository.MemberRepository;
 import com.ssafy.star.message.dto.request.ComplaintMessageRequest;
-import com.ssafy.star.message.dto.response.ReceiveMessage;
-import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
-import com.ssafy.star.message.dto.response.SendMessage;
-import com.ssafy.star.message.dto.response.SendMessageListResponse;
+import com.ssafy.star.message.dto.response.*;
 import com.ssafy.star.message.service.MessageService;
 import com.ssafy.star.security.dto.CustomUserDetails;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import com.ssafy.star.response.ApiResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,18 +44,18 @@ public class MessageController {
     }
 
     @GetMapping("/reception/{messageId}")
-    public ResponseEntity<ApiResponse<ReceiveMessage>> getReceptionMessage(@AuthenticationPrincipal CustomUserDetails user,
-                                                                           @PathVariable Long messageId){
+    public ResponseEntity<ApiResponse<ReceiveMessageResponse>> getReceptionMessage(@AuthenticationPrincipal CustomUserDetails user,
+                                                                                   @PathVariable Long messageId){
         Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        ReceiveMessage response = messageService.getReceiveMessage(userId, messageId);
+        ReceiveMessageResponse response = messageService.getReceiveMessage(userId, messageId);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 
     @GetMapping("/send/{messageId}")
-    public ResponseEntity<ApiResponse<SendMessage>> getSendMessage(@AuthenticationPrincipal CustomUserDetails user,
-                                                                   @PathVariable Long messageId){
+    public ResponseEntity<ApiResponse<SendMessageResponse>> getSendMessage(@AuthenticationPrincipal CustomUserDetails user,
+                                                                           @PathVariable Long messageId){
         Long userId = memberRepository.findIdByMemberName(user.getUsername());
-        SendMessage response = messageService.getSendMessage(userId, messageId);
+        SendMessageResponse response = messageService.getSendMessage(userId, messageId);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 
@@ -77,5 +73,10 @@ public class MessageController {
         Long userId = memberRepository.findIdByMemberName(user.getUsername());
         messageService.complaintMessage(userId, request);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "메시지 신고가 완료되었습니다."));
+    }
+
+    @GetMapping("/report-reason")
+    public ResponseEntity<ApiResponse<List<ComplaintReasonResponse>>> getReportReason(){
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "신고 사유 목록 조회가 완료되었습니다.", messageService.complaintReasons()));
     }
 }

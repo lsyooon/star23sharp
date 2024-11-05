@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class ReceiveMessage {
+public class ReceiveMessageResponse {
     private Long messageId;
     private List<String> senderName;
     @JsonIgnore
@@ -24,7 +24,7 @@ public class ReceiveMessage {
     private short receiverType;
     private boolean isReported;
 
-    public ReceiveMessage(Long messageId, String sender, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean isReported) {
+    public ReceiveMessageResponse(Long messageId, String sender, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean isReported) {
         this.messageId = messageId;
         this.sender = sender;
         this.senderName = List.of(sender);

@@ -5,10 +5,7 @@ import com.ssafy.star.exception.CustomException;
 import com.ssafy.star.member.repository.MemberGroupRepository;
 import com.ssafy.star.member.repository.MemberRepository;
 import com.ssafy.star.message.dto.request.ComplaintMessageRequest;
-import com.ssafy.star.message.dto.response.ReceiveMessage;
-import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
-import com.ssafy.star.message.dto.response.SendMessage;
-import com.ssafy.star.message.dto.response.SendMessageListResponse;
+import com.ssafy.star.message.dto.response.*;
 import com.ssafy.star.message.entity.Complaint;
 import com.ssafy.star.message.entity.ComplaintReason;
 import com.ssafy.star.message.repository.ComplaintReasonRepository;
@@ -124,7 +121,7 @@ public class MessageService {
 
 
     // 수신 쪽지 상세조회
-    public ReceiveMessage getReceiveMessage(Long userId, Long messageId) {
+    public ReceiveMessageResponse getReceiveMessage(Long userId, Long messageId) {
         // 쪽지가 존재하는지 확인 & 리스트에서 삭제한 쪽지인지 확인
         if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
@@ -135,7 +132,7 @@ public class MessageService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        ReceiveMessage receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
+        ReceiveMessageResponse receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
         String formattedDate = formatCreatedDate(receiveMessage.getCreatedAt(), now);
         receiveMessage.setCreatedDate(formattedDate);
 
@@ -143,7 +140,7 @@ public class MessageService {
     }
 
     // 송신 쪽지 상세조회
-    public SendMessage getSendMessage(Long userId, Long messageId) {
+    public SendMessageResponse getSendMessage(Long userId, Long messageId) {
         if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
@@ -152,7 +149,7 @@ public class MessageService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        SendMessage sendMessage = messageRepository.findSendMessageById(messageId);
+        SendMessageResponse sendMessage = messageRepository.findSendMessageById(messageId);
         String formattedDate = formatCreatedDate(sendMessage.getCreatedAt(), now);
         sendMessage.setCreatedDate(formattedDate);
 
@@ -231,6 +228,11 @@ public class MessageService {
 
         complaintRepository.save(complaint);
         messageBoxRepository.updateIsReportedByMessageIdAndMemberId(request.getMessageId(), userId);
+    }
+
+    // 신고 사유 목록
+    public List<ComplaintReasonResponse> complaintReasons() {
+        return complaintReasonRepository.getAllComplaintReasons();
     }
 
 
