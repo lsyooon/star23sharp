@@ -19,7 +19,7 @@ class SignUpScreen extends StatelessWidget {
             ),
           ),
         ),
-        
+
         Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 60),
@@ -49,7 +49,8 @@ class SignUpScreen extends StatelessWidget {
     final TextEditingController usernameController = TextEditingController();
     final TextEditingController nicknameController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
-    final TextEditingController confirmPasswordController = TextEditingController();
+    final TextEditingController confirmPasswordController =
+        TextEditingController();
 
     // 아이디 및 닉네임 중복 여부를 저장할 변수
     bool isUsernameAvailable = false;
@@ -86,16 +87,25 @@ class SignUpScreen extends StatelessWidget {
               checkNicknameAvailability();
             }),
             _buildTextField("비밀번호", passwordController, obscureText: true),
-            _buildTextField("비밀번호 확인", confirmPasswordController, obscureText: true),
+            _buildTextField("비밀번호 확인", confirmPasswordController,
+                obscureText: true),
             const SizedBox(height: 20),
-            _buildSignUpButton(context, usernameController, nicknameController, passwordController, confirmPasswordController, isUsernameAvailable, isNicknameAvailable),
+            _buildSignUpButton(
+                context,
+                usernameController,
+                nicknameController,
+                passwordController,
+                confirmPasswordController,
+                isUsernameAvailable,
+                isNicknameAvailable),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTextFieldWithBtn(String label, TextEditingController controller, {bool obscureText = false, required Function isAvailable}) {
+  Widget _buildTextFieldWithBtn(String label, TextEditingController controller,
+      {bool obscureText = false, required Function isAvailable}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -136,7 +146,8 @@ class SignUpScreen extends StatelessWidget {
               },
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFA292EC).withOpacity(0.4),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -152,7 +163,8 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool obscureText = false}) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool obscureText = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -186,7 +198,14 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSignUpButton(BuildContext context, TextEditingController usernameController, TextEditingController nicknameController, TextEditingController passwordController, TextEditingController confirmPasswordController, bool isUsernameAvailable, bool isNicknameAvailable) {
+  Widget _buildSignUpButton(
+      BuildContext context,
+      TextEditingController usernameController,
+      TextEditingController nicknameController,
+      TextEditingController passwordController,
+      TextEditingController confirmPasswordController,
+      bool isUsernameAvailable,
+      bool isNicknameAvailable) {
     return SizedBox(
       width: double.infinity,
       child: Container(
@@ -202,7 +221,10 @@ class SignUpScreen extends StatelessWidget {
             String password = passwordController.text.trim();
             String confirmPassword = confirmPasswordController.text.trim();
 
-            if (username.isEmpty || nickname.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+            if (username.isEmpty ||
+                nickname.isEmpty ||
+                password.isEmpty ||
+                confirmPassword.isEmpty) {
               _showErrorDialog(context, '모든 필드를 입력해야 합니다.');
               return;
             }
@@ -242,7 +264,12 @@ class SignUpScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('오류', style: TextStyle(fontSize: 20,),),
+          title: const Text(
+            '오류',
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
           content: Text(message),
           actions: <Widget>[
             TextButton(

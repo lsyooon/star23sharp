@@ -24,12 +24,12 @@ class MainLayout extends StatelessWidget {
           ),
           IgnorePointer(
             ignoring: true,
-            child: Positioned.fill( 
-              child: Container( 
+            child: Positioned.fill(
+              child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage(themeProvider.backgroundImage),
-                    fit: BoxFit.fill, 
+                    fit: BoxFit.fill,
                   ),
                 ),
               ),

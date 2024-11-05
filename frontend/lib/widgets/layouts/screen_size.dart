@@ -21,3 +21,5 @@ class UIhelper {
     return (screenHeight / designGuideHeight);
   }
 }
+
+//TODO - 키보드 올라가있지 않는 width, height로 바꾸기
