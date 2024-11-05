@@ -13,6 +13,4 @@
 **Spring 서버와 내용을 공유해야 합니다.**
 - JWT_SECRET
     - 사용자 Authentication 을 위한 JWT Secret
-- JWT_SECRET_MESSAGE_KEY
-    - 보물 메세지 열람 권한의 Authorization을 가지는 JWT Token을 생성할 때 사용
 - JWT_ALGORITH
