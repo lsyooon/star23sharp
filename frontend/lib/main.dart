@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:provider/provider.dart';
+import 'package:star23sharp/screens/choose_star_style_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -93,6 +94,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => MessageFormProvider()),
       ],
       child: const MyApp(),
     ),
@@ -128,6 +130,8 @@ class MyApp extends StatelessWidget {
             const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
+        '/message_style_editor': (context) =>
+            const MainLayout(child: ChooseStarStyleScreen()),
 
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },

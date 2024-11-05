@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:star23sharp/providers/index.dart';
 
 import 'package:star23sharp/widgets/index.dart';
 
@@ -35,6 +38,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
     return nicknameRegExp.hasMatch(nickname);
   }
 
+  bool _sendToAll = false; // "모든 사용자에게 보내기" 체크박스 상태
   @override
   void initState() {
     super.initState();
@@ -104,6 +108,9 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTreasureStar =
+        Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
+
     return Center(
       child: Container(
         width: UIhelper.deviceWidth(context) * 0.85,
@@ -119,11 +126,11 @@ class _StarFormScreenState extends State<StarFormScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: 20,
-                    color: const Color(0xffA292EC),
-                    child: const Text("별 만들기"),
-                  ),
+                  // Container(
+                  //   height: 20,
+                  //   color: const Color(0xffA292EC),
+                  //   child: const Text("별 만들기"),
+                  // ),
                   GestureDetector(
                     onTap: _pickImage,
                     child: Container(
@@ -165,9 +172,29 @@ class _StarFormScreenState extends State<StarFormScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // "모든 사용자에게 보내기" 체크박스
+                  if (!isTreasureStar)
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _sendToAll,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _sendToAll = value ?? false;
+                              if (_sendToAll) {
+                                _nicknameController.clear();
+                              }
+                            });
+                          },
+                        ),
+                        const Text('모든 사용자에게 보내기'),
+                      ],
+                    ),
                   // 받는 사람 입력
                   TextFormField(
                     controller: _nicknameController,
+                    enabled: !_sendToAll, // 체크박스 선택 시 input 비활성화
+
                     decoration: InputDecoration(
                       labelText: '받는 사람',
                       suffixIcon: IconButton(
@@ -264,7 +291,15 @@ class _StarFormScreenState extends State<StarFormScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            // 유효성 검사 통과 시 전송 로직 추가
+                            Provider.of<MessageFormProvider>(context,
+                                    listen: false)
+                                .saveMessageData(
+                              newTitle: _titleController.text,
+                              newMessage: _messageController.text,
+                              newRecipients: _recipients,
+                            );
+                            Navigator.pushNamed(context,
+                                '/message_style_editor'); // 문체 변경 페이지로 이동
                           }
                         },
                         style: ElevatedButton.styleFrom(
