@@ -11,8 +11,8 @@ class SignUpScreen extends StatelessWidget {
         // 배경 이미지
         Center(
           child: SizedBox(
-            width: double.infinity,
-            height: double.infinity,
+            width: UIhelper.deviceWidth(context) * 0.85,
+            height: UIhelper.deviceHeight(context) * 0.67,
             child: Image.asset(
               'assets/img/main_bg.png',
               fit: BoxFit.cover,
@@ -31,7 +31,7 @@ class SignUpScreen extends StatelessWidget {
                     "회원가입",
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 28,
+                        fontSize: FontSizes.title,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
@@ -115,7 +115,7 @@ class SignUpScreen extends StatelessWidget {
             label,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: FontSizes.label,
             ),
           ),
         ),
@@ -147,14 +147,14 @@ class SignUpScreen extends StatelessWidget {
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFA292EC).withOpacity(0.4),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               child: const Text(
                 "확인",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontSize: FontSizes.body),
               ),
             ),
           ],
@@ -174,7 +174,7 @@ class SignUpScreen extends StatelessWidget {
             label,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: FontSizes.label,
             ),
           ),
         ),
@@ -252,7 +252,7 @@ class SignUpScreen extends StatelessWidget {
           ),
           child: const Text(
             '회원가입',
-            style: TextStyle(fontSize: 18, color: Colors.white),
+            style: TextStyle(fontSize: FontSizes.label, color: Colors.white),
           ),
         ),
       ),

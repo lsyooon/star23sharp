@@ -102,8 +102,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: AppGlobal.navigatorKey,
       theme: ThemeData(
-        primaryColor: themeProvider.backgroundColor,
-      ),
+          primaryColor: themeProvider.backgroundColor,
+          fontFamily: 'Hakgyoansim Chilpanjiugae'),
       navigatorObservers: <NavigatorObserver>[observer],
       initialRoute: '/home',
       routes: {
@@ -116,7 +116,6 @@ class MyApp extends StatelessWidget {
             const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
-
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
