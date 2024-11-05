@@ -121,8 +121,8 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const MainLayout(child: HomeScreen()),
         '/map': (context) => const MainLayout(child: MapScreen()),
         '/starstorage': (context) => MainLayout(child: StarStoragebox()),
-        // '/starwriteform': (context) =>
-        //     const MainLayout(child: StarFormScreen()),
+        '/starwriteform': (context) =>
+            const MainLayout(child: StarFormScreen()),
         '/profile': (context) => const MainLayout(child: ProfileScreen()),
         '/notification': (context) =>
             const MainLayout(child: PushAlarmScreen()),

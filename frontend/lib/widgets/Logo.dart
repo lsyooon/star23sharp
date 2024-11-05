@@ -19,13 +19,13 @@ class _LogoState extends State<Logo> with SingleTickerProviderStateMixin {
             angle: -0.7,
             child: Image.asset(
               "assets/img/logo/star_logo.GIF",
-              width: 200, // 필요에 따라 크기 조정
-              height: 200,
+              width: 160,
+              height: 190,
             ),
           ),
         ),
         Transform.translate(
-          offset: const Offset(-100, 0),
+          offset: const Offset(-80, 0),
           child: Image.asset(
             'assets/img/logo/text_logo.png', // 텍스트 로고 이미지 경로
             height: 150, // 필요에 따라 크기 조정
