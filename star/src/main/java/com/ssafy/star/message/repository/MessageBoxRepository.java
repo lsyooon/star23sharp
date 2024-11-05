@@ -48,4 +48,11 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     @Query("UPDATE MessageBox mb SET mb.isReported = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
     void updateIsReportedByMessageIdAndMemberId(Long messageId, Long memberId);
 
+    @Query("SELECT mb.state FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.message.id = :messageId")
+    boolean existsByMemberIdAndMessageIdAndStateTrue(Long memberId, Long messageId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE MessageBox mb SET mb.state = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
+    void updateStateByMessageIdAndMemberId(Long messageId, Long memberId);
 }
