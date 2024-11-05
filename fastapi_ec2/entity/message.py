@@ -46,12 +46,12 @@ class Message(Base):
     hint_image_first: Mapped[str] = mapped_column(String(255), nullable=True)
     hint_image_second: Mapped[str] = mapped_column(String(255), nullable=True)
     dot_hint_image: Mapped[str] = mapped_column(String(255), nullable=True)
-    title: Mapped[str] = mapped_column(String(VarcharLimit.TITLE), nullable=False)
+    title: Mapped[str] = mapped_column(String(VarcharLimit.TITLE.value), nullable=False)
     content: Mapped[Optional[str]] = mapped_column(
-        String(VarcharLimit.CONTENT), nullable=True
+        String(VarcharLimit.CONTENT.value), nullable=True
     )
     hint: Mapped[Optional[str]] = mapped_column(
-        String(VarcharLimit.HINT), nullable=True
+        String(VarcharLimit.HINT.value), nullable=True
     )
     lat: Mapped[float] = mapped_column(Double, nullable=True)
     lng: Mapped[float] = mapped_column(Double, nullable=True)

@@ -24,7 +24,7 @@ class Member(Base):
         SmallInteger, default=MEMBER_STATE_ACTIVE, nullable=False
     )
     role: Mapped[str] = mapped_column(
-        String(255), nullable=False, default=MemberRole.ROLE_USER
+        String(255), nullable=False, default=MemberRole.ROLE_USER.value
     )
 
     def __repr__(self) -> str:

@@ -197,11 +197,11 @@ async def insert_new_treasure(
     content_image_url = None
 
     try:
-        if len(title.encode("utf-8")) > VarcharLimit.TITLE:
+        if len(title.encode("utf-8")) > VarcharLimit.TITLE.value:
             raise TitleLengthExceededException()
-        if content and len(content.encode("utf-8")) > VarcharLimit.CONTENT:
+        if content and len(content.encode("utf-8")) > VarcharLimit.CONTENT.value:
             raise ContentLengthExceededException()
-        if hint and len(hint.encode("utf-8")) > VarcharLimit.HINT:
+        if hint and len(hint.encode("utf-8")) > VarcharLimit.HINT.value:
             raise HintLengthExceededException()
         # 입력값 검증
         if not is_lat_lng_valid(lat, lng):
