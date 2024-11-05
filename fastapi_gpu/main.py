@@ -1,12 +1,12 @@
-from fastapi import FastAPI, UploadFile, File, Form, Response
-from typing import List
-from PIL import Image, ImageOps
 import io
+from typing import List
+
 import torch
 import torchvision.transforms as T
-
+from fastapi import FastAPI, File, Form, Response, UploadFile
 from models.boq_embeddings import BOQEmbeddings
 from models.pixel_effect_module import PixelEffectModule
+from PIL import Image, ImageOps
 
 app = FastAPI()
 

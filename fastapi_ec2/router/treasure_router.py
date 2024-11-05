@@ -1,18 +1,15 @@
-import os
-import logging
-import httpx
-import numpy as np
 import datetime
-from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
-from sqlalchemy.orm import Session
+import logging
+import os
+from typing import List, Optional
 
+import numpy as np
 from dto.member_dto import MemberDTO
 from dto.treasure_dto import (
-    ResponseTreasureDTO_Own,
-    TreasureDTO_Own,
     ResponseTreasureDTO_Opened,
+    ResponseTreasureDTO_Own,
     TreasureDTO_Opened,
+    TreasureDTO_Own,
 )
 from entity.member import Member
 from entity.message import (
@@ -20,44 +17,48 @@ from entity.message import (
     MESSAGE_RECEIVER_INDIVIDUAL,
     MESSAGE_RECEIVER_PUBLIC,
 )
-from entity.message_box import MESSAGE_DIRECTION_SENT, MESSAGE_DIRECTION_RECEIVED
+from entity.message_box import MESSAGE_DIRECTION_RECEIVED, MESSAGE_DIRECTION_SENT
+from fastapi import APIRouter, Depends, File, Form, UploadFile
+from response.exceptions import (
+    AmbiguousTargetException,
+    GPUProxyServerException,
+    GroupNotFoundException,
+    InvalidCoordinatesException,
+    InvalidPixelTargetException,
+    MemberNotFoundException,
+    TreasureNotFoundException,
+    UnauthorizedTreasureAccessException,
+)
+from service.group_service import find_group_by_id, insert_new_group
+from service.image_service import (
+    PIXELIZE_DEFAULT_KERNEL,
+    PIXELIZE_DEFAULT_PIXEL_SIZE,
+    get_embedding_of_two_images,
+    get_embedding_service,
+    pixelize_image_service,
+)
 from service.member_service import find_member_by_id
 from service.message_box_service import (
     delete_message_trace,
+    get_authorizable_nonpublic_treasure_message,
     insert_multiple_new_recieved_message_boxs_to_a_message,
     insert_new_message_box,
-    get_authorizable_nonpublic_treasure_message,
 )
 from service.message_service import (
     authorize_treasure_message,
+    find_treasure_by_id,
     insert_new_treasure_message,
     is_message_public,
-    find_treasure_by_id,
 )
-from service.image_service import (
-    pixelize_image_service,
-    get_embedding_of_two_images,
-    get_embedding_service,
-    PIXELIZE_DEFAULT_KERNEL,
-    PIXELIZE_DEFAULT_PIXEL_SIZE,
-)
-from service.group_service import find_group_by_id, insert_new_group
-from utils.resource import download_file
+from sqlalchemy.orm import Session
 from utils.connection_pool import get_db
-from utils.security import get_current_member
-from utils.resource import save_image_to_storage, delete_image_from_storage
 from utils.distance_util import is_lat_lng_valid
-from response.response_model import ResponseModel
-from response.exceptions import (
-    InvalidCoordinatesException,
-    AmbiguousTargetException,
-    MemberNotFoundException,
-    GroupNotFoundException,
-    InvalidPixelTargetException,
-    TreasureNotFoundException,
-    UnauthorizedTreasureAccessException,
-    GPUProxyServerException,
+from utils.resource import (
+    delete_image_from_storage,
+    download_file,
+    save_image_to_storage,
 )
+from utils.security import get_current_member
 
 logger = logging.getLogger(__name__)
 

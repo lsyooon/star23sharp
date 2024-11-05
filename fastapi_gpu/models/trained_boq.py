@@ -1,7 +1,8 @@
 # original file: https://github.com/amaralibey/Bag-of-Queries/blob/main/hubconf.py
 
 import torch
-from .backbones import ResNet, DinoV2
+
+from .backbones import DinoV2, ResNet
 from .boq import BoQ
 
 dependencies = ["torch", "torchvision"]

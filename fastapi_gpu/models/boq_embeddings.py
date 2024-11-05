@@ -1,9 +1,11 @@
 # using models from https://github.com/amaralibey/Bag-of-Queries
-from typing import List
-import torch
-from torch import Tensor
-import torchvision.transforms as T
 from enum import Enum
+from typing import List
+
+import torch
+import torchvision.transforms as T
+from torch import Tensor
+
 from .trained_boq import get_trained_boq
 
 

@@ -1,11 +1,11 @@
 # originated from https://github.com/Jzou44/photo2pixel/blob/main/models/module_pixel_effect.py
+import numpy as np
 import torch
-from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as T
-import numpy as np
 from PIL import Image
+from torch import Tensor
 
 
 class PixelEffectModule(nn.Module):

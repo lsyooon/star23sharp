@@ -1,16 +1,17 @@
 # services/image_service.py
 import logging
 import os
-import httpx
-
 from typing import List, Tuple, Union
+
+import httpx
+from response.exceptions import (
+    EmbeddingsCountMismatchException,
+    GPUProxyServerException,
+    InvalidInputException,
+)
 from starlette.datastructures import UploadFile
-from fastapi import HTTPException
+from utils.resource import _FILEMODEL_INDEX_FILECONTENT, FileModel, download_file
 
-from utils.resource import FileModel, download_file, _FILEMODEL_INDEX_FILECONTENT
-
-from response.response_model import ResponseModel
-from response.exceptions import EmbeddingsCountMismatchException, InvalidInputException, GPUProxyServerException
 # 서버 설정 CONFIG
 GPU_URL = os.environ.get("GPU_URL", None)
 

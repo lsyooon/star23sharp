@@ -1,18 +1,19 @@
+import datetime
+from typing import Optional
+
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
+    DateTime,
+    Double,
+    ForeignKey,
+    SmallInteger,
     String,
     Text,
-    DateTime,
-    SmallInteger,
-    CheckConstraint,
-    ForeignKey,
-    Double,
 )
-from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import Mapped, mapped_column
-from typing import Optional
-import datetime
 
 from .base import Base
 

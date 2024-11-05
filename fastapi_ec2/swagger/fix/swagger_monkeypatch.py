@@ -1,20 +1,20 @@
 # To Resolve Known FastAPI with Swagger Issue: https://github.com/fastapi/fastapi/discussions/8741:
 # Swagger UI 에서 Array 형식을 Form Data에 넣어서 보내려 할 경우 각 원소를 따로따로 보내는 것이 아니라 한 String으로 합쳐서 보낸다. 이것을 해결할 수 있게 Swagger UI 를 수정하는 fix.
-from fastapi.openapi.utils import get_openapi
+from typing import Any, Dict, Literal, Optional, Type, Union
+
 from fastapi._compat import (
-    ModelField,
-    ModelNameMap,
     GenerateJsonSchema,
     JsonSchemaValue,
+    ModelField,
+    ModelNameMap,
 )
 from fastapi.openapi.constants import REF_PREFIX
-from typing import Any, Dict, Optional, Union, Type, Literal
+from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 # Store the original function, IN GLOBAL
 ORIG_GET_REQUEST_BODY = get_openapi.__globals__["get_openapi_operation_request_body"]
-
 
 
 def _get_request_body_with_explode(

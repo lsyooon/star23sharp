@@ -1,5 +1,6 @@
+from sqlalchemy import BigInteger, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import BigInteger, String, SmallInteger
+
 from .base import Base
 
 # 0: active, 1: suspended, 2: deleted

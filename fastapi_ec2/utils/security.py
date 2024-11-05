@@ -1,24 +1,23 @@
 # security.py
-import os
-from typing import Optional
 import logging
-import jwt
-from jwt import PyJWTError
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import os
 
-from pydantic import ValidationError
-from sqlalchemy.orm import Session
-from dto.token_dto import TokenDTO
+import jwt
 from dto.member_dto import MemberDTO
-from service.member_service import find_member_by_id
-from utils.connection_pool import get_db
+from dto.token_dto import TokenDTO
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import PyJWTError
+from pydantic import ValidationError
 from response.exceptions import (
-    InvalidTokenException,
     ExpiredTokenException,
-    UnhandledException,
+    InvalidTokenException,
     MemberNotFoundException,
+    UnhandledException,
 )
+from service.member_service import find_member_by_id
+from sqlalchemy.orm import Session
+from utils.connection_pool import get_db
 
 # JWT settings
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET")
@@ -47,10 +46,12 @@ async def get_current_member(
 
     member = find_member_by_id(token_obj.memberId, Session)
     if member is None:
-        
+
         raise MemberNotFoundException()
     if member.member_name != token_obj.memberName:
-        logging.warning(f"get_current_member: 토큰: {token} 의 memberName 과 DB의 member_name 이 일치하지 않습니다!.")
+        logging.warning(
+            f"get_current_member: 토큰: {token} 의 memberName 과 DB의 member_name 이 일치하지 않습니다!."
+        )
         raise InvalidTokenException()
     member_dto = MemberDTO.get_dto(member)
     return member_dto

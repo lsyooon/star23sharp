@@ -1,18 +1,17 @@
 from typing import List
-from fastapi import APIRouter, UploadFile, File, Form, Response, Depends
+
+from fastapi import APIRouter, Depends, File, Form, Response, UploadFile
+from response.response_model import ResponseModel
 from service.image_service import (
-    pixelize_image_service,
-    get_embedding_service,
-    get_embedding_of_two_images,
     PIXELIZE_DEFAULT_KERNEL,
     PIXELIZE_DEFAULT_PIXEL_SIZE,
+    get_embedding_of_two_images,
+    get_embedding_service,
+    pixelize_image_service,
 )
-
+from utils.distance_util import get_cosine_distance
 from utils.resource import _FILEMODEL_INDEX_FILECONTENT
 from utils.security import get_current_member
-from utils.distance_util import get_cosine_distance
-
-from response.response_model import ResponseModel
 
 
 class EmbeddingResponseModel(ResponseModel):

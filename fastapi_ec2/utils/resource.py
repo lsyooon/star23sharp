@@ -1,13 +1,12 @@
-import os
-import logging
-
-from typing import Tuple, Literal, Union
-from pydantic import RootModel
-from fastapi import UploadFile
-
-import uuid
 import io
+import logging
+import os
+import uuid
+from typing import Tuple, Union
+
+from fastapi import UploadFile
 from PIL import Image
+from pydantic import RootModel
 
 RESOURCE_ROOT = os.getcwd()
 

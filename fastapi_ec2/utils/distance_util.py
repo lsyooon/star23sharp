@@ -1,5 +1,6 @@
-from typing import List
 import math
+from typing import List
+
 import numpy as np
 
 RADIUS_EARTH = 6371_000  # meters

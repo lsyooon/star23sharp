@@ -1,18 +1,19 @@
+import datetime
+from typing import Optional
+
 from sqlalchemy import (
     BigInteger,
     Boolean,
-    DateTime,
-    SmallInteger,
     CheckConstraint,
+    DateTime,
     ForeignKey,
+    SmallInteger,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional
-import datetime
 
+from .base import Base
 from .member import Member
 from .message import Message
-from .base import Base
 
 MESSAGE_DIRECTION_SENT = 0
 MESSAGE_DIRECTION_RECEIVED = 1
