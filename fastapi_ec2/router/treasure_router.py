@@ -55,7 +55,6 @@ logger = logging.getLogger(__name__)
 IMAGE_DIR = os.environ.get("IMAGE_DIR")
 
 # Security
-JWT_SECRET_MESSAGE_KEY = os.environ.get("JWT_SECRET_MESSAGE_KEY")
 ALGORITHM = os.environ.get("JWT_ALGORITHM")
 
 # 코사인 거리 임계값
