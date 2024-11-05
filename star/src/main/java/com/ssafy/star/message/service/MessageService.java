@@ -121,6 +121,7 @@ public class MessageService {
 
 
     // 수신 쪽지 상세조회
+    @Transactional
     public ReceiveMessageResponse getReceiveMessage(Long userId, Long messageId) {
         // 쪽지가 존재하는지 확인 & 리스트에서 삭제한 쪽지인지 확인
         if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
@@ -135,6 +136,11 @@ public class MessageService {
         ReceiveMessageResponse receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
         String formattedDate = formatCreatedDate(receiveMessage.getCreatedAt(), now);
         receiveMessage.setCreatedDate(formattedDate);
+
+        // 메세지 확인 여부가 false일 경우 true로 업데이트
+        if (!messageBoxRepository.existsByMemberIdAndMessageIdAndStateTrue(userId, messageId)) {
+            messageBoxRepository.updateStateByMessageIdAndMemberId(messageId, userId);
+        }
 
         return receiveMessage;
     }
