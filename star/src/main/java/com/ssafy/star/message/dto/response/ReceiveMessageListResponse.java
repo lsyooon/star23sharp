@@ -17,14 +17,16 @@ public class ReceiveMessageListResponse {
     private LocalDateTime createdAt;
     private String createdDate;
     private boolean kind;
+    private boolean state;
 
-    public ReceiveMessageListResponse(Long messageId, String title, short receiverType, String senderNickname, LocalDateTime createdAt, boolean kind) {
+    public ReceiveMessageListResponse(Long messageId, String title, short receiverType, String senderNickname, LocalDateTime createdAt, boolean kind, boolean state) {
         this.messageId = messageId;
         this.title = title;
         this.receiverType = receiverType;
         this.senderNickname = senderNickname;
         this.createdAt = createdAt;
         this.kind = kind;
+        this.state = state;
     }
 
     public void setCreatedDate(String createdDate) {
