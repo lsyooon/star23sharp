@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:star23sharp/providers/auth_provider.dart';
+import 'package:star23sharp/services/user_service.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -6,6 +9,10 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TextEditingController를 생성하여 아이디와 비밀번호 필드의 입력 값을 관리
+    final TextEditingController memberIdController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+
     return Stack(
       children: [
         // 배경 이미지
@@ -56,6 +63,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     TextField(
+                      controller: memberIdController, 
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFA292EC).withOpacity(0.4),
@@ -81,6 +89,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     TextField(
+                      controller: passwordController, 
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
@@ -105,8 +114,25 @@ class LoginScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextButton(
-                          onPressed: () {
-                            // 로그인 버튼 클릭 시 처리
+                          onPressed: () async {
+                            String memberId = memberIdController.text.trim();
+                            String password = passwordController.text.trim();
+
+                            if (memberId.isEmpty || password.isEmpty) {
+                              print("아이디와 비밀번호를 입력해주세요.");
+                            } else {
+                              print("성공");
+                              Map<String, String>? loginResponse = await UserService.login(memberId, password);
+                              if (loginResponse != null) {
+                                Provider.of<AuthProvider>(context, listen: false)
+                                    .logIn(loginResponse['access']!, loginResponse['refresh']!);
+                                print(loginResponse['access']!);
+                                Navigator.pushNamed(context, '/home');
+                                // 로그인 성공 UI 업데이트
+                              } else {
+                                // 로그인 실패 UI 처리
+                              }
+                            }
                           },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
