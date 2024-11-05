@@ -109,7 +109,7 @@ class _HomeScreenScreenState extends State<HomeScreen> {
                                 ),
                                 Text(
                                   menu['text'],
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: Colors.white, fontSize: FontSizes.label),
                                 ),
                                 const SizedBox(height: 20),
                               ],
@@ -157,7 +157,7 @@ class _HomeScreenScreenState extends State<HomeScreen> {
                               child: Text(
                                 button['text'],
                                 style: const TextStyle(
-                                    color: Colors.white, fontSize: 18),
+                                    color: Colors.white, fontSize: FontSizes.label),
                               ),
                             ),
                             const SizedBox(height: 10),

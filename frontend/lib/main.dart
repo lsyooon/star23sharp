@@ -109,14 +109,13 @@ class MyApp extends StatelessWidget {
       initialRoute: '/home',
       routes: {
         '/home': (context) => const MainLayout(child: HomeScreen()),
-        '/starstorage': (context) => const MainLayout(child: StarStoragebox()),
+        '/starstorage': (context) => MainLayout(child: StarStoragebox()),
         '/starwriteform': (context) => const MainLayout(child: ProfileScreen()),
         '/profile': (context) => const MainLayout(child: ProfileScreen()),
         '/notification': (context) =>
             const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
-        '/starlist' : (context) => MainLayout(child: StarListScreen())
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
