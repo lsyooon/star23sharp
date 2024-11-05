@@ -22,7 +22,7 @@ class LoginScreen extends StatelessWidget {
         // 로그인 타이틀과 입력 폼을 묶는 Column
         Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, 
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // 로그인 타이틀
               const Text(
