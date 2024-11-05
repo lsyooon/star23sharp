@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:star23sharp/services/user_service.dart';
+import 'package:star23sharp/main.dart';
+import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -221,25 +222,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 password.isEmpty ||
                 confirmPassword.isEmpty) {
               // _showErrorDialog(context, '모든 필드를 입력해야 합니다.');
-              print("필드입력");
+              logger.d("필드입력");
               return;
             }
 
             if (!isIdAvailable) {
               // _showErrorDialog(context, '아이디가 중복됩니다. 다른 아이디를 입력하세요.');
-              print("아이디 입력");
+              logger.d("아이디 입력");
               return;
             }
 
             if (!isNicknameAvailable) {
               // _showErrorDialog(context, '닉네임이 중복됩니다. 다른 닉네임을 입력하세요.');
-              print("니네임 입력");
+              logger.d("니네임 입력");
               return;
             }
 
             if (password != confirmPassword) {
               // _showErrorDialog(context, '비밀번호가 일치하지 않습니다.');
-              print("비번 입력");
+              logger.d("비번 입력");
               return;
             }
 
@@ -249,7 +250,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               Navigator.pushNamed(context, '/home');
             }else{
               // 회원가입 실패
-              print("실패");
+              logger.d("실패");
             }
           },
           style: TextButton.styleFrom(

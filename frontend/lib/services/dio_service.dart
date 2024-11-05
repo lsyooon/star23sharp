@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:star23sharp/main.dart';
 
 class DioService {
   static String baseUrl = dotenv.env['API_URL'].toString();          
@@ -33,17 +34,17 @@ class DioService {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           // 요청 전 처리 (예: 토큰 갱신)
-          print('Request [${options.method}] ${options.path}');
+          logger.d('Request [${options.method}] ${options.path}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
           // 응답 후 처리
-          print('Response: ${response.statusCode}');
+          logger.d('Response: ${response.statusCode}');
           return handler.next(response);
         },
         onError: (DioException e, handler) {
           // 에러 처리
-          print('Error: ${e.message}');
+          logger.d('Error: ${e.message}');
           return handler.next(e);
         },
       ),

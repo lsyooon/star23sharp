@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:star23sharp/models/response_model.dart';
-import 'package:star23sharp/services/dio_service.dart';
+import 'package:star23sharp/main.dart';
+import 'package:star23sharp/models/index.dart';
+import 'package:star23sharp/services/index.dart';
 
 class UserService {
 
@@ -24,7 +25,7 @@ class UserService {
       }
 
     } on DioException catch (e) {
-      print('Failed to create post: $e');
+      logger.d('Failed to create post: $e');
       throw Exception('Failed to create post');
     }
   }
@@ -50,7 +51,7 @@ class UserService {
       }
 
     } on DioException catch (e) {
-      print('Failed to create post: $e');
+      logger.e('Failed to create post: $e');
       throw Exception('Failed to create post');
     }
   }
@@ -79,7 +80,7 @@ class UserService {
       }
 
     } on DioException catch (e) {
-      print('Failed to create post: $e');
+      logger.e('Failed to create post: $e');
       throw Exception('Failed to create post');
     }
   }

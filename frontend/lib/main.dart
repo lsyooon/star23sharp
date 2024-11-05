@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -47,6 +48,16 @@ void _handleMessage(RemoteMessage message) {
         .pushNamed("/notification", arguments: message);
   });
 }
+
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 2, // 호출 스택 깊이
+    errorMethodCount: 5, // 에러 발생 시 호출 스택 깊이
+    lineLength: 50, // 한 줄의 길이 제한
+    colors: true, // 컬러 출력 여부
+    printEmojis: true, // 이모지 출력 여부
+  ),
+);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

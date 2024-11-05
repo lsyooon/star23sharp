@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:star23sharp/providers/auth_provider.dart';
-import 'package:star23sharp/services/user_service.dart';
+import 'package:star23sharp/main.dart';
+import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -119,14 +120,14 @@ class LoginScreen extends StatelessWidget {
                             String password = passwordController.text.trim();
 
                             if (memberId.isEmpty || password.isEmpty) {
-                              print("아이디와 비밀번호를 입력해주세요.");
+                              logger.d("아이디와 비밀번호를 입력해주세요.");
                             } else {
-                              print("성공");
+                              logger.d("성공");
                               Map<String, String>? loginResponse = await UserService.login(memberId, password);
                               if (loginResponse != null) {
                                 Provider.of<AuthProvider>(context, listen: false)
                                     .logIn(loginResponse['access']!, loginResponse['refresh']!);
-                                print(loginResponse['access']!);
+                                logger.d(loginResponse['access']!);
                                 Navigator.pushNamed(context, '/home');
                                 // 로그인 성공 UI 업데이트
                               } else {
