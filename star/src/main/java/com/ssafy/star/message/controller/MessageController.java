@@ -79,4 +79,11 @@ public class MessageController {
     public ResponseEntity<ApiResponse<List<ComplaintReasonResponse>>> getReportReason(){
         return ResponseEntity.ok().body(new ApiResponse<>("200", "신고 사유 목록 조회가 완료되었습니다.", messageService.complaintReasons()));
     }
+
+    @GetMapping("/unread-state")
+    public ResponseEntity<ApiResponse<Boolean>> messageListState(@AuthenticationPrincipal CustomUserDetails user){
+        Long userId = memberRepository.findIdByMemberName(user.getUsername());
+        boolean result = messageService.stateFalse(userId);
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회가 완료되었습니다.", result));
+    }
 }

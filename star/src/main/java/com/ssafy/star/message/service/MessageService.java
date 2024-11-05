@@ -241,6 +241,12 @@ public class MessageService {
         return complaintReasonRepository.getAllComplaintReasons();
     }
 
+    // 안 읽은 쪽지 존재 여부
+    public boolean stateFalse(Long userId) {
+        int count = messageBoxRepository.existsByMemberIdANDMessageDirection(userId, (short)1);
+        return count != 0;
+    }
+
 
     /* 중복 코드 */
     // 날짜 포맷 메서드
