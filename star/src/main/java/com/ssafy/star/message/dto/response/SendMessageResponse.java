@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class SendMessage {
+public class SendMessageResponse {
     private Long messageId;
     private List<String> receiverNames;
     @JsonIgnore
@@ -24,7 +24,7 @@ public class SendMessage {
     @JsonIgnore
     private Long groupId;
 
-    public SendMessage(Long messageId, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean state, Long groupId) {
+    public SendMessageResponse(Long messageId, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean state, Long groupId) {
         this.messageId = messageId;
         this.createdAt = createdAt;
         this.title = title;
