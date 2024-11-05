@@ -7,10 +7,18 @@ from jwt import PyJWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from dto.token_dto import TokenDTO
 from dto.member_dto import MemberDTO
 from service.member_service import find_member_by_id
 from utils.connection_pool import get_db
+from response.exceptions import (
+    InvalidTokenException,
+    ExpiredTokenException,
+    UnhandledException,
+    MemberNotFoundException,
+)
 
 # JWT settings
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET")
@@ -20,7 +28,6 @@ ALGORITHM = os.environ.get("JWT_ALGORITHM")
 security = HTTPBearer()
 
 
-# TODO: 모든 API try-catch pattern으로 바꿀 것.
 async def get_current_member(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     Session: Session = Depends(get_db),
@@ -28,40 +35,22 @@ async def get_current_member(
     token = credentials.credentials  # Bearer blabla의 blabla 부분
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
-        id: Optional[str] = payload.get("sub")
-        logging.debug(f"get_current_user: payload extracted, member_id: {id}")
-        if id is None:
-            logging.error("get_current_user: no id in token payload.")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Cannot validate credentials. no id in token payload.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        try:
+            token_obj = TokenDTO.model_validate(payload)
+        except ValidationError:
+            raise InvalidTokenException()
     except jwt.ExpiredSignatureError:
-        logging.debug("get_current_user: Token has expired.")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except PyJWTError as e:
-        logging.error(f"get_current_user: JWT error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal Server Error",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise ExpiredTokenException()
+    except PyJWTError:
+        logging.exception("get_current_user: JWT error.")
+        raise UnhandledException()
 
-    member = find_member_by_id(id, Session)
-
+    member = find_member_by_id(token_obj.memberId, Session)
     if member is None:
-        logging.warning(
-            f"get_current_user: Got a valid Token with unvalid user id: {id}"
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unvalid User",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        
+        raise MemberNotFoundException()
+    if member.member_name != token_obj.memberName:
+        logging.warning(f"get_current_member: 토큰: {token} 의 memberName 과 DB의 member_name 이 일치하지 않습니다!.")
+        raise InvalidTokenException()
     member_dto = MemberDTO.get_dto(member)
     return member_dto
