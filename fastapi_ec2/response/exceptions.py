@@ -115,7 +115,7 @@ class UnauthorizedTreasureAccessException(AppException):
     열람 권한이 없는 보물 쪽지입니다.
     """
 
-    status_code = status.HTTP_403_FORBIDDEN
+    status_code = status.HTTP_401_UNAUTHORIZED
     code = "L0012"
 
 
@@ -207,3 +207,12 @@ class SelfRecipientException(AppException):
 
     status_code = status.HTTP_400_BAD_REQUEST
     code = "L0022"
+
+
+class UnauthorizedGroupAccessException(AppException):
+    """
+    그룹에 대한 접근 권한이 없습니다.
+    """
+
+    status_code = status.HTTP_401_UNAUTHORIZED
+    code = "G0003"

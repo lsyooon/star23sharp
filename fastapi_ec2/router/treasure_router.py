@@ -32,6 +32,7 @@ from response.exceptions import (
     SelfRecipientException,
     TitleLengthExceededException,
     TreasureNotFoundException,
+    UnauthorizedGroupAccessException,
     UnauthorizedTreasureAccessException,
 )
 from service.group_service import find_group_by_id, insert_new_group
@@ -235,6 +236,8 @@ async def insert_new_treasure(
 
         result_recieving_members: List[Member] = []
         if recieving_group:  # 이미 존재하는 그룹에게 발신
+            if recieving_group.creator_id is current_member.id:  # 접근 권한이 없는 그룹
+                raise UnauthorizedGroupAccessException()
             for group_member in recieving_group.members:
                 if group_member.member.id != current_member.id:
                     result_recieving_members.append(group_member.member)
