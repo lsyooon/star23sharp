@@ -56,6 +56,7 @@ from service.message_service import (
     insert_new_treasure_message,
     is_message_public,
 )
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from utils.connection_pool import get_db
 from utils.distance_util import is_lat_lng_valid
@@ -147,6 +148,7 @@ AUTHORIZE_DESCRIPTION = f"""
 - "success": 인증에 성공한 경우.
 - "member_too_far": 사용자의 위치가 보물 위치와 너무 먼 경우.
 - "image_not_similar": 업로드한 이미지가 보물 이미지와 유사하지 않은 경우.
+- "already_found" : 인증에 성공했지만, 이미 다른 유저가 먼저 인증에 성공한 경우.
 """
 
 
@@ -292,6 +294,8 @@ async def insert_new_treasure(
             hint_image_first, hint_image_second
         )
 
+        # 이미지 임베딩 생성에 오랜 시간이 걸렸으므로 flush
+
         # 평균 벡터 계산
         embeddings_array = np.array(embeddings)
         result_vector = (embeddings_array[0] + embeddings_array[1]) / 2
@@ -361,6 +365,7 @@ async def authorize_treasure(
 ):
     # 인증 시도 시각
     created_at = datetime.datetime.now()
+
     # 좌표 입력값 검증
     if not is_lat_lng_valid(lat, lng):
         raise InvalidCoordinatesException()
@@ -390,6 +395,8 @@ async def authorize_treasure(
         logger.error("임베딩 서버에서 임베딩을 반환하지 않았습니다.")
         raise GPUProxyServerException()
 
+    db.flush()
+
     # 보물 메시지 인증
     auth_result = authorize_treasure_message(
         target_treasure,
@@ -403,21 +410,33 @@ async def authorize_treasure(
     treasure_result = None
 
     if auth_result[0]:
-        target_treasure.is_found = True  # 메세지 발견 처리
-        treasure_result = TreasureDTO_Opened.get_dto(target_treasure)
-        if is_public:
-            box_row = insert_new_message_box(
-                target_treasure,
-                current_member,
-                MESSAGE_DIRECTION_RECEIVED,
-                created_at=created_at,
-                session=db,
-            )
-        box_row.state = True  # 열람 처리
-        db.flush()  # 세션 동기화
-        delete_message_trace(target_treasure, db)
-        db.commit()
-        result_message = "success"
+        # Lock과 함께 Message 객체를 가져온다.
+        locked_treasure_stmt = (
+            select(target_treasure.__class__)
+            .where(target_treasure.__class__.id == id)
+            .with_for_update()
+        )
+        locked_treasure = db.execute(locked_treasure_stmt).scalar_one()
+
+        # Ensure `locked_treasure` is used for updates to maintain locking
+        if locked_treasure.is_found is True:  # 메세지가 이미 발견됨
+            result_message = "already_found"
+        else:
+            locked_treasure.is_found = True  # 메세지 발견 처리
+            treasure_result = TreasureDTO_Opened.get_dto(locked_treasure)
+            if is_public:
+                box_row = insert_new_message_box(
+                    locked_treasure,
+                    current_member,
+                    MESSAGE_DIRECTION_RECEIVED,
+                    created_at=created_at,
+                    session=db,
+                )
+            box_row.state = True  # 열람 처리
+            db.flush()  # 세션 동기화
+            delete_message_trace(locked_treasure, db)
+            db.commit()
+            result_message = "success"
     else:
         if auth_result[1] is None:
             result_message = "member_too_far"
