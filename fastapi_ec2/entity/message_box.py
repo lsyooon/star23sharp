@@ -15,14 +15,14 @@ from .message import Message
 from .base import Base
 
 MESSAGE_DIRECTION_SENT = 0
-MESSAGE_DIRECTION_RECIEVED = 1
+MESSAGE_DIRECTION_RECEIVED = 1
 
 
 class MessageBox(Base):
     __tablename__ = "message_box"
     __table_args__ = (
         CheckConstraint(
-            f"message_direction IN ({MESSAGE_DIRECTION_SENT}, {MESSAGE_DIRECTION_RECIEVED})",
+            f"message_direction IN ({MESSAGE_DIRECTION_SENT}, {MESSAGE_DIRECTION_RECEIVED})",
             name="message_direction_check",
         ),
     )

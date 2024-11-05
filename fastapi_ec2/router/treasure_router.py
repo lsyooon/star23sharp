@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from dto.member_dto import MemberDTO
 from dto.treasure_dto import (
-    ResponseTresureDTO_Own,
+    ResponseTreasureDTO_Own,
     TreasureDTO_Own,
     ResponseTreasureDTO_Opened,
     TreasureDTO_Opened,
@@ -20,7 +20,7 @@ from entity.message import (
     MESSAGE_RECEIVER_INDIVIDUAL,
     MESSAGE_RECEIVER_PUBLIC,
 )
-from entity.message_box import MESSAGE_DIRECTION_SENT, MESSAGE_DIRECTION_RECIEVED
+from entity.message_box import MESSAGE_DIRECTION_SENT, MESSAGE_DIRECTION_RECEIVED
 from service.member_service import find_member_by_id
 from service.message_box_service import (
     delete_message_trace,
@@ -71,7 +71,7 @@ treasure_router = APIRouter()
 
 @treasure_router.post(
     "/insert",
-    response_model=ResponseTresureDTO_Own,
+    response_model=ResponseTreasureDTO_Own,
     summary="새 보물 메시지 등록",
     description="새로운 보물 메시지를 생성하고 저장합니다.",
 )
@@ -284,7 +284,7 @@ async def insert_new_treasure(
         )
         result_model = TreasureDTO_Own.get_dto(new_message)
         db.commit()
-        return ResponseTresureDTO_Own(code="200", data=result_model)
+        return ResponseTreasureDTO_Own(code="200", data=result_model)
     except Exception as e:
         db.rollback()
         if hint_image_first_url is not None:
@@ -384,7 +384,7 @@ async def authorize_treasure(
                 box_row = insert_new_message_box(
                     target_treasure,
                     current_member,
-                    MESSAGE_DIRECTION_RECIEVED,
+                    MESSAGE_DIRECTION_RECEIVED,
                     created_at=created_at,
                     session=db,
                 )
