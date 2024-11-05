@@ -10,7 +10,7 @@ from fastapi import HTTPException
 from utils.resource import FileModel, download_file, _FILEMODEL_INDEX_FILECONTENT
 
 from response.response_model import ResponseModel
-
+from response.exceptions import EmbeddingsCountMismatchException, InvalidInputException, GPUProxyServerException
 # 서버 설정 CONFIG
 GPU_URL = os.environ.get("GPU_URL", None)
 
@@ -42,9 +42,7 @@ async def proxy_file_request(
     async with httpx.AsyncClient() as client:
         response = await client.post(url, files=files, data=data)
     if response.status_code != 200:
-        raise HTTPException(
-            status_code=response.status_code, detail=ResponseModel(code="L0014")
-        )
+        raise GPUProxyServerException()
     return response
 
 
@@ -69,7 +67,7 @@ async def pixelize_image_service(
         logging.error(
             f"pixelize_image_service: kernel size: {kernel_size} 와 pixel_size: {pixel_size} 중 하나 이상이 1 미만입니다!"
         )
-        raise ValueError("E0001")
+        raise InvalidInputException()
 
     if isinstance(file, UploadFile):
         file = await download_file(file)
@@ -130,7 +128,7 @@ async def get_embedding_of_two_images(
     embeddings = response_data.get("embeddings", [])
 
     if len(embeddings) != 2:
-        raise HTTPException(status_code=500, detail=ResponseModel(code="L0015"))
+        raise EmbeddingsCountMismatchException()
 
     embedding_1 = embeddings[0]["embedding"]
     embedding_2 = embeddings[1]["embedding"]

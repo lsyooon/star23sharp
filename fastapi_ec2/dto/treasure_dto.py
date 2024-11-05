@@ -16,7 +16,7 @@ class TreasureDTO_Own(BaseDTO):
     image: Optional[str]
 
 
-class ResponseTresureDTO_Own(ResponseModel):
+class ResponseTreasureDTO_Own(ResponseModel):
     data: Optional[TreasureDTO_Own] = None
 
 

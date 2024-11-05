@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Response, Depends
+from fastapi import APIRouter, UploadFile, File, Form, Response, Depends
 from service.image_service import (
     pixelize_image_service,
     get_embedding_service,
@@ -69,14 +69,8 @@ async def get_embedding(
     반환값:
         EmbeddingResponseModel: 이미지의 임베딩.
     """
-    try:
-        response = await get_embedding_service(file)
-        return EmbeddingResponseModel(code="200", data=response.json())
-    except Exception as e:
-        try:
-            raise HTTPException(status_code=500, detail=ResponseModel(code=str(e)))
-        except Exception:
-            raise HTTPException(status_code=500, detail=ResponseModel(code="L0009"))
+    response = await get_embedding_service(file)
+    return EmbeddingResponseModel(code="200", data=response.json())
 
 
 @image_router.post("/compare", response_model=ResponseModel)
@@ -95,12 +89,6 @@ async def compare_image(
     반환값:
         float: 두 이미지 임베딩의 코사인 거리.
     """
-    try:
-        embedding_1, embedding_2 = await get_embedding_of_two_images(file_1, file_2)
-        distance = float(get_cosine_distance(embedding_1, embedding_2))
-        return ResponseModel(code="200", data={"distance": distance})
-    except Exception as e:
-        try:
-            raise HTTPException(status_code=500, detail=ResponseModel(code=str(e)))
-        except Exception:
-            raise HTTPException(status_code=500, detail=ResponseModel(code="L0009"))
+    embedding_1, embedding_2 = await get_embedding_of_two_images(file_1, file_2)
+    distance = float(get_cosine_distance(embedding_1, embedding_2))
+    return ResponseModel(code="200", data={"distance": distance})

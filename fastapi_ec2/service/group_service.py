@@ -7,6 +7,7 @@ from entity.member import Member
 from entity.group import MemberGroup, GroupMember
 from .member_service import find_members_by_id, is_member_valid
 from .simple_find import find_by_attribute
+from response.exceptions import InvalidGroupMembersException
 
 
 def find_group_by_id(id: int, session: Session_Object) -> Optional[MemberGroup]:
@@ -35,7 +36,7 @@ def insert_new_group(
     members = find_members_by_id(member_ids, session)
     if len(members) != len(member_ids):
         logging.error("insert_new_group: 멤버들 중 일부가 존재하지 않음")
-        raise RuntimeError("G0001")
+        raise InvalidGroupMembersException()
 
     result = []
     for member in members:
@@ -43,7 +44,7 @@ def insert_new_group(
             logging.error(
                 f"insert_new_group: Member with id {member.id} is deleted or inactive"
             )
-            raise RuntimeError("G0001")
+            raise InvalidGroupMembersException()
 
         result.append(GroupMember(group_id=new_member_group.id, member_id=member.id))
 

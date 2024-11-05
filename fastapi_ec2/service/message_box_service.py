@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session as Session_Object
 from dto.member_dto import MemberDTO
 from entity.member import Member
 from entity.message import Message
-from entity.message_box import MessageBox, MESSAGE_DIRECTION_RECIEVED
+from entity.message_box import MessageBox, MESSAGE_DIRECTION_RECEIVED
 
 from .member_service import find_member_by_id
 from .message_service import is_message_public
@@ -43,7 +43,7 @@ def insert_multiple_new_recieved_message_boxs_to_a_message(
         MessageBox(
             message_id=message.id,
             member_id=a_member.id,
-            message_direction=MESSAGE_DIRECTION_RECIEVED,
+            message_direction=MESSAGE_DIRECTION_RECEIVED,
             created_at=created_at,
         )
         for a_member in members
@@ -69,7 +69,7 @@ def get_authorizable_nonpublic_treasure_message(
         select(MessageBox)
         .where(MessageBox.member_id == orm_member.id)
         .where(MessageBox.message_id == treasure_message.id)
-        .where(MessageBox.message_direction == MESSAGE_DIRECTION_RECIEVED)
+        .where(MessageBox.message_direction == MESSAGE_DIRECTION_RECEIVED)
         .where(MessageBox.state.is_(False))
     )
     return session.scalar(stmt)
@@ -87,7 +87,7 @@ def delete_message_trace(treasure_message: Message, session: Session_Object):
         delete(MessageBox)
         .where(MessageBox.message_id == treasure_message.id)
         .where(MessageBox.state.is_(False))  # 읽지 못함
-        .where(MessageBox.message_direction == MESSAGE_DIRECTION_RECIEVED)
+        .where(MessageBox.message_direction == MESSAGE_DIRECTION_RECEIVED)
     )
     session.execute(stmt)
     session.flush()

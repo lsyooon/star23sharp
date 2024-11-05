@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from dto.member_dto import MemberDTO
 from dto.treasure_dto import (
-    ResponseTresureDTO_Own,
+    ResponseTreasureDTO_Own,
     TreasureDTO_Own,
     ResponseTreasureDTO_Opened,
     TreasureDTO_Opened,
@@ -20,7 +20,7 @@ from entity.message import (
     MESSAGE_RECEIVER_INDIVIDUAL,
     MESSAGE_RECEIVER_PUBLIC,
 )
-from entity.message_box import MESSAGE_DIRECTION_SENT, MESSAGE_DIRECTION_RECIEVED
+from entity.message_box import MESSAGE_DIRECTION_SENT, MESSAGE_DIRECTION_RECEIVED
 from service.member_service import find_member_by_id
 from service.message_box_service import (
     delete_message_trace,
@@ -48,6 +48,16 @@ from utils.security import get_current_member
 from utils.resource import save_image_to_storage, delete_image_from_storage
 from utils.distance_util import is_lat_lng_valid
 from response.response_model import ResponseModel
+from response.exceptions import (
+    InvalidCoordinatesException,
+    AmbiguousTargetException,
+    MemberNotFoundException,
+    GroupNotFoundException,
+    InvalidPixelTargetException,
+    TreasureNotFoundException,
+    UnauthorizedTreasureAccessException,
+    GPUProxyServerException,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +81,7 @@ treasure_router = APIRouter()
 
 @treasure_router.post(
     "/insert",
-    response_model=ResponseTresureDTO_Own,
+    response_model=ResponseTreasureDTO_Own,
     summary="새 보물 메시지 등록",
     description="새로운 보물 메시지를 생성하고 저장합니다.",
 )
@@ -143,7 +153,7 @@ async def insert_new_treasure(
     try:
         # 입력값 검증
         if not is_lat_lng_valid(lat, lng):
-            raise HTTPException(status_code=400, detail=ResponseModel(code="L0007"))
+            raise InvalidCoordinatesException()
 
         # 송신 시각 처리
         if created_at is None:
@@ -151,7 +161,7 @@ async def insert_new_treasure(
 
         # 수신 대상 파악
         if receivers is not None and group_id is not None:
-            raise HTTPException(status_code=400, detail=ResponseModel(code="L0008"))
+            raise AmbiguousTargetException()
         elif receivers is not None:
             if len(receivers) == 1:
                 result_receiver_type = MESSAGE_RECEIVER_INDIVIDUAL
@@ -159,23 +169,14 @@ async def insert_new_treasure(
             else:
                 result_receiver_type = MESSAGE_RECEIVER_GROUP
                 # 새로운 그룹 생성
-                try:
-                    recieving_group = insert_new_group(
-                        None, current_member, False, False, receivers, created_at, db
-                    )
-                except RuntimeError as e:
-                    try:
-                        raise HTTPException(
-                            status_code=500, detail=ResponseModel(code=str(e))
-                        )
-                    except Exception as e:
-                        logging.error(e)
-                        raise
+                recieving_group = insert_new_group(
+                    None, current_member, False, False, receivers, created_at, db
+                )
         elif group_id is not None:
             result_receiver_type = MESSAGE_RECEIVER_GROUP
             recieving_group = find_group_by_id(group_id, db)
             if recieving_group is None:
-                raise HTTPException(status_code=404, detail=ResponseModel(code="G0002"))
+                raise GroupNotFoundException()
         else:
             result_receiver_type = MESSAGE_RECEIVER_PUBLIC
             recieving_group = None
@@ -191,7 +192,7 @@ async def insert_new_treasure(
                 logging.error(
                     f"수신자 id={receivers[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다."
                 )
-                raise HTTPException(status_code=404, detail=ResponseModel(code="L0006"))
+                raise MemberNotFoundException()
             result_recieving_members.append(_recieving_member)
 
         # 이미지 내용 읽기
@@ -208,36 +209,24 @@ async def insert_new_treasure(
             elif dot_target == 2:
                 _to_dot = hint_image_second
             else:
-                raise HTTPException(status_code=404, detail=ResponseModel(code="L0013"))
-            try:
-                dot_hint_image = await pixelize_image_service(
-                    _to_dot,
-                    PIXELIZE_DEFAULT_PIXEL_SIZE if kernel_size is None else kernel_size,
-                    PIXELIZE_DEFAULT_PIXEL_SIZE if pixel_size is None else pixel_size,
-                )
-            except Exception as e:
-                try:
-                    raise HTTPException(
-                        status_code=400, detail=ResponseModel(code=str(e))
-                    )
-                except Exception:
-                    raise
+                raise InvalidPixelTargetException()
+            dot_hint_image = await pixelize_image_service(
+                _to_dot,
+                PIXELIZE_DEFAULT_PIXEL_SIZE if kernel_size is None else kernel_size,
+                PIXELIZE_DEFAULT_PIXEL_SIZE if pixel_size is None else pixel_size,
+            )
 
         # 메시지 첨부 이미지 읽기
         if content_image:
             content_image = await download_file(content_image)
 
         # 이미지 저장
-        try:
-            hint_image_first_url = save_image_to_storage(hint_image_first, IMAGE_DIR)
-            hint_image_second_url = save_image_to_storage(hint_image_second, IMAGE_DIR)
-            if dot_hint_image is not None:
-                dot_hint_image_url = save_image_to_storage(dot_hint_image, IMAGE_DIR)
-            if content_image is not None:
-                content_image_url = save_image_to_storage(content_image, IMAGE_DIR)
-        except Exception as e:
-            logger.error(f"이미지 저장 중 오류 발생: {str(e)}")
-            raise HTTPException(status_code=500, detail=ResponseModel(code="L0005"))
+        hint_image_first_url = save_image_to_storage(hint_image_first, IMAGE_DIR)
+        hint_image_second_url = save_image_to_storage(hint_image_second, IMAGE_DIR)
+        if dot_hint_image is not None:
+            dot_hint_image_url = save_image_to_storage(dot_hint_image, IMAGE_DIR)
+        if content_image is not None:
+            content_image_url = save_image_to_storage(content_image, IMAGE_DIR)
 
         # 힌트 이미지 임베딩 생성
         embeddings = await get_embedding_of_two_images(
@@ -284,8 +273,8 @@ async def insert_new_treasure(
         )
         result_model = TreasureDTO_Own.get_dto(new_message)
         db.commit()
-        return ResponseTresureDTO_Own(code="200", data=result_model)
-    except Exception as e:
+        return ResponseTreasureDTO_Own(code="200", data=result_model)
+    except Exception:
         db.rollback()
         if hint_image_first_url is not None:
             delete_image_from_storage(hint_image_first_url)
@@ -295,11 +284,7 @@ async def insert_new_treasure(
             delete_image_from_storage(dot_hint_image_url)
         if content_image_url is not None:
             delete_image_from_storage(content_image_url)
-        if isinstance(e, HTTPException):
-            raise
-        else:
-            logger.error(f"오류 발생:\n{str(e)}")
-            raise HTTPException(status_code=500, detail=ResponseModel(code="L0009"))
+        raise
 
 
 @treasure_router.post("/authorize", response_model=ResponseTreasureDTO_Opened)
@@ -332,82 +317,68 @@ async def authorize_treasure(
     """
     # 인증 시도 시각
     created_at = datetime.datetime.now()
-    try:
-        # 좌표 입력값 검증
-        if not is_lat_lng_valid(lat, lng):
-            raise HTTPException(status_code=400, detail=ResponseModel(code="L0007"))
+    # 좌표 입력값 검증
+    if not is_lat_lng_valid(lat, lng):
+        raise InvalidCoordinatesException()
 
-        # 메세지 검증
-        current_member = find_member_by_id(member.id, db)
-        if current_member is None:
-            raise HTTPException(status_code=404, detail=ResponseModel(code="M0006"))
+    # 메세지 검증
+    current_member = find_member_by_id(member.id, db)
+    if current_member is None:
+        raise MemberNotFoundException()
 
-        target_treasure = find_treasure_by_id(id, db)
-        if target_treasure is None:
-            logger.warning(
-                f"authorize_treasure_message: 존재하지 않는 보물 메시지 ID = {id}"
-            )
-            raise HTTPException(status_code=404, detail=ResponseModel(code="L0011"))
+    target_treasure = find_treasure_by_id(id, db)
+    if target_treasure is None:
+        raise TreasureNotFoundException()
 
-        is_public = is_message_public(target_treasure)
-        if not is_public:
-            box_row = get_authorizable_nonpublic_treasure_message(
-                current_member, target_treasure, db
-            )
-            if box_row is None:
-                raise HTTPException(status_code=403, detail=ResponseModel(code="L0012"))
-
-        # 임베딩 얻음
-        response = await get_embedding_service(file)
-        response_json = response.json()
-        embedding: List[float] = response_json.get("embedding")
-        if not embedding:
-            logger.error("임베딩 서버에서 임베딩을 반환하지 않았습니다.")
-            raise HTTPException(status_code=500, detail=ResponseModel(code="L0014"))
-
-        # 보물 메시지 인증
-        auth_result = authorize_treasure_message(
-            target_treasure,
-            embedding,
-            lat,
-            lng,
-            cos_distance_threshold=THRESHOLD_COSINE_DISTANCE_HIGH,
-            linear_distance_threshold=THRESHOLD_LINEAR_DISTANCE,
+    is_public = is_message_public(target_treasure)
+    if not is_public:
+        box_row = get_authorizable_nonpublic_treasure_message(
+            current_member, target_treasure, db
         )
+        if box_row is None:
+            raise UnauthorizedTreasureAccessException()
 
-        treasure_result = None
-        
-        if auth_result[0]:
-            target_treasure.is_found = True  # 메세지 발견 처리
-            treasure_result = TreasureDTO_Opened.get_dto(target_treasure)
-            if is_public:
-                box_row = insert_new_message_box(
-                    target_treasure,
-                    current_member,
-                    MESSAGE_DIRECTION_RECIEVED,
-                    created_at=created_at,
-                    session=db,
-                )
-            box_row.state = True  # 열람 처리
-            db.flush()  # 세션 동기화
-            delete_message_trace(target_treasure, db)
-            db.commit()
-            result_message = "success"
-        else:
-            if(auth_result[1] is None):
-                result_message = "member_too_far"
-            else:
-                result_message = "image_not_similar"
-        return ResponseTreasureDTO_Opened(
-            code="200", message=result_message, data=treasure_result
-        )
+    # 임베딩 얻음
+    response = await get_embedding_service(file)
+    response_json = response.json()
+    embedding: List[float] = response_json.get("embedding")
+    if not embedding:
+        logger.error("임베딩 서버에서 임베딩을 반환하지 않았습니다.")
+        raise GPUProxyServerException()
 
-    except Exception as e:
-        # httpx.HTTPError as e:
-        logger.error(f"{str(e)}")
-        if isinstance(e, httpx.HTTPError):
-            raise HTTPException(status_code=500, detail=ResponseModel(code="L0010"))
-        if isinstance(e, HTTPException):
-            raise
+    # 보물 메시지 인증
+    auth_result = authorize_treasure_message(
+        target_treasure,
+        embedding,
+        lat,
+        lng,
+        cos_distance_threshold=THRESHOLD_COSINE_DISTANCE_HIGH,
+        linear_distance_threshold=THRESHOLD_LINEAR_DISTANCE,
+    )
+
+    treasure_result = None
+
+    if auth_result[0]:
+        target_treasure.is_found = True  # 메세지 발견 처리
+        treasure_result = TreasureDTO_Opened.get_dto(target_treasure)
+        if is_public:
+            box_row = insert_new_message_box(
+                target_treasure,
+                current_member,
+                MESSAGE_DIRECTION_RECEIVED,
+                created_at=created_at,
+                session=db,
+            )
+        box_row.state = True  # 열람 처리
+        db.flush()  # 세션 동기화
+        delete_message_trace(target_treasure, db)
+        db.commit()
+        result_message = "success"
+    else:
+        if auth_result[1] is None:
+            result_message = "member_too_far"
         else:
-            raise HTTPException(status_code=500, detail=ResponseModel(code="L0009"))
+            result_message = "image_not_similar"
+    return ResponseTreasureDTO_Opened(
+        code="200", message=result_message, data=treasure_result
+    )
