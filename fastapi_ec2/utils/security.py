@@ -53,5 +53,10 @@ async def get_current_member(
             f"get_current_member: 토큰: {token} 의 memberName 과 DB의 member_name 이 일치하지 않습니다!."
         )
         raise InvalidTokenException()
+    if member.role != token_obj.role:
+        logging.warning(
+            f"get_current_member: 토큰: {token} 의 role 과 DB의 role 이 일치하지 않습니다!."
+        )
+        raise InvalidTokenException()
     member_dto = MemberDTO.get_dto(member)
     return member_dto

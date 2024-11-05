@@ -1,3 +1,4 @@
+from enum import Enum
 from sqlalchemy import BigInteger, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -8,6 +9,8 @@ MEMBER_STATE_ACTIVE = 0
 MEMBER_STATE_SUSPENDED = 1
 MEMBER_STATE_DELETED = 2
 
+class MemberRole(Enum):
+    ROLE_USER="ROLE_USER"
 
 # Models
 class Member(Base):
@@ -17,7 +20,7 @@ class Member(Base):
     state: Mapped[int] = mapped_column(
         SmallInteger, default=MEMBER_STATE_ACTIVE, nullable=False
     )
-
+    role: Mapped[str] = mapped_column(String(255), nullable=False, default=MemberRole.ROLE_USER)
     def __repr__(self) -> str:
         return (
             f"Member(id={self.id}, member_name={self.member_name}, state={self.state})"

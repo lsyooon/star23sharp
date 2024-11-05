@@ -17,7 +17,9 @@ CREATE TABLE member (
   state             SMALLINT         NOT NULL DEFAULT 0 CHECK (state IN (0, 1, 2)), -- 0: Active, 1: Suspended, 2: Deleted
   nickname          VARCHAR(20)      NOT NULL UNIQUE,
   reactivation_date TIMESTAMP        NULL,
-  created_at       TIMESTAMP         NOT NULL
+  created_at       TIMESTAMP         NOT NULL,
+  role             VARCHAR(255)      NOT NULL DEFAULT ROLE_USER,
+  is_push_notification_enabled   BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE member_group (
@@ -57,7 +59,8 @@ CREATE TABLE message_box (
    is_deleted        BOOLEAN       NOT NULL DEFAULT FALSE,
    message_direction SMALLINT      NOT NULL CHECK (message_direction IN (0, 1)), -- 발신: 0, 수신: 1
    state             BOOLEAN       NULL DEFAULT FALSE, -- 메시지 확인 시 true
-   created_at       TIMESTAMP      NOT NULL
+   created_at       TIMESTAMP      NOT NULL,
+   is_reported       BOOLEAN       DEFAULT FALSE
 );
 
 CREATE TABLE notification (
