@@ -22,8 +22,9 @@ public class ReceiveMessage {
     private String image;
     private boolean kind;
     private short receiverType;
+    private boolean isReported;
 
-    public ReceiveMessage(Long messageId, String sender, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType) {
+    public ReceiveMessage(Long messageId, String sender, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean isReported) {
         this.messageId = messageId;
         this.sender = sender;
         this.senderName = List.of(sender);
@@ -33,6 +34,7 @@ public class ReceiveMessage {
         this.image = image;
         this.kind = kind;
         this.receiverType = receiverType;
+        this.isReported = isReported;
     }
 
     public void setCreatedDate(String createdDate) {
