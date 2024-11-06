@@ -16,8 +16,6 @@ import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 //TODO - 카카오 연결
 //TODO - 카메라 연결
 
