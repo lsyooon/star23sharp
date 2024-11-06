@@ -12,15 +12,17 @@ public class NotificationResponse {
     private Long notificationId;
     private String title;
     private String content;
+    private String hint;
     private String image;
     private String createdDate;
     @JsonIgnore
     private LocalDateTime createdAt;
 
-    public NotificationResponse(Long notificationId, String title, String content, String image, LocalDateTime createdAt) {
+    public NotificationResponse(Long notificationId, String title, String content, String hint, String image, LocalDateTime createdAt) {
         this.notificationId = notificationId;
         this.title = title;
         this.content = content;
+        this.hint = hint;
         this.image = image;
         this.createdAt = createdAt;
     }

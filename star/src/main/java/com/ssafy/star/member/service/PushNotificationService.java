@@ -51,11 +51,11 @@ public class PushNotificationService {
     }
 
     @Async
-    public void sendPushNotification(String token, String title, String content, String image) {
+    public void sendPushNotification(String token, String title, String content, String hint, String image) {
 
         Notification notification = Notification.builder()
                 .setTitle(title)
-                .setBody(content)
+                .setBody(content + "\n" + hint)  // 줄바꿈 추가
                 .setImage(image)
                 .build();
 

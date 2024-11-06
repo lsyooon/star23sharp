@@ -40,5 +40,8 @@ public class Notification {
 
     @Column
     private String image;
+
+    @Column
+    private String hint;
 }
 
