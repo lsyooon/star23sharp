@@ -1,8 +1,6 @@
 package com.ssafy.star.member.controller;
 
 import com.ssafy.star.member.dto.request.DeviceTokenRequest;
-import com.ssafy.star.member.dto.response.NotificationResponse;
-import com.ssafy.star.member.dto.response.ReceiverTreasureNotificationResponse;
 import com.ssafy.star.member.service.NotificationService;
 import com.ssafy.star.response.ApiResponse;
 import com.ssafy.star.security.dto.CustomUserDetails;
