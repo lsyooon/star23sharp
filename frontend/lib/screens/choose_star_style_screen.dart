@@ -58,13 +58,14 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               (currentStyle.index - 1 + WritingStyle.values.length) %
                   WritingStyle.values.length];
     });
+    String content = messageProvider.content ?? '';
 
     // API 호출 후 변환된 메시지를 저장
     if ((changedMessages[currentStyle] == null ||
             changedMessages[currentStyle] == '문체 변환 중 오류가 발생했습니다.') &&
         currentStyle != WritingStyle.basic) {
       String result = await OpenAIService.instance
-          .fetchStyledMessage(messageProvider.message, currentStyle);
+          .fetchStyledMessage(content, currentStyle);
       setState(() {
         changedMessages[currentStyle] = result;
       });
@@ -78,7 +79,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
   @override
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessageFormProvider>(context);
-    String title = '별 문체 바꾸기';
+    String? content = messageProvider.content;
     return Center(
       child: Container(
         width: UIhelper.deviceWidth(context) * 0.85,
@@ -94,9 +95,9 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               child: Container(
                 width: UIhelper.deviceWidth(context) * 0.85,
                 alignment: Alignment.center,
-                child: Text(
-                  title,
-                  style: const TextStyle(
+                child: const Text(
+                  '별 문체 바꾸기',
+                  style: TextStyle(
                     fontSize: 20.0,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -147,7 +148,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                 child: SingleChildScrollView(
                   child: Text(
                     currentStyle == WritingStyle.basic
-                        ? messageProvider.message
+                        ? (content ?? '') // null일 경우 기본값 설정
                         : (changedMessages[currentStyle] ?? '변환 중입니다...'),
                     style: const TextStyle(
                       fontSize: 16.0,

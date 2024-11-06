@@ -4,7 +4,7 @@ class GeneralMessageModel {
   final int receiverType;
   final String title;
   final String content;
-  final List<String> recipients;
+  final List<String> receivers;
   final DateTime createdAt;
   final File? image;
   final int? groupId;
@@ -13,7 +13,7 @@ class GeneralMessageModel {
     required this.receiverType,
     required this.title,
     required this.content,
-    required this.recipients,
+    required this.receivers,
     required this.createdAt,
     this.image,
     this.groupId,
@@ -23,8 +23,8 @@ class GeneralMessageModel {
         'receiver_type': receiverType,
         'title': title,
         'content': content,
-        'recipients': recipients,
-        'created_at': createdAt.toIso8601String(),
+        'receivers': receivers,
+        'created_at': createdAt.toString(),
         'image': image,
         'group_id': groupId,
       };

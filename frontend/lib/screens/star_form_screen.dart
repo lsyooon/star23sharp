@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/main.dart';
 
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
+import 'package:star23sharp/services/index.dart';
 
 class StarFormScreen extends StatefulWidget {
   const StarFormScreen({super.key});
@@ -61,25 +63,43 @@ class _StarFormScreenState extends State<StarFormScreen> {
     });
   }
 
-  void _addRecipient(String nickname) {
+  void _addRecipient(String nickname) async {
     if (nickname.isNotEmpty && !_recipients.contains(nickname)) {
       if (_validateNickname(nickname)) {
+        // 닉네임 중복 검사
+        bool isDuplicate = await UserService.checkDuplicateId(
+            1, _nicknameController.text.trim());
+
+        // 최대 인원수 제한 확인 후 추가
         if (_recipients.length < maxRecipients) {
-          setState(() {
-            _recipients.add(nickname);
-          });
-          _nicknameController.clear();
+          if (!isDuplicate) {
+            setState(() {
+              _recipients.add(nickname);
+            });
+            _nicknameController.clear();
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text('받는 사람은 최대 $maxRecipients명까지 추가할 수 있습니다.')),
+              );
+            }
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('받는 사람은 최대 $maxRecipients명까지 추가할 수 있습니다.')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('존재하지 않는 닉네임입니다. 닉네임을 확인해주세요.')),
+            );
+          }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text(
-                  '닉네임은 2자 이상 16자 이하, 영어/숫자/한글만 가능합니다. 한글 초성 및 모음은 허용되지 않습니다.')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    '닉네임은 2자 이상 16자 이하, 영어/숫자/한글만 가능합니다. 한글 초성 및 모음은 허용되지 않습니다.')),
+          );
+        }
       }
     }
   }
@@ -104,6 +124,18 @@ class _StarFormScreenState extends State<StarFormScreen> {
     setState(() {
       _selectedImage = null; // 이미지를 삭제
     });
+  }
+
+  void _saveMessage() {
+    if (_formKey.currentState!.validate()) {
+      logger.d(_recipients);
+      Provider.of<MessageFormProvider>(context, listen: false).saveMessageData(
+        title: _titleController.text,
+        content: _messageController.text,
+        receivers: _recipients,
+      );
+      Navigator.pushNamed(context, '/message_style_editor'); // 문체 변경 페이지로 이동
+    }
   }
 
   @override
@@ -289,19 +321,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                     child: SizedBox(
                       width: UIhelper.deviceWidth(context) * 0.85,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            Provider.of<MessageFormProvider>(context,
-                                    listen: false)
-                                .saveMessageData(
-                              newTitle: _titleController.text,
-                              newMessage: _messageController.text,
-                              newRecipients: _recipients,
-                            );
-                            Navigator.pushNamed(context,
-                                '/message_style_editor'); // 문체 변경 페이지로 이동
-                          }
-                        },
+                        onPressed: _saveMessage,
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromRGBO(162, 146, 236, 40),

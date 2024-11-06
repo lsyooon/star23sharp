@@ -4,7 +4,7 @@ class TreasureMessageModel {
   final String title;
   final String? content;
   final File? contentImage;
-  final List<int>? receivers;
+  final List<String>? receivers;
   final int? groupId;
   final String? hint;
   final File hintImageFirst;
