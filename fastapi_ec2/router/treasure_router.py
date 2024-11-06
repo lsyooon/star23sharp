@@ -53,8 +53,12 @@ from service.message_box_service import (
 )
 from service.message_service import (
     authorize_treasure_message,
-    find_nonpublic_near_treasures,
-    find_public_near_treasures,
+    find_received_near_group_treasures,
+    find_received_near_private_treasures,
+    find_received_near_public_treasures,
+    find_sent_near_group_treasures,
+    find_sent_near_private_treasures,
+    find_sent_near_public__treasures,
     find_treasure_by_id,
     insert_new_treasure_message,
     is_message_public,
@@ -126,12 +130,20 @@ INSERT_DESCRIPTION = """
 """
 
 FIND_DESCRIPTION = """
-좌표 두 개를 제공하면 두 지점을 지름으로 가지는 원 안의 접근 가능한 보물 메세지들을 표시합니다.
-is_public으로 public 메세지를 가져올지 자신에게 온 보물 메세지들을 표시할 지 체크할 수 있습니다.
-### is_public 이 `True` 인 경우
-- 범위 안의 **public 보물 메세지만**가져옵니다.
-### is_public 이 `False` 인 경우
-- 범위 안의 **public 이 아니면서** 현재 유저가 접근 가능한 보물 메세지들만 가져옵니다.
+좌표 두 개를 제공하면 두 지점을 지름으로 가지는 원 안의 접근 가능한 보물 메세지들을 제공합니다.
+## 매개변수:
+- lat_1 (float): 첫 번째 좌표 위도.
+- lng_1 (float): 첫 번째 좌표 경도.
+- lat_2 (float): 두 번째 좌표 위도.
+- lng_2 (float): 두 번째 좌표 경도.
+- get_received (bool): **True이면 자신이 접근 가능한(미열람) 보물 메세지만, False이면 자신이 등록한 보물 메세지(누군가 열람한 것도)만 가져옵니다.** 기본값 True.
+### 아래 세 매개변수가 모두 False 이면 빈 결과를 제공합니다.
+- include_public: 퍼블릭 보물 메세지를 포함할지의 여부. 기본값 True
+- include_group: 그룹 또는 다수 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 True
+- include_private: 개인을 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 True
+## 반환값
+- ResponseTreasureDTO_Undiscovered
+    - 주어진 두 좌표의 중심점에서 가까운 순서대로 정렬되어 제공됩니다.
 """
 
 AUTHORIZE_DESCRIPTION = f"""
@@ -375,7 +387,7 @@ async def insert_new_treasure(
 
 
 @treasure_router.get(
-    "/list",
+    "/near",
     response_model=ResponseTreasureDTO_Undiscovered,
     summary="주변 보물 메세지 찾기",
     description=FIND_DESCRIPTION,
@@ -385,8 +397,16 @@ async def find_near_treasures(
     lng_1: float = Query(..., description="첫 번째 좌표의 경도"),
     lat_2: float = Query(..., description="두 번째 좌표의 위도"),
     lng_2: float = Query(..., description="두 번째 좌표의 경도"),
-    is_public: bool = Query(
-        True, description="퍼블릭 메세지만 가져올지의 여부. 기본값: `True`"
+    get_received: bool = Query(
+        True,
+        description="True 이면 자신이 접근 가능한 보물 메세지를, False 이면 자신이 등록한 보물 메세지를 가져옵니다.",
+    ),
+    include_public: bool = Query(True, description="퍼블릭 메세지를 가져올지의 여부."),
+    include_group: bool = Query(
+        True, description="그룹 또는 여러 명에게 보낸 메세지를 가져올지의 여부."
+    ),
+    include_private: bool = Query(
+        True, description="1대1 보물 메세지를 가져올지의 여부."
     ),
     member: MemberDTO = Depends(get_current_member),
     db: Session = Depends(get_db),
@@ -408,12 +428,34 @@ async def find_near_treasures(
             np.acos(1 - get_cosine_distance(xyz_1, center_xyz, dtype=np.float128))
         )
     )
-    if is_public:
-        query_result: List[Message] = find_public_near_treasures(center_xyz, radius, db)
-    else:
-        query_result: List[Message] = find_nonpublic_near_treasures(
-            member_orm, center_xyz, radius, db
-        )
+    query_result: List[Message] = []
+    if include_public:
+        if get_received:
+            query_result.extend(
+                find_received_near_public_treasures(center_xyz, radius, db)
+            )
+        else:
+            query_result.extend(
+                find_sent_near_public__treasures(member_orm, center_xyz, radius, db)
+            )
+    if include_group:
+        if get_received:
+            query_result.extend(
+                find_received_near_group_treasures(member_orm, center_xyz, radius, db)
+            )
+        else:
+            query_result.extend(
+                find_sent_near_group_treasures(member_orm, center_xyz, radius, db)
+            )
+    if include_private:
+        if get_received:
+            query_result.extend(
+                find_received_near_private_treasures(member_orm, center_xyz, radius, db)
+            )
+        else:
+            query_result.extend(
+                find_sent_near_private_treasures(member_orm, center_xyz, radius, db)
+            )
     result_dtos = [
         TreasureDTO_Undiscovered.get_dto(treasure) for treasure in query_result
     ]

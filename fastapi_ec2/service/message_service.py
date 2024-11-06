@@ -153,35 +153,112 @@ def is_message_public(message: Message):
     return message.receiver_type == ReceiverTypes.PUBLIC.value
 
 
-def find_public_near_treasures(
+def _build_stmt_search_near_treasures(
+    stmt,
+    xyz: List[float] | np.ndarray,
+    radius: float,
+):
+    l2_distance_threashold = get_l2_distance_from_arc_distance(radius)
+    return (
+        stmt.where(Message.is_treasure.is_(True))
+        .filter(Message.coordinate.l2_distance(xyz) < l2_distance_threashold)
+        .order_by(Message.coordinate.l2_distance(xyz))
+    )
+
+
+def find_received_near_public_treasures(
     xyz: List[float] | np.ndarray,
     radius: float,
     session: Session_Object,
 ):
-    l2_distance_threashold = get_l2_distance_from_arc_distance(radius)
     stmt = (
         select(Message)
         .where(Message.receiver_type == ReceiverTypes.PUBLIC.value)
         .where(Message.is_found.is_(False))
-        .filter(Message.coordinate.l2_distance(xyz) < l2_distance_threashold)
     )
-    return session.scalars(stmt).all()
+    final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
+    return session.scalars(final_stmt).all()
 
 
-def find_nonpublic_near_treasures(
+def find_sent_near_public__treasures(
     valid_member: Member,
     xyz: List[float] | np.ndarray,
     radius: float,
     session: Session_Object,
 ):
-    l2_distance_threashold = get_l2_distance_from_arc_distance(radius)
+    stmt = (
+        select(Message)
+        .where(Message.sender_id == valid_member.id)
+        .where(Message.receiver_type == ReceiverTypes.PUBLIC.value)
+    )
+    final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
+    return session.scalars(final_stmt).all()
+
+
+def find_received_near_group_treasures(
+    valid_member: Member,
+    xyz: List[float] | np.ndarray,
+    radius: float,
+    session: Session_Object,
+):
     stmt = (
         select(Message)
         .join(MessageBox.message)
         .where(MessageBox.member_id == valid_member.id)
+        .where(Message.group_id.is_not(None))
+        .where(Message.is_found.is_(False))
         .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
-        .where(Message.is_treasure.is_(True))
-        .filter(Message.coordinate.l2_distance(xyz) < l2_distance_threashold)
-        .order_by(Message.coordinate.l2_distance(xyz))
     )
-    return session.scalars(stmt).all()
+    final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
+    return session.scalars(final_stmt).all()
+
+
+def find_sent_near_group_treasures(
+    valid_member: Member,
+    xyz: List[float] | np.ndarray,
+    radius: float,
+    session: Session_Object,
+):
+    stmt = (
+        select(Message)
+        .where(Message.sender_id == valid_member.id)
+        .where(Message.group_id.is_not(None))
+    )
+    final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
+    return session.scalars(final_stmt).all()
+
+
+def find_received_near_private_treasures(
+    valid_member: Member,
+    xyz: List[float] | np.ndarray,
+    radius: float,
+    session: Session_Object,
+):
+    stmt = (
+        select(Message)
+        .join(MessageBox.message)
+        .where(MessageBox.member_id == valid_member.id)
+        .where(Message.group_id.is_(None))
+        .where(Message.is_found.is_(False))
+        .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
+        .where(Message.receiver_type != ReceiverTypes.PUBLIC.value)
+    )
+    final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
+    return session.scalars(final_stmt).all()
+
+
+def find_sent_near_private_treasures(
+    valid_member: Member,
+    xyz: List[float] | np.ndarray,
+    radius: float,
+    session: Session_Object,
+):
+    stmt = (
+        select(Message)
+        .join(MessageBox.message)
+        .where(MessageBox.member_id == valid_member.id)
+        .where(MessageBox.message_direction == MessageDirections.SENT.value)
+        .where(Message.group_id.is_(None))
+    )
+    final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
+    return session.scalars(final_stmt).all()
