@@ -50,4 +50,19 @@ public class NotificationController {
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
     }
 
+    @PostMapping("/sender-push")
+    public ResponseEntity<ApiResponse<?>> senderPush(@AuthenticationPrincipal CustomUserDetails user,
+                                                     @RequestBody Long messageId) {
+        notificationService.readReceiver(messageId, user.getId());
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "알림 전송 완료"));
+    }
+
+    @PostMapping("/receiver-push")
+    public ResponseEntity<ApiResponse<?>> receiverPush(@AuthenticationPrincipal CustomUserDetails user,
+                                                       @RequestBody Long receiverId,
+                                                       @RequestBody Long messageId) {
+        notificationService.receiveMessage(user.getId(), receiverId, messageId);
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "알림 전송 완료"));
+    }
+
 }

@@ -18,7 +18,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             "FROM Notification n WHERE n.member.id = :memberId")
     List<NotificationListResponse> getNotificationListByMemberId(Long memberId);
 
-    @Query("SELECT new com.ssafy.star.member.dto.response.NotificationResponse(n.id, n.title, n.content, n.image, n.createdAt ) " +
+    @Query("SELECT new com.ssafy.star.member.dto.response.NotificationResponse(n.id, n.title, n.content, n.hint, n.image, n.createdAt ) " +
             "FROM Notification n WHERE n.id = :id")
     NotificationResponse getNotificationById(Long id);
 

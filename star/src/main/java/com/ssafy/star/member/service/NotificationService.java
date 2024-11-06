@@ -104,17 +104,18 @@ public class NotificationService {
 
         Notification notification = new Notification();
         notification.setTitle(senderNickname + "님이 " + receiverNickname + "님에게 살짝 보물 쪽지를 남겼어요! \uD83D\uDC8C 힌트를 보고 쪽지를 찾아보세요\uD83D\uDE04");
-        notification.setContent("위치 : " + address + "\n힌트 : " + message.getHint());
+        notification.setContent("위치 : " + address);
         notification.setMember(memberRepository.findMemberById(receiverId));
         notification.setMessage(messageRepository.findMessageById(messageId));
         notification.setImage(message.getDotHintImage());
+        notification.setHint("힌트 : " + message.getHint());
         notificationRepository.save(notification);
 
         String receiverName = memberRepository.findMemberNameById(receiverId);
         // 레디스에서 토큰 조회 -> 푸시알림 전송
         DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
         if (receiverToken != null && receiverToken.isActive()) {
-            pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), notification.getTitle(), notification.getContent(), message.getDotHintImage());
+            pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), notification.getTitle(), notification.getContent(), notification.getHint(), message.getDotHintImage());
         }
     }
 
