@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
@@ -48,6 +49,16 @@ void _handleMessage(RemoteMessage message) {
   });
 }
 
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 2, // 호출 스택 깊이
+    errorMethodCount: 5, // 에러 발생 시 호출 스택 깊이
+    lineLength: 50, // 한 줄의 길이 제한
+    colors: true, // 컬러 출력 여부
+    printEmojis: true, // 이모지 출력 여부
+  ),
+);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/env/.env");
@@ -88,6 +99,8 @@ void main() async {
   //메시지 상호작용 함수 호출
   setupInteractedMessage();
 
+  // env 파일 설정
+  await dotenv.load(fileName: '.env');
   runApp(
     MultiProvider(
       providers: [
