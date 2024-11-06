@@ -26,9 +26,10 @@ public enum CustomErrorCode {
     PUSH_NOTIFICATION_FAILED("P0001", "푸시 알림 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     PUSH_NOTIFICATION_INVALID_TOKEN("P0002", "유효하지 않은 디바이스 토큰입니다.", HttpStatus.BAD_REQUEST),
     PUSH_NOTIFICATION_EXPIRED_TOKEN("P0003", "만료된 디바이스 토큰입니다.", HttpStatus.BAD_REQUEST),
-    PUSH_NOTIFICATION_NETWORK_ERROR("P0004", "네트워크 오류로 인해 푸시 알림 전송에 실패했습니다.", HttpStatus.SERVICE_UNAVAILABLE),
     PUSH_NOTIFICATION_AUTH_ERROR("P0005", "푸시 알림 인증 오류가 발생했습니다.", HttpStatus.UNAUTHORIZED),
     PUSH_NOTIFICATION_MESSAGE_TOO_LARGE("P0006", "푸시 알림 메시지 크기가 초과되었습니다.", HttpStatus.BAD_REQUEST),
+    NOT_FOUND_NOTIFICATION("P0007", "알림이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_NOTIFICATION_ACCESS("P0008", "알림에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
     ;
     private final String code;
     private final String message;

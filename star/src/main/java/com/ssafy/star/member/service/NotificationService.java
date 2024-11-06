@@ -3,6 +3,8 @@ package com.ssafy.star.member.service;
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
 import com.ssafy.star.member.dto.request.DeviceTokenRequest;
+import com.ssafy.star.member.dto.response.NotificationListResponse;
+import com.ssafy.star.member.dto.response.NotificationResponse;
 import com.ssafy.star.member.entity.DeviceToken;
 import com.ssafy.star.member.repository.DeviceTokenRepository;
 import com.ssafy.star.member.repository.MemberRepository;
@@ -11,6 +13,11 @@ import com.ssafy.star.member.repository.NotificationRepository;
 import com.ssafy.star.message.entity.Message;
 import com.ssafy.star.message.repository.MessageRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class NotificationService {
@@ -112,5 +119,52 @@ public class NotificationService {
     }
 
     // 수신인에게 일반 쪽지가 왔을 경우
+
+
+
+    // 알림 리스트
+    public List<NotificationListResponse> getNotificationList(Long userId) {
+        List<NotificationListResponse> notificationList = notificationRepository.getNotificationListByMemberId(userId);
+
+        // 리스트가 null일 경우 빈 리스트로 초기화
+        if (notificationList == null) {
+            notificationList = new ArrayList<>();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        for (NotificationListResponse notificationListResponse : notificationList) {
+            String formattedDate = formatCreatedDate(notificationListResponse.getCreatedAt(), now);
+            notificationListResponse.setCreatedDate(formattedDate);
+        }
+
+        return notificationList;
+    }
+
+    // 알림 상세보기
+    public NotificationResponse getNotification(Long userId, Long notificationId) {
+        NotificationResponse notificationResponse = notificationRepository.getNotificationById(notificationId);
+        if (notificationResponse == null) {
+            throw new CustomException(CustomErrorCode.NOT_FOUND_NOTIFICATION);
+        }
+        if (!notificationRepository.existsByMemberIdAndId(userId, notificationId)) {
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_NOTIFICATION_ACCESS);
+        }
+        LocalDateTime now = LocalDateTime.now();
+        String formattedDate = formatCreatedDate(notificationResponse.getCreatedAt(), now);
+        notificationResponse.setCreatedDate(formattedDate);
+        // 알림 확인여부 true로 업데이트
+        notificationRepository.updateIsReadById(notificationId);
+        return notificationResponse;
+    }
+
+    /* 중복 메서드 */
+    // 날짜 포맷 메서드
+    private String formatCreatedDate(LocalDateTime createdAt, LocalDateTime now) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        return createdAt.toLocalDate().isEqual(now.toLocalDate())
+                ? createdAt.format(timeFormatter) // 오늘 날짜면 시간만
+                : createdAt.format(dateFormatter); // 오늘 이전 날짜면 날짜만
+    }
 
 }
