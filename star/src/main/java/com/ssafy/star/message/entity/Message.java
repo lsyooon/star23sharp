@@ -51,10 +51,10 @@ public class Message {
     private Float lat;
     @Column
     private Float lng;
-    @Column
-    @JdbcTypeCode(SqlTypes.VECTOR)
-    @Array(length = 3)
-    private Float[] coordinate;
+//    @Column
+//    @JdbcTypeCode(SqlTypes.VECTOR)
+//    @Array(length = 3)
+//    private Float[] coordinate;
 
     @Column(name = "is_treasure", nullable = false)
     private boolean isTreasure = false;
@@ -68,10 +68,10 @@ public class Message {
     @Column
     private String image;
 
-    @Column
-    @JdbcTypeCode(SqlTypes.VECTOR)
-    @Array(length = 12288)
-    private Float[] vector;
+//    @Column
+//    @JdbcTypeCode(SqlTypes.VECTOR)
+//    @Array(length = 12288)
+//    private Float[] vector;
 
     @ManyToOne
     @JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "fk_message_group"))

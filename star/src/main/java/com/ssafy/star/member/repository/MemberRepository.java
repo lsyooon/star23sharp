@@ -28,4 +28,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Modifying
     @Query("UPDATE Member m SET m.isPushNotificationEnabled = :isPushNotificationEnabled WHERE m.id = :id")
     void updatePushNotificationEnabledById(Long id, boolean isPushNotificationEnabled);
+
+    @Query("SELECT m.nickname FROM Member m WHERE m.id = :id")
+    String findNicknameById(Long id);
 }

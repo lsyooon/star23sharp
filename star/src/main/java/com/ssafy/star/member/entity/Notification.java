@@ -1,14 +1,12 @@
-package com.ssafy.star.message.entity;
+package com.ssafy.star.member.entity;
 
-import com.ssafy.star.member.entity.Member;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.ssafy.star.message.entity.Message;
+import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -39,5 +37,8 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "message_id", foreignKey = @ForeignKey(name = "fk_notification_message"))
     private Message message;
+
+    @Column
+    private String image;
 }
 
