@@ -1,4 +1,5 @@
 import datetime
+from enum import Enum
 from typing import Optional
 
 from sqlalchemy import (
@@ -15,15 +16,17 @@ from .base import Base
 from .member import Member
 from .message import Message
 
-MESSAGE_DIRECTION_SENT = 0
-MESSAGE_DIRECTION_RECEIVED = 1
+
+class MessageDirections(Enum):
+    SENT: int = 0
+    RECEIVED: int = 1
 
 
 class MessageBox(Base):
     __tablename__ = "message_box"
     __table_args__ = (
         CheckConstraint(
-            f"message_direction IN ({MESSAGE_DIRECTION_SENT}, {MESSAGE_DIRECTION_RECEIVED})",
+            f"message_direction IN ({MessageDirections.SENT.value}, {MessageDirections.RECEIVED.value})",
             name="message_direction_check",
         ),
     )

@@ -17,9 +17,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
 
-MESSAGE_RECEIVER_INDIVIDUAL = 0
-MESSAGE_RECEIVER_GROUP = 1
-MESSAGE_RECEIVER_PUBLIC = 2
 IMAGE_VECTOR_SIZE = 12288
 
 
@@ -29,11 +26,17 @@ class VarcharLimit(Enum):
     HINT: int = 20
 
 
+class ReceiverTypes(Enum):
+    INDIVIDUAL: int = 0
+    GROUP: int = 1
+    PUBLIC: int = 2
+
+
 class Message(Base):
     __tablename__ = "message"
     __table_args__ = (
         CheckConstraint(
-            f"receiver_type IN ({MESSAGE_RECEIVER_INDIVIDUAL}, {MESSAGE_RECEIVER_GROUP}, {MESSAGE_RECEIVER_PUBLIC})",
+            f"receiver_type IN ({ReceiverTypes.INDIVIDUAL.value}, {ReceiverTypes.GROUP.value}, {ReceiverTypes.PUBLIC.value})",
             name="receiver_type_check",
         ),
     )
@@ -41,7 +44,7 @@ class Message(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     sender_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     receiver_type: Mapped[int] = mapped_column(
-        SmallInteger, nullable=False, server_default=f"{MESSAGE_RECEIVER_INDIVIDUAL}"
+        SmallInteger, nullable=False, server_default=f"{ReceiverTypes.INDIVIDUAL.value}"
     )
     hint_image_first: Mapped[str] = mapped_column(String(255), nullable=True)
     hint_image_second: Mapped[str] = mapped_column(String(255), nullable=True)

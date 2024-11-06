@@ -44,12 +44,38 @@ def get_cosine_distance(list1: List[float], list2: List[float], dtype=np.float32
     return 1 - cosine_similarity  # Cosine distance is 1 - cosine similarity
 
 
+def get_radian_from_distance(distance: float) -> float:
+    return distance / RADIUS_EARTH
+
+
+def get_distance_from_radian(radian: float) -> float:
+    return radian * RADIUS_EARTH
+
+
+def get_cosine_distance_from_radian(radian: float) -> float:
+    return 1 - math.cos(radian)
+
+
 def get_degree_from_distance(distance: float) -> float:
-    return (distance * 180) / (math.pi * RADIUS_EARTH)
+    return math.degrees(get_radian_from_distance(distance))
 
 
 def get_distance_from_degree(degree: float) -> float:
-    return (degree * math.pi * RADIUS_EARTH) / 180
+    return get_distance_from_radian(math.radians(degree))
+
+
+def get_cosine_distance_from_degree(degree: float):
+    return get_cosine_distance_from_radian(math.radians(degree))
+
+
+def get_l2_distance_from_arc_distance(arc_distance: float):
+    # 제이코사인법칙:
+    # 직선 길이^2 = 2*(지구반지름^2)*cosdistance of two point of arc
+    return math.sqrt(
+        2
+        * math.pow(RADIUS_EARTH, 2)
+        * get_cosine_distance_from_radian(get_radian_from_distance(arc_distance))
+    )
 
 
 def convert_lat_lng_to_xyz(lat: float, lng: float, radius=RADIUS_EARTH) -> List[float]:

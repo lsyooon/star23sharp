@@ -216,3 +216,12 @@ class UnauthorizedGroupAccessException(AppException):
 
     status_code = status.HTTP_401_UNAUTHORIZED
     code = "G0003"
+
+
+class TreasureSearchRangeTooBroadException(AppException):
+    """
+    지구상의 두 점의 지구 중심에 대한 각도가 180도에 가까우면 발생. 거의 발생할 일이 없음.
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "L0023"

@@ -8,18 +8,15 @@ from dto.member_dto import MemberDTO
 from dto.treasure_dto import (
     ResponseTreasureDTO_Opened,
     ResponseTreasureDTO_Own,
+    ResponseTreasureDTO_Undiscovered,
     TreasureDTO_Opened,
     TreasureDTO_Own,
+    TreasureDTO_Undiscovered,
 )
 from entity.member import Member
-from entity.message import (
-    MESSAGE_RECEIVER_GROUP,
-    MESSAGE_RECEIVER_INDIVIDUAL,
-    MESSAGE_RECEIVER_PUBLIC,
-    VarcharLimit,
-)
-from entity.message_box import MESSAGE_DIRECTION_RECEIVED, MESSAGE_DIRECTION_SENT
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from entity.message import Message, ReceiverTypes, VarcharLimit
+from entity.message_box import MessageDirections
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from response.exceptions import (
     AmbiguousTargetException,
     ContentLengthExceededException,
@@ -32,6 +29,7 @@ from response.exceptions import (
     SelfRecipientException,
     TitleLengthExceededException,
     TreasureNotFoundException,
+    TreasureSearchRangeTooBroadException,
     UnauthorizedGroupAccessException,
     UnauthorizedTreasureAccessException,
 )
@@ -43,7 +41,10 @@ from service.image_service import (
     get_embedding_service,
     pixelize_image_service,
 )
-from service.member_service import find_member_by_id
+from service.member_service import (
+    find_member_by_id,
+    find_members_by_nickname_no_validation,
+)
 from service.message_box_service import (
     delete_message_trace,
     get_authorizable_nonpublic_treasure_message,
@@ -52,6 +53,8 @@ from service.message_box_service import (
 )
 from service.message_service import (
     authorize_treasure_message,
+    find_nonpublic_near_treasures,
+    find_public_near_treasures,
     find_treasure_by_id,
     insert_new_treasure_message,
     is_message_public,
@@ -59,7 +62,13 @@ from service.message_service import (
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from utils.connection_pool import get_db
-from utils.distance_util import is_lat_lng_valid
+from utils.distance_util import (
+    RADIUS_EARTH,
+    convert_lat_lng_to_xyz,
+    get_cosine_distance,
+    get_distance_from_radian,
+    is_lat_lng_valid,
+)
 from utils.resource import (
     delete_image_from_storage,
     download_file,
@@ -107,7 +116,7 @@ INSERT_DESCRIPTION = """
 - content_image (UploadFile, Optional): 메시지 첨부 이미지
 - hint (str, Optional): 텍스트 힌트
 - group_id (int, Optional): 그룹 ID
-- receivers (List[int], Optional): 수신자들의 멤버 ID 목록
+- receivers (List[str], Optional): 수신자들의 멤버 닉네임 목록
 - lat (float): 위도
 - lng (float): 경도
 - created_at (datetime, Optional): 메시지 송신 시각. 미제공 시 현재 시각 사용.
@@ -116,6 +125,14 @@ INSERT_DESCRIPTION = """
 - ResponseTreasureDTO_Own: 생성된 보물 메시지 정보
 """
 
+FIND_DESCRIPTION = """
+좌표 두 개를 제공하면 두 지점을 지름으로 가지는 원 안의 접근 가능한 보물 메세지들을 표시합니다.
+is_public으로 public 메세지를 가져올지 자신에게 온 보물 메세지들을 표시할 지 체크할 수 있습니다.
+### is_public 이 `True` 인 경우
+- 범위 안의 **public 보물 메세지만**가져옵니다.
+### is_public 이 `False` 인 경우
+- 범위 안의 **public 이 아니면서** 현재 유저가 접근 가능한 보물 메세지들만 가져옵니다.
+"""
 
 AUTHORIZE_DESCRIPTION = f"""
 보물 메시지의 열람 인증을 처리합니다.
@@ -184,7 +201,9 @@ async def insert_new_treasure(
     group_id: Optional[int] = Form(
         None, description="그룹을 지정해서 보낼 경우 해당 그룹 ID"
     ),
-    receivers: Optional[List[int]] = Form(None, description="수신자들의 멤버 ID 목록."),
+    receivers: Optional[List[str]] = Form(
+        None, description="수신자들의 멤버 닉네임 목록."
+    ),
     lat: float = Form(..., description="위도"),
     lng: float = Form(..., description="경도"),
     created_at: Optional[datetime.datetime] = Form(
@@ -218,38 +237,44 @@ async def insert_new_treasure(
         if receivers is not None and group_id is not None:
             raise AmbiguousTargetException()
         elif receivers is not None:
-            if len(receivers) == 1:
-                result_receiver_type = MESSAGE_RECEIVER_INDIVIDUAL
+            receivers_int = [
+                member.id
+                for member in find_members_by_nickname_no_validation(receivers, db)
+            ]  # TODO: Inefficient
+            if len(receivers_int) == 1:
+                result_receiver_type = ReceiverTypes.INDIVIDUAL.value
                 recieving_group = None
             else:
-                result_receiver_type = MESSAGE_RECEIVER_GROUP
+                result_receiver_type = ReceiverTypes.GROUP.value
                 # 새로운 그룹 생성
                 recieving_group = insert_new_group(
-                    None, current_member, False, False, receivers, created_at, db
+                    None, current_member, False, False, receivers_int, created_at, db
                 )
         elif group_id is not None:
-            result_receiver_type = MESSAGE_RECEIVER_GROUP
+            result_receiver_type = ReceiverTypes.GROUP.value
             recieving_group = find_group_by_id(group_id, db)
             if recieving_group is None:
                 raise GroupNotFoundException()
         else:
-            result_receiver_type = MESSAGE_RECEIVER_PUBLIC
+            result_receiver_type = ReceiverTypes.PUBLIC.value
             recieving_group = None
 
         result_recieving_members: List[Member] = []
         if recieving_group:  # 이미 존재하는 그룹에게 발신
-            if recieving_group.creator_id is current_member.id:  # 접근 권한이 없는 그룹
+            if (
+                recieving_group.creator_id is not current_member.id
+            ):  # 접근 권한이 없는 그룹
                 raise UnauthorizedGroupAccessException()
             for group_member in recieving_group.members:
                 if group_member.member.id != current_member.id:
                     result_recieving_members.append(group_member.member)
                 else:
                     raise SelfRecipientException()
-        elif result_receiver_type != MESSAGE_RECEIVER_PUBLIC:  # 개인에게 발신
-            _recieving_member = find_member_by_id(receivers[0], db)
+        elif result_receiver_type != ReceiverTypes.PUBLIC.value:  # 개인에게 발신
+            _recieving_member = find_member_by_id(receivers_int[0], db)
             if _recieving_member is None:
                 logging.error(
-                    f"수신자 id={receivers[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다."
+                    f"수신자 id={receivers_int[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다."
                 )
                 raise MemberNotFoundException()
             if _recieving_member.id == current_member.id:
@@ -324,7 +349,7 @@ async def insert_new_treasure(
         insert_new_message_box(
             new_message,
             current_member,
-            MESSAGE_DIRECTION_SENT,
+            MessageDirections.SENT.value,
             created_at,
             db,
         )
@@ -347,6 +372,53 @@ async def insert_new_treasure(
         if content_image_url is not None:
             delete_image_from_storage(content_image_url)
         raise
+
+
+@treasure_router.get(
+    "/list",
+    response_model=ResponseTreasureDTO_Undiscovered,
+    summary="주변 보물 메세지 찾기",
+    description=FIND_DESCRIPTION,
+)
+async def find_near_treasures(
+    lat_1: float = Query(..., description="첫 번째 좌표의 위도"),
+    lng_1: float = Query(..., description="첫 번째 좌표의 경도"),
+    lat_2: float = Query(..., description="두 번째 좌표의 위도"),
+    lng_2: float = Query(..., description="두 번째 좌표의 경도"),
+    is_public: bool = Query(
+        True, description="퍼블릭 메세지만 가져올지의 여부. 기본값: `True`"
+    ),
+    member: MemberDTO = Depends(get_current_member),
+    db: Session = Depends(get_db),
+):
+    member_orm = find_member_by_id(member.id, db)
+    if member_orm is None:
+        raise MemberNotFoundException()
+    if not is_lat_lng_valid(lat_1, lng_1) or not is_lat_lng_valid(lat_2, lng_2):
+        raise InvalidCoordinatesException()
+    xyz_1 = np.array(convert_lat_lng_to_xyz(lat_1, lng_1))
+    xyz_2 = np.array(convert_lat_lng_to_xyz(lat_2, lng_2))
+    center_xyz_short = (xyz_1 + xyz_2) / 2
+    center_norm_length = np.linalg.norm(center_xyz_short)
+    if center_norm_length < 1:  # 거의 일어나지 않음
+        raise TreasureSearchRangeTooBroadException()
+    center_xyz = RADIUS_EARTH * (center_xyz_short / np.linalg.norm(center_xyz_short))
+    radius = float(
+        get_distance_from_radian(
+            np.acos(1 - get_cosine_distance(xyz_1, center_xyz, dtype=np.float128))
+        )
+    )
+    if is_public:
+        query_result: List[Message] = find_public_near_treasures(center_xyz, radius, db)
+    else:
+        query_result: List[Message] = find_nonpublic_near_treasures(
+            member_orm, center_xyz, radius, db
+        )
+    result_dtos = [
+        TreasureDTO_Undiscovered.get_dto(treasure) for treasure in query_result
+    ]
+
+    return ResponseTreasureDTO_Undiscovered(code="200", data={"treasures": result_dtos})
 
 
 @treasure_router.post(
@@ -428,7 +500,7 @@ async def authorize_treasure(
                 box_row = insert_new_message_box(
                     locked_treasure,
                     current_member,
-                    MESSAGE_DIRECTION_RECEIVED,
+                    MessageDirections.RECEIVED.value,
                     created_at=created_at,
                     session=db,
                 )

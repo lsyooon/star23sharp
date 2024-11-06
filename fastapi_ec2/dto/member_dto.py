@@ -6,3 +6,4 @@ class MemberDTO(BaseDTO):
     member_name: str
     state: int
     role: str
+    nickname: str

@@ -7,7 +7,7 @@ from entity.member import Member
 from response.exceptions import InvalidGroupMembersException
 from sqlalchemy.orm.session import Session as Session_Object
 
-from .member_service import find_members_by_id, is_member_valid
+from .member_service import find_members_by_id_no_validation, is_member_valid
 from .simple_find import find_by_attribute
 
 
@@ -34,7 +34,7 @@ def insert_new_group(
     session.add(new_member_group)
     session.flush()
 
-    members = find_members_by_id(member_ids, session)
+    members = find_members_by_id_no_validation(member_ids, session)
     if len(members) != len(member_ids):
         logging.error("insert_new_group: 멤버들 중 일부가 존재하지 않음")
         raise InvalidGroupMembersException()

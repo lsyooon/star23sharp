@@ -5,7 +5,8 @@ from typing import List, Optional, Tuple
 import numpy as np
 from entity.group import MemberGroup
 from entity.member import Member
-from entity.message import MESSAGE_RECEIVER_PUBLIC, Message
+from entity.message import Message, ReceiverTypes
+from entity.message_box import MessageBox, MessageDirections
 from sqlalchemy import select
 from sqlalchemy.orm.session import Session as Session_Object
 from utils.distance_util import (
@@ -13,6 +14,7 @@ from utils.distance_util import (
     get_cosine_distance,
     get_degree_from_distance,
     get_distance_from_degree,
+    get_l2_distance_from_arc_distance,
 )
 
 logger = logging.getLogger(__name__)
@@ -148,4 +150,38 @@ def authorize_treasure_message(
 
 
 def is_message_public(message: Message):
-    return message.receiver_type == MESSAGE_RECEIVER_PUBLIC
+    return message.receiver_type == ReceiverTypes.PUBLIC.value
+
+
+def find_public_near_treasures(
+    xyz: List[float] | np.ndarray,
+    radius: float,
+    session: Session_Object,
+):
+    l2_distance_threashold = get_l2_distance_from_arc_distance(radius)
+    stmt = (
+        select(Message)
+        .where(Message.receiver_type == ReceiverTypes.PUBLIC.value)
+        .where(Message.is_found.is_(False))
+        .filter(Message.coordinate.l2_distance(xyz) < l2_distance_threashold)
+    )
+    return session.scalars(stmt).all()
+
+
+def find_nonpublic_near_treasures(
+    valid_member: Member,
+    xyz: List[float] | np.ndarray,
+    radius: float,
+    session: Session_Object,
+):
+    l2_distance_threashold = get_l2_distance_from_arc_distance(radius)
+    stmt = (
+        select(Message)
+        .join(MessageBox.message)
+        .where(MessageBox.member_id == valid_member.id)
+        .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
+        .where(Message.is_treasure.is_(True))
+        .filter(Message.coordinate.l2_distance(xyz) < l2_distance_threashold)
+        .order_by(Message.coordinate.l2_distance(xyz))
+    )
+    return session.scalars(stmt).all()

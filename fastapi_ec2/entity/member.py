@@ -26,6 +26,7 @@ class Member(Base):
     role: Mapped[str] = mapped_column(
         String(255), nullable=False, default=MemberRole.ROLE_USER.value
     )
+    nickname: Mapped[str] = mapped_column(String(16), nullable=False, unique=True)
 
     def __repr__(self) -> str:
         return (

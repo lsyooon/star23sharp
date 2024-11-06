@@ -14,8 +14,16 @@ def find_member_by_id(id: int, session: Session_Object) -> Optional[Member]:
     return None
 
 
-def find_members_by_id(id: List[int], session: Session_Object) -> List[Member]:
+def find_members_by_id_no_validation(
+    id: List[int], session: Session_Object
+) -> List[Member]:
     return find_multiple_by_attribute(Member, Member.id, id, session)
+
+
+def find_members_by_nickname_no_validation(
+    nicks: List[str], session: Session_Object
+) -> List[Member]:
+    return find_multiple_by_attribute(Member, Member.nickname, nicks, session)
 
 
 def find_member_by_member_name(
