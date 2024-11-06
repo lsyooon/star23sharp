@@ -52,6 +52,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String refresh = null;
         refresh = request.getHeader("refresh");
 
+        System.out.println(refresh);
         log.info("logout 들어옴");
         //refresh Token이 비어있는 경우
         if (refresh == null || refresh.trim().equals("")) {
