@@ -1,18 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:star23sharp/widgets/index.dart';
+import 'package:provider/provider.dart';
+import 'package:star23sharp/main.dart';
 
-class ChooseStarStyleScreen extends StatelessWidget {
+import 'package:star23sharp/widgets/index.dart';
+import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/models/enums/star/writing_style.dart';
+
+class ChooseStarStyleScreen extends StatefulWidget {
   const ChooseStarStyleScreen({super.key});
 
   @override
+  State<ChooseStarStyleScreen> createState() => _ChooseStarStyleScreenState();
+}
+
+class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
+  WritingStyle currentStyle = WritingStyle.basic;
+  final Map<WritingStyle, String?> changedMessages = {
+    WritingStyle.basic: null,
+    WritingStyle.cute: null,
+    WritingStyle.didItStyle: null,
+    WritingStyle.haoche: null,
+    WritingStyle.humanKorean: null,
+    WritingStyle.otaku: null,
+    WritingStyle.middleSchool: null,
+  };
+
+// 문체 이름 반환 함수
+  String getStyleName(WritingStyle style) {
+    switch (style) {
+      case WritingStyle.basic:
+        return '기본';
+      case WritingStyle.cute:
+        return '귀여니체';
+      case WritingStyle.didItStyle:
+        return '했삼체';
+      case WritingStyle.haoche:
+        return '하오체';
+      case WritingStyle.humanKorean:
+        return '휴먼급식체';
+      case WritingStyle.otaku:
+        return '오덕체';
+      case WritingStyle.middleSchool:
+        return '중2병체';
+      default:
+        return '기본';
+    }
+  }
+
+  Future<void> _handleArrowButtonPress(
+      bool isNext, MessageFormProvider messageProvider) async {
+    setState(() {
+      currentStyle = isNext
+          ? WritingStyle
+              .values[(currentStyle.index + 1) % WritingStyle.values.length]
+          : WritingStyle.values[
+              (currentStyle.index - 1 + WritingStyle.values.length) %
+                  WritingStyle.values.length];
+    });
+
+    // API 호출 후 변환된 메시지를 저장
+    if ((changedMessages[currentStyle] == null ||
+            changedMessages[currentStyle] == '문체 변환 중 오류가 발생했습니다.') &&
+        currentStyle != WritingStyle.basic) {
+      String result = await OpenAIService.instance
+          .fetchStyledMessage(messageProvider.message, currentStyle);
+      setState(() {
+        changedMessages[currentStyle] = result;
+      });
+    }
+  }
+
+  void _onSendButtonPressed() {
+    //TODO - 쪽지 전송 api
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final messageProvider = Provider.of<MessageFormProvider>(context);
     String title = '별 문체 바꾸기';
     return Center(
       child: Container(
         width: UIhelper.deviceWidth(context) * 0.85,
         height: UIhelper.deviceHeight(context) * 0.67,
-        color: Colors.white, // 배경색 추가
-
+        color: Colors.white,
         child: Column(
           // 커스텀 헤더
           children: [
@@ -35,42 +106,59 @@ class ChooseStarStyleScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20.0),
 
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Icon(Icons.arrow_back, color: Colors.black),
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () =>
+                      _handleArrowButtonPress(false, messageProvider),
+                ),
                 Text(
-                  '문체 명',
-                  style: TextStyle(
+                  currentStyle.name,
+                  style: const TextStyle(
                     fontSize: 20.0,
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Icon(Icons.arrow_forward, color: Colors.black),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                  onPressed: () =>
+                      _handleArrowButtonPress(true, messageProvider),
+                ),
               ],
             ),
             const SizedBox(height: 20.0),
             // 본문 내용
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(15.0),
               child: Container(
+                constraints: BoxConstraints(
+                  minWidth: UIhelper.deviceWidth(context) * 0.8,
+                  minHeight: UIhelper.deviceHeight(context) * 0.33,
+                ),
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12.0),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: const Text(
-                  '사용자가 입력한 내용의 문체를 ChatGPT를 사용해서 변환하고 그 내용을 보여줍니다.',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black87,
-                    height: 1.5,
+                child: SingleChildScrollView(
+                  child: Text(
+                    currentStyle == WritingStyle.basic
+                        ? messageProvider.message
+                        : (changedMessages[currentStyle] ?? '변환 중입니다...'),
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.black87,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ),
             ),
+
             const Spacer(),
             // 하단 버튼
             Padding(
@@ -78,9 +166,7 @@ class ChooseStarStyleScreen extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // 버튼 클릭 시 동작 추가
-                  },
+                  onPressed: _onSendButtonPressed,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFA292EC),
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
