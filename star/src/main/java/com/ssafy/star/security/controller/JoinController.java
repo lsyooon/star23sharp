@@ -32,11 +32,9 @@ public class JoinController {
     @PostMapping("/duplicate")
     public ResponseEntity<?> checkNickname(@RequestBody DuplicateDto req) {
         if(req.getCheckType() == 0){
-            joinService.checkMemberId(req.getValue());
-            return ResponseEntity.ok().body(new ApiResponse<>("200", "사용 가능한 아이디입니다."));
+            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", joinService.checkMemberId(req.getValue())));
         }
-        joinService.checkNickname(req.getValue());
-        return ResponseEntity.ok().body(new ApiResponse<>("200","사용 가능한 닉네임입니다."));
+        return ResponseEntity.ok().body(new ApiResponse<>("200","조회 성공", joinService.checkNickname(req.getValue())));
     }
 
 

@@ -23,8 +23,12 @@ public class JoinService {
     public void joinProcess(JoinDTO joinDTO) {
 
         //db에 이미 동일한 유저 네임을 가진 회원이 존재하는지 검증
-        checkMemberId(joinDTO.getMemberId());
-        checkNickname(joinDTO.getNickname());
+        if (checkMemberId(joinDTO.getMemberId())) {
+            throw new CustomException(CustomErrorCode.MEMBER_ALREADY_EXISTS);
+        }
+        if (checkNickname(joinDTO.getNickname())) {
+            throw new CustomException(CustomErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
         Member data = Member.builder()
                 .memberName(joinDTO.getMemberId())
                 .password(passwordEncoder.encode(joinDTO.getPassword()))
@@ -38,17 +42,11 @@ public class JoinService {
 
     }
 
-    public void checkMemberId(String memberId) {
-        boolean isUser = memberRepository.existsByMemberName(memberId);
-        if (isUser) {
-            throw new CustomException(CustomErrorCode.MEMBER_ALREADY_EXISTS);
-        }
+    public boolean checkMemberId(String memberId) {
+        return memberRepository.existsByMemberName(memberId);
     }
-    public void checkNickname(String nickname) {
-        boolean isNickConflict = memberRepository.existsByNickname(nickname);
-        if (isNickConflict) {
-            throw new CustomException(CustomErrorCode.NICKNAME_ALREADY_EXISTS);
-        }
+    public boolean checkNickname(String nickname) {
+        return memberRepository.existsByNickname(nickname);
     }
 
 }
