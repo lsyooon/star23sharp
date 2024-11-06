@@ -9,6 +9,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,12 +36,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final TokenService tokenService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, TokenService tokenService, Long accessTokenExpiration, Long refreshTokenExpiration) {
+    private final Validator validator;
+
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, TokenService tokenService, Long accessTokenExpiration, Long refreshTokenExpiration, Validator validator) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.tokenService = tokenService;
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
+        this.validator = validator;
+
     }
 
     // 클라이언트 요청을 가로채서 아이디 비밀번호 확인

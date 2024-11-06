@@ -24,26 +24,33 @@ public class JWTUtil {
     }
 
     //JWT Token 유효성 검사
-    public boolean validateToken(String token) {
+    public int validateToken(String token) {
         try {
-            return Jwts.parser().
+            if(Jwts.parser().
                     verifyWith(secretKey)
                     .build()
                     .parseClaimsJws(token)
                     .getPayload()
                     .keySet()
-                    .containsAll(List.of("memberName", "role", "category","memberId"));
+                    .containsAll(List.of("memberName", "role", "category","memberId"))){
+                return 0;
+            }
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-
             log.info("Invalid JWT Token", e.getMessage());
+            return 1;
+
         } catch (ExpiredJwtException e) {
             log.info("Expired JWT Token", e.getMessage());
-        } catch (UnsupportedJwtException e) {
+            return 2;
+        }
+        catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e.getMessage());
+            return 1;
         } catch (IllegalArgumentException e) {
             log.info("JWT claims string is empty.", e.getMessage());
+            return 1;
         }
-        return false;
+            return 1;
     }
 
     // jwt token의 payload 에서 username 추출

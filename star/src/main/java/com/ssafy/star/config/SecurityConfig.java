@@ -7,6 +7,7 @@ import com.ssafy.star.security.jwt.LoginFilter;
 import com.ssafy.star.security.repository.TokenRepository;
 import com.ssafy.star.security.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,9 +43,11 @@ public class SecurityConfig {
 
     private final Long refreshTokenExpiration;
 
+    private final Validator validator;
+
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, TokenService tokenService,
                           @Value("${jwt.access-token.expiration}") Long accessTokenExpiration,
-                          @Value("${jwt.refresh-token.expiration}") Long refreshTokenExpiration, TokenRepository tokenRepository) {
+                          @Value("${jwt.refresh-token.expiration}") Long refreshTokenExpiration, TokenRepository tokenRepository, Validator validator) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
@@ -52,6 +55,7 @@ public class SecurityConfig {
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
         this.tokenRepository = tokenRepository;
+        this.validator = validator;
     }
 
     //AuthenticationManager Bean 등록
@@ -111,7 +115,7 @@ public class SecurityConfig {
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenService, accessTokenExpiration, refreshTokenExpiration);
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenService, accessTokenExpiration, refreshTokenExpiration, validator);
         loginFilter.setFilterProcessesUrl("/api/v1/login");
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
