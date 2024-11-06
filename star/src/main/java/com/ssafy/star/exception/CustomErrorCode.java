@@ -23,6 +23,12 @@ public enum CustomErrorCode {
     INVALID_DATE_FORMAT("L0018", "날짜 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_DEVICE_TOKEN("M0010", "잘못된 디바이스 토큰입니다.", HttpStatus.BAD_REQUEST),
     DEVICE_TOKEN_NOT_FOUND("M0011", "디바이스 토큰을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    PUSH_NOTIFICATION_FAILED("P0001", "푸시 알림 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PUSH_NOTIFICATION_INVALID_TOKEN("P0002", "유효하지 않은 디바이스 토큰입니다.", HttpStatus.BAD_REQUEST),
+    PUSH_NOTIFICATION_EXPIRED_TOKEN("P0003", "만료된 디바이스 토큰입니다.", HttpStatus.BAD_REQUEST),
+    PUSH_NOTIFICATION_NETWORK_ERROR("P0004", "네트워크 오류로 인해 푸시 알림 전송에 실패했습니다.", HttpStatus.SERVICE_UNAVAILABLE),
+    PUSH_NOTIFICATION_AUTH_ERROR("P0005", "푸시 알림 인증 오류가 발생했습니다.", HttpStatus.UNAUTHORIZED),
+    PUSH_NOTIFICATION_MESSAGE_TOO_LARGE("P0006", "푸시 알림 메시지 크기가 초과되었습니다.", HttpStatus.BAD_REQUEST),
     ;
     private final String code;
     private final String message;
