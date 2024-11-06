@@ -15,6 +15,7 @@ import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 //TODO - 카카오 연결
 //TODO - 카메라 연결
@@ -59,13 +60,27 @@ final logger = Logger(
   ),
 );
 
+// 토큰 저장 관련
+const storage = FlutterSecureStorage();
+
+// storage에 저장해둔 내용 받아오기
+Future<void> loadAccessToken(AuthProvider authProvider) async {
+  String? access = await storage.read(key: 'access');
+  String? refresh = await storage.read(key: 'refresh');
+  if (access != null && refresh != null) {
+    logger.d("access: $access, refresh: $refresh");
+    authProvider.setToken(access, refresh);
+  } else{
+    logger.d("토큰 없음 -> 로그인 안된 상태");
+  }
+}
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/env/.env");
 
   final appKey = dotenv.env['APP_KEY'] ?? '';
   AuthRepository.initialize(
-    appKey: appKey,
+    appKey: appKey, 
   );
 
 //firebase setting
@@ -101,11 +116,13 @@ void main() async {
 
   // env 파일 설정
   await dotenv.load(fileName: '.env');
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: const MyApp(),
     ),
