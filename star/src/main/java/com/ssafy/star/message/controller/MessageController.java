@@ -21,12 +21,15 @@ public class MessageController {
     }
 
     @GetMapping("/reception/list")
-    public ResponseEntity<ApiResponse<List<ReceiveMessageListResponse>>> getReceptionList(@AuthenticationPrincipal CustomUserDetails user){
-        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(user.getId());
+    public ResponseEntity<?> getReceptionList2(@AuthenticationPrincipal CustomUserDetails user){
+        System.out.println("--------list2------------------");
+        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageListResponse(user.getId());
         if (response.isEmpty()){
-            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 받은 편지가 없습니다."));
+            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
         }
-        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
+        System.out.println("--------list2 End!!------------------");
+
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 
     @GetMapping("/send/list")

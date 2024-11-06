@@ -1,5 +1,6 @@
 package com.ssafy.star.message.repository;
 
+import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
 import com.ssafy.star.message.entity.MessageBox;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -58,4 +59,23 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
 
     @Query("SELECT count(*) FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.messageDirection = :messageDirection AND mb.state = false")
     int existsByMemberIdANDMessageDirection(Long memberId, short messageDirection);
+
+
+
+    // Message Box에서
+    // memberId, messageDirection,isDeleted 조건으로 messageId와 state 조회해서
+    // messageId로 message에서 조회 할 건데 만약에 message의 is_treasure 속성이 true이면 state가 true 인것만, false이면 state가 true/false 인
+    // message의 m. id, m. title, m. receiverType, m. sender. nickname, m. createdAt, m. isTreasure, mb. state 조회하는 쿼리
+    @Query("SELECT new com.ssafy.star.message.dto.response.ReceiveMessageListResponse(" +
+            "m.id, m.title, m.receiverType, m.sender.nickname, m.createdAt, m.isTreasure, mb.state) " +
+            "FROM MessageBox mb " +
+            "JOIN mb.message m " +
+            "WHERE mb.member.id = :memberId " +
+            "AND mb.messageDirection = :messageDirection " +
+            "AND mb.isDeleted = false " +
+            "AND ((m.isTreasure = true AND mb.state = true) OR (m.isTreasure = false))")
+    List<ReceiveMessageListResponse> findFilteredMessages(
+            @Param("memberId") Long memberId,
+            @Param("messageDirection") short messageDirection);
+
 }

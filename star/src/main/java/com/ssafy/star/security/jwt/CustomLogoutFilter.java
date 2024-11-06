@@ -8,11 +8,13 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
+@Slf4j
 public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JWTUtil jwtUtil;
@@ -44,11 +46,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
+
+
         //get refresh token
         String refresh = null;
         refresh = request.getHeader("refresh");
 
-
+        log.info("logout 들어옴");
         //refresh Token이 비어있는 경우
         if (refresh == null || refresh.trim().equals("")) {
 
@@ -56,6 +60,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
+
+
 
             // 응답 메시지 작성
             try (PrintWriter writer = response.getWriter()) {
@@ -71,6 +77,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
+            log.info("토큰 검증 실패");
             // 응답 메시지 작성
             try (PrintWriter writer = response.getWriter()) {
                 writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\", \"data\": null }");
