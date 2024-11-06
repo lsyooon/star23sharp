@@ -2,7 +2,6 @@ package com.ssafy.star.security.jwt;
 
 import com.ssafy.star.security.entity.TokenEntity;
 import com.ssafy.star.security.repository.TokenRepository;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -65,7 +64,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return; // 필터 체인 종료
 
         }
-        if(!jwtUtil.validateToken(refresh)) {
+        int validateJwt = jwtUtil.validateToken(refresh);
+        if(validateJwt == 1) {
             // 응답 상태 코드 설정
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("application/json");
@@ -77,15 +77,27 @@ public class CustomLogoutFilter extends GenericFilterBean {
             }
             return;
         }
+        if(validateJwt == 2){
+            System.out.println("여기에걸림?");
+            //refresh token을 보내달라
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            try (PrintWriter writer = response.getWriter()) {
+                writer.write("{\"code\": \"M0000\", \"message\": \"만료된 토큰입니다.\", \"data\": null }");
+            }
+            return; // 필터 체인 종료
+        }
 
 
         // 만료된 경우
-        boolean isExpired = false;
-        try {
-            jwtUtil.isExpired(refresh);
-        } catch (ExpiredJwtException e) {
-            isExpired = true;
-        }
+//        boolean isExpired = false;
+//        try {
+//            jwtUtil.isExpired(refresh);
+//        } catch (ExpiredJwtException e) {
+//            isExpired = true;
+//        }
 
         // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
         String category = jwtUtil.getCategory(refresh);

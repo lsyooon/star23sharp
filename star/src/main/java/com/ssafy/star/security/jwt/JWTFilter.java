@@ -4,7 +4,6 @@ import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
 import com.ssafy.star.member.entity.Member;
 import com.ssafy.star.security.dto.CustomUserDetails;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -67,8 +66,8 @@ public class JWTFilter extends OncePerRequestFilter {
             }
             return;
         }
-
-        if(!jwtUtil.validateToken(accessToken)) {
+        int validateJwt = jwtUtil.validateToken(accessToken);
+        if(validateJwt == 1) {
             // 응답 상태 코드 설정
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("application/json");
@@ -79,11 +78,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 writer.write("{\"code\": \"M0009\", \"message\": \"유효하지 않은 토큰입니다.\", \"data\": null }");
             }
             return;
-        }
-        // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
-        try {
-            jwtUtil.isExpired(accessToken);
-        } catch (ExpiredJwtException e) {
+        }else if(validateJwt == 2) {
             // 응답 상태 코드 설정
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("application/json");
@@ -93,7 +88,22 @@ public class JWTFilter extends OncePerRequestFilter {
             try (PrintWriter writer = response.getWriter()) {
                 writer.write("{\"code\": \"M0000\", \"message\": \"만료된 토큰입니다.\", \"data\": null }");
             }
+            return;
         }
+        // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
+//        try {
+//            jwtUtil.isExpired(accessToken);
+//        } catch (ExpiredJwtException e) {
+//            // 응답 상태 코드 설정
+//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//            response.setContentType("application/json");
+//            response.setCharacterEncoding("UTF-8");
+//
+//            // 응답 메시지 작성
+//            try (PrintWriter writer = response.getWriter()) {
+//                writer.write("{\"code\": \"M0000\", \"message\": \"만료된 토큰입니다.\", \"data\": null }");
+//            }
+//        }
 
         // 토큰이 access인지 확인 (발급시 페이로드에 명시)
         String category = jwtUtil.getCategory(accessToken);
