@@ -1,39 +1,39 @@
 import 'dart:io';
 
 class TreasureMessageModel {
-  final String title;
+  final String? title;
   final String? content;
   final File? contentImage;
   final List<String>? receivers;
   final int? groupId;
   final String? hint;
-  final File hintImageFirst;
-  final File hintImageSecond;
+  final File? hintImageFirst;
+  final File? hintImageSecond;
   final File? dotHintImage;
   final int? dotTarget;
   final int? kernelSize;
   final int? pixelSize;
   final DateTime? createdAt;
-  final double lat;
-  final double lng;
+  final double? lat;
+  final double? lng;
   final File? image;
 
   TreasureMessageModel({
-    required this.title,
+    this.title,
     this.content,
     this.contentImage,
     this.receivers,
     this.groupId,
     this.hint,
-    required this.hintImageFirst,
-    required this.hintImageSecond,
+    this.hintImageFirst,
+    this.hintImageSecond,
     this.dotHintImage,
     this.dotTarget,
     this.kernelSize,
     this.pixelSize,
     this.createdAt,
-    required this.lat,
-    required this.lng,
+    this.lat,
+    this.lng,
     this.image,
   });
 
