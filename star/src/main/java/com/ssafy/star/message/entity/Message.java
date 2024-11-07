@@ -2,13 +2,16 @@ package com.ssafy.star.message.entity;
 
 import com.ssafy.star.member.entity.Member;
 import com.ssafy.star.member.entity.MemberGroup;
+import io.hypersistence.utils.hibernate.type.array.ListArrayType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -74,8 +77,11 @@ public class Message {
     @JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "fk_message_group"))
     private MemberGroup group;
 
-
-    @Column(name="receiver")
-    private String receiver;
+    @Type(ListArrayType.class)
+    @Column(
+            name = "receiver",
+            columnDefinition = "bigint[]"
+    )
+    private List<Long> receiver;
 
 }

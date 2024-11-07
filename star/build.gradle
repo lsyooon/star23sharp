@@ -54,6 +54,10 @@ dependencies {
 	implementation 'software.amazon.awssdk:auth:2.20.40'
 	implementation 'software.amazon.awssdk:core:2.20.40'
 
+
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.8.3'
+
+
 }
 
 tasks.named('test') {
