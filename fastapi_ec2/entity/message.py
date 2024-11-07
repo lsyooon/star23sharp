@@ -1,19 +1,10 @@
 import datetime
 from enum import Enum
-from sqlalchemy import Enum as SAEnum
 from typing import Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import (
-    ARRAY,
-    BigInteger,
-    Boolean,
-    CheckConstraint,
-    DateTime,
-    Double,
-    ForeignKey,
-    String,
-)
+from sqlalchemy import ARRAY, BigInteger, Boolean, CheckConstraint, DateTime, Double
+from sqlalchemy import ForeignKey, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
@@ -45,8 +36,8 @@ class Message(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     sender_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    receiver_type: Mapped[ReceiverTypes] = mapped_column(
-        SAEnum(ReceiverTypes), nullable=False, server_default=ReceiverTypes.INDIVIDUAL.name
+    receiver_type: Mapped[int] = mapped_column(
+        SmallInteger, nullable=False, server_default=f"{ReceiverTypes.INDIVIDUAL.value}"
     )
     receiver: Mapped[Optional[list[int]]] = mapped_column(
         ARRAY(BigInteger), nullable=True
