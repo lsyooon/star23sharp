@@ -45,8 +45,8 @@ class MessageFormProvider with ChangeNotifier {
 
 // 모델 저장 메서드
   void saveMessageData({
-    required String title,
-    required String content,
+    String? title,
+    String? content,
     File? contentImage,
     List<String>? receivers,
     int? groupId,
