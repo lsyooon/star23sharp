@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 30),
             const Logo(),
             // 로그인 여부에 따른 UI 변경
-            !authProvider.isLoggedIn
+            authProvider.isLoggedIn
                 ? Expanded(
                     child: Stack(
                       children: [

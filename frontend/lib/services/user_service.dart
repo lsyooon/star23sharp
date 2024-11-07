@@ -79,11 +79,12 @@ class UserService {
         // 로그인
         return {'access': access, 'refresh': refresh};
       } else {
-        return null;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
       logger.e('Failed to create post: $e');
-      throw Exception('Failed to create post');
+      ErrorHandler.handle(e); // 에러 처리 및 Snackbar 표시
     }
+    return null;
   }
 }
