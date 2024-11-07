@@ -20,11 +20,7 @@ class ListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // 상세화면으로 이동
-        // Navigator.pushNamed(context, '/signup', arguments: messageId); 
-        
-        // 상세 화면에서 데이터 받는 방법
-        // final String receivedData = ModalRoute.of(context)!.settings.arguments as String;
+        Navigator.pushNamed(context, '/stardetail', arguments: messageId); 
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

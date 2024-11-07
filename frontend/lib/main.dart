@@ -158,7 +158,7 @@ class MyApp extends StatelessWidget {
             const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
-
+        '/stardetail': (context) => const MainLayout(child: StarDetailScreen()),
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
