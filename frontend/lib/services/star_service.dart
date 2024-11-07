@@ -1,25 +1,46 @@
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:star23sharp/models/index.dart';
-import 'package:dio/dio.dart';
+import 'package:star23sharp/services/index.dart';
 
 class StarService {
-  static Dio dio = Dio();
-  static String baseUrl = dotenv.env['API_URL'].toString();
   
+  // 수신 별 리스트 조회
+  static Future<List<ReceivedStarListModel>?> getReceivedStarList() async{
+    List<ReceivedStarListModel> starList = [];
 
-  // 수신 별 받아오는 API
-  static Future<List<ReceivedStarModel>> getReceivedStarList() async{
-    List<ReceivedStarModel> starList = [];
-    var response = await dio.get(baseUrl);
-    if(response.statusCode == 200){
-      final List<dynamic> list = jsonDecode(response.data);
-    for (var item in list) {
-      starList.add(ReceivedStarModel.fromJson(item));
-    }
-    return starList;
+    var response = await DioService.authDio.get(
+      '/message/reception/list'
+    );
+
+    var result = ResponseModel.fromJson(response.data);
+    if(result.code == '200'){
+      if(result.data != null){
+        for (var item in result.data!) {
+          starList.add(ReceivedStarListModel.fromJson(item));
+        }
+        return starList;
+      }
     }
     
-    throw Error();
+    return null;
   }
+
+  // 수신 별 상세조회
+  static Future<ReceivedStarModel?> getReceivedStar(int messageId) async{
+    var response = await DioService.authDio.get(
+      '/message/reception/$messageId'
+    );
+
+    var result = ResponseModel.fromJson(response.data);
+    if(result.code == '200'){
+      if(result.data != null){
+        var data = ReceivedStarModel.fromJson(result.data);
+        return data;
+      }
+    }
+    return null;
+  }
+
+  // 송신 별 리스트 조회
+
+  // 송신 별 상세조회
 }

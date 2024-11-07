@@ -143,7 +143,6 @@ class UserService {
   // 회원 정보 조회
   static Future<dynamic> getMemberInfo() async {
     try {
-      logger.d(DioService.authDio.options);
       final response = await DioService.authDio.get(
         '/member/info',
       );
