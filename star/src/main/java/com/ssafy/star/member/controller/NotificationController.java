@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/notification")
@@ -59,9 +60,8 @@ public class NotificationController {
 
     @PostMapping("/receiver-push")
     public ResponseEntity<ApiResponse<?>> receiverPush(@AuthenticationPrincipal CustomUserDetails user,
-                                                       @RequestBody Long receiverId,
-                                                       @RequestBody Long messageId) {
-        notificationService.receiveMessage(user.getId(), receiverId, messageId);
+                                                       @RequestBody Map<String, Long> request) {
+        notificationService.receiveMessage(user.getId(), request.get("receiverId"), request.get("messageId"));
         return ResponseEntity.ok().body(new ApiResponse<>("200", "알림 전송 완료"));
     }
 

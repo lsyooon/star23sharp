@@ -19,7 +19,7 @@ public class PushNotificationService {
     }
 
     @Async
-    public void sendPushNotification(String token, String title, String content) {
+    public void sendPushNotification(String token, String id, String title, String content) {
 
         Notification notification = Notification.builder()
                 .setTitle(title)
@@ -28,6 +28,7 @@ public class PushNotificationService {
 
         Message message = Message.builder()
                 .setToken(token)
+                .putData("notificationId", id)
                 .setNotification(notification)
                 .build();
 
@@ -51,16 +52,17 @@ public class PushNotificationService {
     }
 
     @Async
-    public void sendPushNotification(String token, String title, String content, String hint, String image) {
+    public void sendPushNotification(String token, String title, String content, String id, String hint, String image) {
 
         Notification notification = Notification.builder()
                 .setTitle(title)
-                .setBody(content + "\n" + hint)  // 줄바꿈 추가
+                .setBody(content + "\n" + hint)
                 .setImage(image)
                 .build();
 
         Message message = Message.builder()
                 .setToken(token)
+                .putData("notificationId", id)
                 .setNotification(notification)
                 .build();
 
