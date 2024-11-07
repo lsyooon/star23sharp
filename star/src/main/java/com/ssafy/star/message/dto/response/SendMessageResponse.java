@@ -12,9 +12,7 @@ import java.util.List;
 public class SendMessageResponse {
     private Long messageId;
     private List<String> receiverNames;
-    @JsonIgnore
     private LocalDateTime createdAt;
-    private String createdDate;
     private String title;
     private String content;
     private String image;
@@ -34,10 +32,6 @@ public class SendMessageResponse {
         this.receiverType = receiverType;
         this.state = state;
         this.groupId = groupId;
-    }
-
-    public void setCreatedDate(String createdDate) {
-        this.createdDate = createdDate;
     }
 
     public void setReceiverNames(List<String> recipients) {

@@ -227,10 +227,7 @@ public class MessageService {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
         }
 
-        LocalDateTime now = LocalDateTime.now();
         ReceiveMessageResponse receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
-        String formattedDate = formatCreatedDate(receiveMessage.getCreatedAt(), now);
-        receiveMessage.setCreatedDate(formattedDate);
 
         // 메세지 확인 여부가 false일 경우 true로 업데이트
         if (!messageBoxRepository.existsByMemberIdAndMessageIdAndStateTrue(userId, messageId)) {
@@ -249,10 +246,7 @@ public class MessageService {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
         }
 
-        LocalDateTime now = LocalDateTime.now();
         SendMessageResponse sendMessage = messageRepository.findSendMessageById(messageId);
-        String formattedDate = formatCreatedDate(sendMessage.getCreatedAt(), now);
-        sendMessage.setCreatedDate(formattedDate);
 
         // 받는 사람 리스트 설정
         if (sendMessage.getReceiverType() == (short) 0) {   // 한명 전송
