@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:provider/provider.dart';
+import 'package:star23sharp/screens/choose_star_style_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -23,7 +24,7 @@ import 'package:star23sharp/utilities/index.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   if (message.notification != null) {
-    print("Notification Received!");
+    logger.d("Notification Received!");
   }
 }
 
@@ -43,7 +44,6 @@ Future<void> setupInteractedMessage() async {
 //FCM에서 전송한 data를 처리합니다. /message 페이지로 이동하면서 해당 데이터를 화면에 보여줍니다.
 void _handleMessage(RemoteMessage message) {
   Future.delayed(const Duration(seconds: 1), () {
-    print("알림 페이지로 이동!!!!!");
     AppGlobal.navigatorKey.currentState!
         .pushNamed("/notification", arguments: message);
   });
@@ -71,9 +71,9 @@ void main() async {
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //FCM 푸시 알림 관련 초기화
-  PushNotification.init();
+  PushNotificationService.init();
   //flutter_local_notifications 패키지 관련 초기화
-  PushNotification.localNotiInit();
+  PushNotificationService.localNotiInit();
   //백그라운드 알림 수신 리스너
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -106,6 +106,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => MessageFormProvider()),
       ],
       child: const MyApp(),
     ),
@@ -141,6 +142,8 @@ class MyApp extends StatelessWidget {
             const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
+        '/message_style_editor': (context) =>
+            const MainLayout(child: ChooseStarStyleScreen()),
 
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
