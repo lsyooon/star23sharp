@@ -373,7 +373,7 @@ async def insert_new_treasure(
         new_message = insert_new_treasure_message(
             sender=current_member,
             receiver_type=result_receiver_type,
-            receiver=receivers_int,
+            receiver=[member.id for member in  result_recieving_members] if len(result_recieving_members) > 0 else None,
             hint_image_first=hint_image_first_url,
             hint_image_second=hint_image_second_url,
             dot_hint_image=dot_hint_image_url,
