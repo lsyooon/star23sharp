@@ -161,7 +161,6 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
         '/message_style_editor': (context) =>
             const MainLayout(child: ChooseStarStyleScreen()),
-
         '/stardetail': (context) => const MainLayout(child: StarDetailScreen()),
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
