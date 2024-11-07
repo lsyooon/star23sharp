@@ -36,7 +36,7 @@ public class RefreshController {
             // refresh 토큰이 없는 경우
             if (refresh == null || refresh.trim().equals("")) {
 
-                return new ResponseEntity<>(new ApiResponse<>("M0007","Refresh Token이 비어있습니다.", null), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ApiResponse<>("M0007","Refresh Token이 비어있습니다.", null), HttpStatus.UNAUTHORIZED);
             }
             Map<String,String> tokens = refreshService.updateToken(refresh);
             //response

@@ -18,16 +18,19 @@ public class SendMessageListResponseDto {
     private boolean kind;
     private boolean state;
     private short receiverType;
+    @JsonIgnore
     private String receiverName;
     @JsonIgnore
     private LocalDateTime createdAt;
     @JsonIgnore
     private Long groupId;
+    @JsonIgnore
     private Boolean isFound;
 
-    public SendMessageListResponseDto(Long messageId, String title, short receiverType, LocalDateTime createdAt, boolean kind, boolean state, Long groupId, Boolean isFound) {
+    public SendMessageListResponseDto(Long messageId, String title, String recipient, short receiverType, LocalDateTime createdAt, boolean kind, boolean state, Long groupId, Boolean isFound) {
         this.messageId = messageId;
         this.title = title;
+        this.recipient = recipient;
         this.receiverType = receiverType;
         this.createdAt = createdAt;
         this.kind = kind;
@@ -35,6 +38,19 @@ public class SendMessageListResponseDto {
         this.groupId = groupId;
         this.isFound = isFound;
     }
+
+    // 쿼리에 맞춘 생성자
+    public SendMessageListResponseDto(Long messageId, String title, String recipient, LocalDateTime createdAt, boolean kind, boolean state, short receiverType, Long groupId) {
+        this.messageId = messageId;
+        this.title = title;
+        this.recipient = recipient;
+        this.createdAt = createdAt;
+        this.kind = kind;
+        this.state = state;
+        this.receiverType = receiverType;
+        this.groupId = groupId;
+    }
+
     public void setRecipient(String recipient) {
         this.recipient = recipient;
     }

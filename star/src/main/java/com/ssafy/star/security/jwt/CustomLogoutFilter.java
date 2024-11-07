@@ -58,7 +58,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         if (refresh == null || refresh.trim().equals("")) {
 
             // 응답 상태 코드 설정
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
@@ -74,7 +74,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         int validateJwt = jwtUtil.validateToken(refresh);
         if(validateJwt == 1) {
             // 응답 상태 코드 설정
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
@@ -88,7 +88,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         if(validateJwt == 2){
             System.out.println("여기에걸림?");
             //refresh token을 보내달라
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 400 Bad Request
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
@@ -111,7 +111,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String category = jwtUtil.getCategory(refresh);
         if (!category.equals("refresh")) {
             //refresh token을 보내달라
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 400 Bad Request
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
@@ -128,7 +128,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         // refresh 토큰이 달라
         if (tokenEntity != null && !tokenEntity.getToken().equals(refresh)) {
             // 만료 안된거면 탈취됐을 가능성이 높으므로 권한이 없다고 반환
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 400 Bad Request
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
