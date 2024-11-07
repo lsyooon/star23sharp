@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    print("액세스토큰: ${authProvider.accessToken}");
 
     void onLoginPressed() {
       // 로그인 로직
@@ -111,6 +112,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   // 선택된 URL이 null이 아닌 경우 페이지 이동
                                   if (selectedUrl != null) {
                                     url = selectedUrl;
+                                    Provider.of<MessageFormProvider>(context,
+                                            listen: false)
+                                        .setMessageFormType(type: url);
                                     Navigator.pushNamed(context, url);
                                   }
                                 } else {

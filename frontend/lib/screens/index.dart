@@ -6,3 +6,5 @@ export 'package:star23sharp/screens/push_alarm_screen.dart';
 export 'package:star23sharp/screens/star_form_screen.dart';
 export 'package:star23sharp/screens/user/login_screen.dart';
 export 'package:star23sharp/screens/user/signup_screen.dart';
+export 'package:star23sharp/screens/map_screen.dart';
+export 'package:star23sharp/screens/choose_star_style_screen.dart';

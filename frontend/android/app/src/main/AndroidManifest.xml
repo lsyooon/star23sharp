@@ -6,10 +6,21 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!--위치 권한 설정-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!--카메라 권한 설정-->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    
     <application
         android:label="star23sharp"
+        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:name="${applicationName}"> <!-- 수정 필요시 -->
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true">
+        <!--카카오맵 설정-->
         <activity
             android:name=".MainActivity"
             android:exported="true"
