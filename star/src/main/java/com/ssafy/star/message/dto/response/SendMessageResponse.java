@@ -12,19 +12,20 @@ import java.util.List;
 public class SendMessageResponse {
     private Long messageId;
     private List<String> receiverNames;
-    private LocalDateTime createdAt;
+    private LocalDateTime createdDate;
     private String title;
     private String content;
     private String image;
     private boolean kind;
     private short receiverType;
     private boolean state;
+    private String recipient;
     @JsonIgnore
     private Long groupId;
 
-    public SendMessageResponse(Long messageId, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean state, Long groupId) {
+    public SendMessageResponse(Long messageId, LocalDateTime createdDate, String title, String content, String image, boolean kind, short receiverType, boolean state, Long groupId) {
         this.messageId = messageId;
-        this.createdAt = createdAt;
+        this.createdDate = createdDate;
         this.title = title;
         this.content = content;
         this.image = image;
@@ -36,5 +37,8 @@ public class SendMessageResponse {
 
     public void setReceiverNames(List<String> recipients) {
         this.receiverNames = recipients;
+    }
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
     }
 }

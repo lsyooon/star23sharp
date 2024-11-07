@@ -88,7 +88,7 @@ public class NotificationService {
         // 레디스에서 토큰 조회 -> 푸시알림 전송
         DeviceToken senderToken = deviceTokenRepository.findById(senderName).orElse(null);
         if (senderToken != null && senderToken.isActive()) {
-            pushNotificationService.sendPushNotification(senderToken.getDeviceToken(), notification.getTitle(), notification.getContent());
+            pushNotificationService.sendPushNotification(senderToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
         }
     }
 
@@ -97,6 +97,7 @@ public class NotificationService {
         String receiverNickname = memberRepository.findNicknameById(receiverId);
         String senderNickname = memberRepository.findNicknameById(senderId);
         Message message = messageRepository.findMessageById(messageId);
+
         // 위경도 주소로 변환
         double latitude = (double) message.getLat();
         double longitude = (double) message.getLng();
@@ -112,10 +113,11 @@ public class NotificationService {
         notificationRepository.save(notification);
 
         String receiverName = memberRepository.findMemberNameById(receiverId);
+        System.out.println(notification.getId());
         // 레디스에서 토큰 조회 -> 푸시알림 전송
         DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
         if (receiverToken != null && receiverToken.isActive()) {
-            pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), notification.getTitle(), notification.getContent(), notification.getHint(), message.getDotHintImage());
+            pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), notification.getTitle(), notification.getContent(), "" + notification.getId(), notification.getHint(), message.getDotHintImage());
         }
     }
 

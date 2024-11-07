@@ -2,12 +2,14 @@ package com.ssafy.star.message.service;
 
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
+import com.ssafy.star.member.repository.GroupMemberRepository;
 import com.ssafy.star.member.repository.MemberGroupRepository;
 import com.ssafy.star.member.repository.MemberRepository;
 import com.ssafy.star.message.dto.request.ComplaintMessageRequest;
 import com.ssafy.star.message.dto.response.*;
 import com.ssafy.star.message.entity.Complaint;
 import com.ssafy.star.message.entity.ComplaintReason;
+import com.ssafy.star.message.entity.Message;
 import com.ssafy.star.message.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +30,16 @@ public class MessageService {
     private final MemberRepository memberRepository;
     private final ComplaintRepository complaintRepository;
     private final ComplaintReasonRepository complaintReasonRepository;
-    private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
-    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository, ComplaintRepository complaintRepository, MemberRepository memberRepository, ComplaintReasonRepository complaintReasonRepository, GroupRepository groupRepository) {
+    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository, ComplaintRepository complaintRepository, MemberRepository memberRepository, ComplaintReasonRepository complaintReasonRepository, GroupMemberRepository groupMemberRepository) {
         this.messageRepository = messageRepository;
         this.messageBoxRepository = messageBoxRepository;
         this.memberGroupRepository = memberGroupRepository;
         this.complaintReasonRepository = complaintReasonRepository;
         this.memberRepository = memberRepository;
         this.complaintRepository = complaintRepository;
-        this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
     LocalDateTime now = LocalDateTime.now();
     public List<ReceiveMessageListResponse> getReceiveMessageListResponse(Long userId) {
@@ -106,7 +108,6 @@ public class MessageService {
                 .collect(Collectors.toList());
         LocalDateTime now = LocalDateTime.now();
         for (SendMessageListResponseDto message : responseList) {
-
             String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
             message.setCreatedDate(formattedDate);
         }
@@ -313,6 +314,7 @@ public class MessageService {
     // 송신 쪽지 상세조회
     public SendMessageResponse getSendMessage(Long userId, Long messageId) {
         SendMessageResponse sendMessage = messageRepository.findSendMessageById(messageId);
+        Message message = messageRepository.findMessageById(messageId);
         if (sendMessage == null) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
@@ -324,35 +326,22 @@ public class MessageService {
         // 받는 사람 리스트 설정
         if (sendMessage.getReceiverType() == (short) 0) {   // 한명 전송
             // 한 명 이름을 리스트로 변환 후 설정
-            sendMessage.setReceiverNames(List.of(messageBoxRepository.getRecipientNameByMessageId(sendMessage.getMessageId(), (short) 0)));
-        } else if (sendMessage.getReceiverType() == (short) 1) {    // 단체 or 그룹 전송
-            List<String> recipients = messageBoxRepository.getRecipientNamesByMessageId(messageId, (short) 1);
+            sendMessage.setReceiverNames(List.of(messageBoxRepository.getRecipientNameByMessageId(sendMessage.getMessageId(), (short) 1)));
+        } else if (sendMessage.getReceiverType() == (short) 1) {    // 단체
+            List<String> recipients = groupMemberRepository.findNicknamesByGroupId(sendMessage.getGroupId());
             sendMessage.setReceiverNames(recipients);
-
-            // 그룹 전송일 경우
-            if (sendMessage.getGroupId() != null) {
-                Boolean isConstructed = memberGroupRepository.findIsConstructedByGroupId(sendMessage.getGroupId());
-
-                // 내가 만든 그룹이라면 그룹 이름을 설정
-                if (isConstructed != null && isConstructed) {
-                    String groupName = memberGroupRepository.findGroupNameById(sendMessage.getGroupId());
-                    sendMessage.setReceiverNames(List.of(groupName));
-                } else {
-                    // 내가 만든 그룹이 아닐 경우, 기존 recipients 리스트 설정
-                    sendMessage.setReceiverNames(recipients);
-                }
-            } else {
-                // 단체 전송일 경우 recipients 리스트 설정
-                sendMessage.setReceiverNames(recipients);
-            }
+        } else if (sendMessage.getReceiverType() == (short) 2) {    // 그룹
+            String groupName = memberGroupRepository.findGroupNameById(sendMessage.getGroupId());
+            sendMessage.setReceiverNames(List.of(groupName));
         } else {    // 불특정 다수
             sendMessage.setReceiverNames(List.of("모두에게"));
-            if (sendMessage.isKind()) { // 보물 쪽지의 경우
-                if (sendMessage.isState()) {   // 누군가 쪽지를 열었을 경우
-                    sendMessage.setReceiverNames(List.of(messageBoxRepository.getRecipientNameByMessageIdAndState(sendMessage.getMessageId(), (short) 1, true)));
-                }
-            }
         }
+
+        // 받은 사람 설정
+        if (message.isTreasure() && message.isFound()) {
+            sendMessage.setRecipient(messageBoxRepository.getRecipientNameByMessageId(message.getId(), (short) 1));
+        }
+
         return sendMessage;
     }
 
