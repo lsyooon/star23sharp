@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ReceiveMessageResponse {
     private Long messageId;
-    private List<String> senderName;
+    private List<String> senderNickname;
     @JsonIgnore
     private String sender;
     private LocalDateTime createdAt;
@@ -25,7 +25,7 @@ public class ReceiveMessageResponse {
     public ReceiveMessageResponse(Long messageId, String sender, LocalDateTime createdAt, String title, String content, String image, boolean kind, short receiverType, boolean isReported) {
         this.messageId = messageId;
         this.sender = sender;
-        this.senderName = List.of(sender);
+        this.senderNickname = List.of(sender);
         this.createdAt = createdAt;
         this.title = title;
         this.content = content;
@@ -36,6 +36,6 @@ public class ReceiveMessageResponse {
     }
 
     public void setSenderName(String sender) {
-        this.senderName = List.of(sender);
+        this.senderNickname = List.of(sender);
     }
 }
