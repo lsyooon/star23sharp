@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -8,17 +10,13 @@ import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:star23sharp/screens/index.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-//TODO - 카카오 연결
-//TODO - 카메라 연결
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -41,11 +39,20 @@ Future<void> setupInteractedMessage() async {
   FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
 }
 
-//FCM에서 전송한 data를 처리합니다. /message 페이지로 이동하면서 해당 데이터를 화면에 보여줍니다.
 void _handleMessage(RemoteMessage message) {
+  logger.d("Handling message: $message");
+  // 데이터에서 notificationId 추출
+  final notificationId = message.data['notificationId'];
+
   Future.delayed(const Duration(seconds: 1), () {
-    AppGlobal.navigatorKey.currentState!
-        .pushNamed("/notification", arguments: message);
+    if (notificationId != null) {
+      AppGlobal.navigatorKey.currentState!.pushNamed(
+        "/notification",
+        arguments: int.tryParse(notificationId), // notificationId를 전달
+      );
+    } else {
+      logger.e("Notification ID is missing in the message data.");
+    }
   });
 }
 
@@ -95,22 +102,28 @@ void main() async {
   //포그라운드 알림 수신 리스너
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
-
+    String? imageUrl = message.notification?.android?.imageUrl;
+    logger.d("Handling message: $message");
     if (notification != null) {
-      FlutterLocalNotificationsPlugin().show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'high_importance_notification',
-            importance: Importance.max,
-          ),
-        ),
-      );
+      if (imageUrl != null) {
+        // 이미지가 포함된 경우
+        await FCMService.showImageNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          imageUrl: imageUrl,
+          payload: jsonEncode(message.data),
+        );
+      } else {
+        // 일반 알림
+        await FCMService.showSimpleNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          payload: jsonEncode(message.data),
+        );
+      }
     }
   });
+
   //메시지 상호작용 함수 호출
   setupInteractedMessage();
 

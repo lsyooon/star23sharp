@@ -6,23 +6,29 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
 import 'package:star23sharp/services/index.dart';
-import 'package:star23sharp/utilities/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class PushAlarmScreen extends StatefulWidget {
-  const PushAlarmScreen({super.key});
+  final int? notificationId; // 푸시 알림에서 전달받은 notificationId
+
+  const PushAlarmScreen({super.key, this.notificationId});
 
   @override
   State<PushAlarmScreen> createState() => _PushAlarmScreenState();
 }
 
 class _PushAlarmScreenState extends State<PushAlarmScreen> {
-  @override
-  BuildContext context = AppGlobal.navigatorKey.currentState!
-      .context; // use context from navigator key in app global class
+  final ScrollController _scrollController = ScrollController();
 
   List<NotificationModel> notifications = [];
   bool isLoading = true;
+  Map<int, bool> expansionStates = {}; // ExpansionTile 상태 관리
+  Map<int, NotificationDetailModel?> notificationDetails = {}; // 상세 정보를 저장
+
+  // @override
+  // BuildContext context = AppGlobal.navigatorKey.currentState!
+  //     .context; // use context from navigator key in app global class
+
   @override
   void initState() {
     super.initState();
@@ -35,44 +41,46 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
     setState(() {
       notifications = fetchedNotifications;
       isLoading = false;
+      expansionStates = {for (var n in notifications) n.notificationId: false};
     });
+    // 알림 ID가 주어졌으면 해당 위치로 스크롤하고 펼치기
+    if (widget.notificationId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToNotification(widget.notificationId!);
+      });
+    }
   }
 
   Future<void> _fetchNotificationDetail(int notificationId) async {
-    final notificationDetail =
-        await NotificationService.getNotificationDetail(notificationId);
+    if (!notificationDetails.containsKey(notificationId)) {
+      final notificationDetail =
+          await NotificationService.getNotificationDetail(notificationId);
+      if (notificationDetail != null) {
+        setState(() {
+          notificationDetails[notificationId] = notificationDetail;
+        });
+      } else {
+        logger.e('알림 상세 정보를 불러오는 데 실패했습니다.');
+      }
+    }
+  }
 
-    if (notificationDetail != null) {
-      logger.d(notificationDetail);
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(notificationDetail.title),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(notificationDetail.content),
-              if (notificationDetail.hint != null) ...[
-                const SizedBox(height: 10),
-                Text("${notificationDetail.hint}"),
-              ],
-              if (notificationDetail.image != null) ...[
-                const SizedBox(height: 10),
-                Image.network(notificationDetail.image!),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('닫기'),
-            ),
-          ],
-        ),
+  void _scrollToNotification(int notificationId) {
+    final index =
+        notifications.indexWhere((n) => n.notificationId == notificationId);
+
+    if (index != -1) {
+      // 스크롤 이동
+      _scrollController.animateTo(
+        index * 72.0, // 각 항목의 높이를 기준으로 계산 (필요에 따라 조정)
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
       );
-    } else {
-      logger.e('알림 상세 정보를 불러오는 데 실패했습니다.');
+
+      // 해당 ExpansionTile을 펼침
+      setState(() {
+        expansionStates[notificationId] = true;
+      });
     }
   }
 
@@ -108,7 +116,6 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
           color: Colors.white,
           child: Column(
             children: [
-              // 커스텀 헤더
               Container(
                 color: const Color(0xFFA292EC),
                 padding: const EdgeInsets.symmetric(
@@ -126,52 +133,59 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20.0),
+              const SizedBox(height: 10.0),
               isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : Expanded(
-                      // ListView.builder를 Expanded로 감싸기
                       child: ListView.builder(
+                        controller: _scrollController,
                         itemCount: notifications.length,
                         itemBuilder: (context, index) {
                           final notification = notifications[index];
+                          final isExpanded =
+                              expansionStates[notification.notificationId] ??
+                                  false;
                           return ExpansionTile(
-                            title: Text(notification.title),
-                            subtitle: Text(notification.createdDate),
-                            trailing: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Icon(
-                                  notification.read
-                                      ? Icons.notifications
-                                      : Icons.notifications_active,
-                                  color: notification.read
-                                      ? Colors.grey
-                                      : Colors.red,
-                                ),
-                                if (!notification.read)
-                                  Positioned(
-                                    top: -5,
-                                    right: -5,
-                                    child: Container(
-                                      height: 10,
-                                      width: 10,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            children: [
-                              ListTile(
-                                title: const Text('상세 보기'),
-                                onTap: () {
-                                  _fetchNotificationDetail(
-                                      notification.notificationId);
-                                },
+                            title: Text(
+                              notification.title,
+                              maxLines: isExpanded ? null : 1, // 확장되었을 때 제한 없음
+                              overflow: isExpanded
+                                  ? TextOverflow.visible
+                                  : TextOverflow.ellipsis, // 확장되었을 때 제한 없음
+                              style: TextStyle(
+                                fontSize: 14.0, // 제목 크기 조정
+                                fontWeight: notification.read
+                                    ? FontWeight.w400
+                                    : FontWeight.w700, // 읽음 여부에 따라 가중치 변경
+                                color: notification.read
+                                    ? Colors.grey[700]
+                                    : Colors.black, // 읽음 여부에 따라 색상 변경
                               ),
+                            ),
+                            subtitle: Text(notification.createdDate),
+                            onExpansionChanged: (isExpanded) async {
+                              setState(() {
+                                expansionStates[notification.notificationId] =
+                                    isExpanded;
+                              });
+                              if (isExpanded) {
+                                await _fetchNotificationDetail(
+                                    notification.notificationId);
+                              }
+                            },
+                            children: [
+                              if (isExpanded)
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: notificationDetails[
+                                              notification.notificationId] !=
+                                          null
+                                      ? _buildNotificationDetail(notification
+                                          .notificationId) // 상세 정보 UI
+                                      : const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                ),
                             ],
                           );
                         },
@@ -181,6 +195,32 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildNotificationDetail(int notificationId) {
+    final detail = notificationDetails[notificationId];
+    if (detail == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          detail.content,
+          style: const TextStyle(fontSize: 14.0, color: Colors.black),
+        ),
+        if (detail.hint != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            "힌트: ${detail.hint}",
+            style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+          ),
+        ],
+        if (detail.image != null) ...[
+          const SizedBox(height: 8),
+          Image.network(detail.image!),
+        ],
+      ],
     );
   }
 }

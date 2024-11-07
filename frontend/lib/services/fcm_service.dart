@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,6 +12,28 @@ import 'package:star23sharp/main.dart';
 import 'package:star23sharp/utilities/index.dart';
 
 //포그라운드로 알림을 받아서 알림을 탭했을 때 페이지 이동
+//FIXME - 이미지 되는 코드
+// @pragma('vm:entry-point')
+// void onNotificationTap(NotificationResponse notificationResponse) {
+//   try {
+//     // 데이터에서 notificationId 추출
+//     final payload = notificationResponse.payload;
+//     final Map<String, dynamic> parsedPayload =
+//         payload != null ? jsonDecode(payload) : {};
+//     final notificationId = parsedPayload['notificationId'];
+
+//     if (notificationId != null) {
+//       AppGlobal.navigatorKey.currentState!.pushNamed(
+//         '/notification',
+//         arguments: int.tryParse(notificationId), // notificationId를 전달
+//       );
+//     } else {
+//       logger.e("Notification ID is missing in the payload.");
+//     }
+//   } catch (e) {
+//     logger.e("Failed to parse notification payload: $e");
+//   }
+// }
 @pragma('vm:entry-point')
 void onNotificationTap(NotificationResponse notificationResponse) {
   AppGlobal.navigatorKey.currentState!
@@ -81,6 +104,45 @@ class FCMService {
         .show(0, title, body, notificationDetails, payload: payload);
   }
 
+//포그라운드에서 푸시 알림을 전송받기 위한 패키지 푸시 알림 발송
+  static Future showImageNotification({
+    required String title,
+    required String body,
+    required String imageUrl,
+    required String payload,
+  }) async {
+    final BigPictureStyleInformation bigPictureStyleInformation =
+        BigPictureStyleInformation(
+      FilePathAndroidBitmap(imageUrl), // 이미지 경로
+      largeIcon: FilePathAndroidBitmap(imageUrl),
+      contentTitle: title,
+      htmlFormatContentTitle: true,
+      summaryText: body,
+      htmlFormatSummaryText: true,
+    );
+
+    final AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'image_channel', // 채널 ID
+      'Image Notifications', // 채널 이름
+      channelDescription: 'Channel for image notifications',
+      styleInformation: bigPictureStyleInformation,
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidNotificationDetails);
+
+    await _flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: payload,
+    );
+  }
+
   //API를 이용한 발송 요청
   static Future<void> send(
       {required String title, required String message}) async {
@@ -106,10 +168,9 @@ class FCMService {
         }
       },
     };
+    final fcmKey = dotenv.env['FCM_ADMIN_KEY'].toString();
     final response = await client.post(
-      //FIXME - admin senderId env파일에 넣기
-      Uri.parse(
-          'https://fcm.googleapis.com/v1/projects/0bbcc74abaea1b06086cecee7880eab57fe7f90e/messages:send'),
+      Uri.parse('https://fcm.googleapis.com/v1/projects/$fcmKey/messages:send'),
       headers: {
         'content-type': 'application/json',
       },
