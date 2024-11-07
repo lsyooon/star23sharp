@@ -89,5 +89,20 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     List<SendMessageListResponseDto> findSendMessageList(@Param("memberId") Long memberId);
 
 
+    // MessageBoxRepository.java
+
+    @Query("""
+    SELECT COUNT(mb) > 0
+    FROM MessageBox mb
+    WHERE mb.message.id = :messageId
+    AND mb.member.id = :memberId
+    AND mb.messageDirection = :messageDirection
+    AND mb.isDeleted = false
+""")
+    boolean existsByMessageIdAndMemberIdAndMessageDirectionAndIsDeletedFalse(
+            @Param("messageId") Long messageId,
+            @Param("memberId") Long memberId,
+            @Param("messageDirection") short messageDirection);
+
 
 }
