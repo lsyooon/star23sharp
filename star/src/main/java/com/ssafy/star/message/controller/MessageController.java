@@ -79,7 +79,7 @@ public class MessageController {
 //    }
 
 
-    @GetMapping("/send/list4")
+    @GetMapping("/send/list")
     public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList4(@AuthenticationPrincipal CustomUserDetails user){
         System.out.println("--------list4------------------");
         List<SendMessageListResponseDto> response = messageService.getSendMessageListResponse(user.getId());
