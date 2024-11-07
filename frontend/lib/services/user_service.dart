@@ -155,11 +155,11 @@ class UserService {
       if (result.code == '200') {
         return result.data;
       } else {
-        return null;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
       logger.d('Failed to create post: $e');
-      return null;
+      ErrorHandler.handle(e);
     }
   }
 }

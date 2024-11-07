@@ -25,6 +25,28 @@ class StarReceivedDetailScreen extends StatelessWidget {
             return const Center(child: Text('별을 조회할 수 없습니다.'));
           } else {
             final item = snapshot.data!;
+            
+            // 이미지 있는 버전 테스트
+            // String jsonString = '''
+            // {
+            //     "messageId": 7,
+            //     "senderNickname": [
+            //         "테스트"
+            //     ],
+            //     "createdAt": "2024-11-05T17:09:31.181",
+            //     "title": "TEST_20",
+            //     "content": "fdsfsdfsfewfe",
+            //     "image": "https://github.com/user-attachments/assets/acc518d1-0127-4e81-ac8b-da8048193613",
+            //     "kind": true,
+            //     "receiverType": 1,
+            //     "reported": false
+            // }
+            // ''';
+            // // JSON 문자열을 Map<String, dynamic>으로 파싱
+            // Map<String, dynamic> jsonData = jsonDecode(jsonString);
+            // // ReceivedStarModel 객체 생성
+            // ReceivedStarModel item = ReceivedStarModel.fromJson(jsonData);
+            
             return Container(
               width: UIhelper.deviceWidth(context) * 0.85,
               height: UIhelper.deviceHeight(context) * 0.67,
