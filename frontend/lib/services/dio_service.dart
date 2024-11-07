@@ -45,7 +45,7 @@ class DioService {
         onError: (DioException e, handler) async {
           logger.d('Error: ${e.message}');
 
-          if (e.response?.statusCode == 400) {
+          if (e.response?.statusCode == 401) {
             // 토큰 만료 시 갱신 로직 수행
             final authProvider = Provider.of<AuthProvider>(
               AppGlobal.navigatorKey.currentContext!,
@@ -58,6 +58,8 @@ class DioService {
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
               final cloneReq = await authDio.fetch(e.requestOptions);
               return handler.resolve(cloneReq); // 재요청 결과 반환
+            }else{
+              
             }
           }
 

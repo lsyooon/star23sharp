@@ -5,8 +5,8 @@ import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/date_formatter.dart';
 import 'package:star23sharp/widgets/index.dart';
 
-class StarDetailScreen extends StatelessWidget {
-  const StarDetailScreen({super.key});
+class StarReceivedDetailScreen extends StatelessWidget {
+  const StarReceivedDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +107,7 @@ class StarDetailScreen extends StatelessWidget {
                   const Spacer(),
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, bottom: 2),
-                    child: Text(formatDate(item.createdAt)),
+                    child: Text('📅 ${formatDate(item.createdAt)}')
                   ),
                 ],
               ),

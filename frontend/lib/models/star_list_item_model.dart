@@ -1,16 +1,17 @@
-class ReceivedStarListModel {
+class StarListItemModel {
   final String title, senderNickname, createdDate;
   final int messageId, receiverType;
-  final bool kind, state;
+  final bool kind, state, isSent;
 
   // receiverType -> 0: 개인, 1: 단체, 2: 불특정 다수
   // kind -> true: 보물쪽지 / false : 일반 쪽지
-  ReceivedStarListModel.fromJson(Map<String, dynamic> json)
+  StarListItemModel.fromJson(Map<String, dynamic> json, bool isSentStar)
       : messageId = json['messageId'],
         title = json['title'],
-        senderNickname = json['senderNickname'],
+        senderNickname = isSentStar ? json['recipient'] : json['senderNickname'],
         receiverType = json['receiverType'],
         createdDate = json['createdDate'],
         kind = json['kind'],
-        state = json['state'];
+        state = json['state'],
+        isSent = isSentStar;
 }

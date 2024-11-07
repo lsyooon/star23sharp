@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:star23sharp/models/received_star_list_model.dart';
+import 'package:star23sharp/models/star_list_item_model.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class StarStoragebox extends StatelessWidget {
   StarStoragebox({super.key});
 
-  final Future<List<ReceivedStarListModel>?> items = StarService.getReceivedStarList();
+  final Future<List<StarListItemModel>?> sent = StarService.getStarList(true);
+  final Future<List<StarListItemModel>?> receieved = StarService.getStarList(false);
   
   @override
   Widget build(BuildContext context) {
-    
     return Stack(
       children: [
         Center(
@@ -58,19 +58,13 @@ class StarStoragebox extends StatelessWidget {
                       Expanded(
                         child: TabBarView(
                           children: [
-                            const Center(
-                              child: Text(
-                                "내가 보낸 별 리스트",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.3),
+                                color: const Color(0xFFE3E1E1).withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: FutureBuilder<List<ReceivedStarListModel>?>(
-                                future: items,
+                              child: FutureBuilder<List<StarListItemModel>?>(
+                                future: sent,
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState == ConnectionState.waiting) {
                                     return const Center(child: CircularProgressIndicator());
@@ -79,21 +73,21 @@ class StarStoragebox extends StatelessWidget {
                                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                                     return const Center(child: Text('받은 별이 없습니다.'));
                                   } else {
-                                    final List<ReceivedStarListModel> itemsData = snapshot.data!;
+                                    final List<StarListItemModel> itemsData = snapshot.data!;
                                     return GridView.builder(
                                       padding: EdgeInsets.zero,
                                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: 1,
-                                        childAspectRatio: 4.9,
+                                        childAspectRatio: 5.3, // 작을수록 높이 길어짐
                                         mainAxisSpacing: 5,
                                         crossAxisSpacing: 10,
                                       ),
                                       itemCount: itemsData.length,
                                       itemBuilder: (context, index) {
                                         return Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
+                                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 10),
                                           decoration: BoxDecoration(
-                                            color: index % 2 == 0
+                                            color: index % 2 == 1
                                                 ? const Color(0xFFF6F6F6).withOpacity(0.2)
                                                 : Colors.white.withOpacity(0),
                                           ),
@@ -106,7 +100,49 @@ class StarStoragebox extends StatelessWidget {
                                   }
                                 },
                               ),
-
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE3E1E1).withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: FutureBuilder<List<StarListItemModel>?>(
+                                future: receieved,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  } else if (snapshot.hasError) {
+                                    return Center(child: Text('Error: ${snapshot.error}'));
+                                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                    return const Center(child: Text('받은 별이 없습니다.'));
+                                  } else {
+                                    final List<StarListItemModel> itemsData = snapshot.data!;
+                                    return GridView.builder(
+                                      padding: EdgeInsets.zero,
+                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 1,
+                                        childAspectRatio: 5.3,
+                                        mainAxisSpacing: 5,
+                                        crossAxisSpacing: 10,
+                                      ),
+                                      itemCount: itemsData.length,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 10),
+                                          decoration: BoxDecoration(
+                                            color: index % 2 == 1
+                                                ? const Color(0xFFF6F6F6).withOpacity(0.2)
+                                                : Colors.white.withOpacity(0),
+                                          ),
+                                          child: ListItem(
+                                            item: itemsData[index],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                              ),
                             ),
                           ],
                         ),
