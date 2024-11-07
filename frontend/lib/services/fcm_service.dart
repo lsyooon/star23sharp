@@ -17,7 +17,7 @@ void onNotificationTap(NotificationResponse notificationResponse) {
       .pushNamed('/notification', arguments: notificationResponse);
 }
 
-class PushNotificationService {
+class FCMService {
   static final _firebaseMessaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();

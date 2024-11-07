@@ -64,6 +64,10 @@ class MainLayout extends StatelessWidget {
                   icon: Icon(Icons.school),
                   label: 'Profile',
                 ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: '알림함',
+                ),
               ],
               onTap: (index) {
                 // 페이지 전환 논리 구현
@@ -73,6 +77,8 @@ class MainLayout extends StatelessWidget {
                   Navigator.pushReplacementNamed(context, '/map');
                 } else if (index == 2) {
                   Navigator.pushReplacementNamed(context, '/profile');
+                } else if (index == 3) {
+                  Navigator.pushReplacementNamed(context, '/notification');
                 }
               },
             ),

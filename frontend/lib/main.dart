@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:provider/provider.dart';
-import 'package:star23sharp/screens/choose_star_style_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -70,25 +69,26 @@ Future<void> loadAccessToken(AuthProvider authProvider) async {
   if (access != null && refresh != null) {
     logger.d("access: $access, refresh: $refresh");
     authProvider.setToken(access, refresh);
-  } else{
+  } else {
     logger.d("토큰 없음 -> 로그인 안된 상태");
   }
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/env/.env");
 
   final appKey = dotenv.env['APP_KEY'] ?? '';
   AuthRepository.initialize(
-    appKey: appKey, 
+    appKey: appKey,
   );
 
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //FCM 푸시 알림 관련 초기화
-  PushNotificationService.init();
+  FCMService.init();
   //flutter_local_notifications 패키지 관련 초기화
-  PushNotificationService.localNotiInit();
+  FCMService.localNotiInit();
   //백그라운드 알림 수신 리스너
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
