@@ -49,6 +49,11 @@ dependencies {
 
 	implementation 'org.json:json:20210307'
 
+	/* S3 */
+	implementation 'software.amazon.awssdk:s3:2.20.40'
+	implementation 'software.amazon.awssdk:auth:2.20.40'
+	implementation 'software.amazon.awssdk:core:2.20.40'
+
 }
 
 tasks.named('test') {
