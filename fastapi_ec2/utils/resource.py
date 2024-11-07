@@ -1,18 +1,39 @@
 import io
 import logging
 import os
+import posixpath
 import uuid
 from typing import Tuple, Union
 
+import boto3
 from fastapi import UploadFile
 from PIL import Image
 from pydantic import RootModel
 
-RESOURCE_ROOT = os.getcwd()
+# Replace local storage with Amazon S3
+S3_BUCKET_NAME = os.environ["S3_BUCKET_NAME"]
+S3_ACCESS_KEY_ID = os.environ["S3_ACCESS_KEY_ID"]
+S3_SECRET_ACCESS_KEY = os.environ["S3_SECRET_ACCESS_KEY"]
+S3_REGION = os.environ["S3_REGION"]
 
 _FILEMODEL_INDEX_FILENAME = 0
 _FILEMODEL_INDEX_FILECONTENT = 1
 _FILEMODEL_INDEX_FILETYPE = 2
+
+
+def _get_s3_client():
+    return boto3.client(
+        "s3",
+        aws_access_key_id=S3_ACCESS_KEY_ID,
+        aws_secret_access_key=S3_SECRET_ACCESS_KEY,
+        region_name=S3_REGION,
+    )
+
+
+def construct_s3_link(s3_file: str):
+    # https://star23sharp.s3.ap-northeast-2.amazonaws.com/b0499f93-47dd-4128-b0ac-ba5cea71e843_quf.png
+    return f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{s3_file}"
+
 
 # Define the file model
 FileModel = RootModel[
@@ -38,32 +59,30 @@ async def download_file(file: UploadFile) -> FileModel:
     return FileModel((file.filename, file_content, file.content_type))
 
 
-def save_image_to_storage(image: FileModel, storage_dir: str) -> str:
+def generate_uuid_filename(image: FileModel):
+    # Generate a unique filename
+    image_tuple = image.root
+    original_filename = image_tuple[_FILEMODEL_INDEX_FILENAME]
+    _, ext = os.path.splitext(original_filename)
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    return unique_filename
+
+
+def save_image_to_storage(image: FileModel, as_name: str) -> str:
     """
-    Save an image to the specified storage directory.
+    Save an image to the specified storage directory in Amazon S3.
 
     Args:
         image (FileModel): The image to save.
-        storage_dir (str): The directory where the image will be stored.
+        storage_dir (str): The directory in S3 where the image will be stored.
 
     Returns:
-        str: The relative path of the saved file.
+        str: The key of the saved file in S3.
     """
-    # Ensure the storage directory exists (must be a subdirectory of RESOURCE_ROOT)
-    abs_storage_dir = os.path.join(RESOURCE_ROOT, storage_dir)
-    os.makedirs(abs_storage_dir, exist_ok=True)
-
     # Get the file extension from the original filename
     image_tuple = image.root
     original_filename = image_tuple[_FILEMODEL_INDEX_FILENAME]
     _, ext = os.path.splitext(original_filename)
-
-    # Implement UUID with collision check on filename Practically will not happen
-    while True:
-        unique_filename = f"{uuid.uuid4().hex}{ext}"
-        file_path = os.path.join(abs_storage_dir, unique_filename)
-        if not os.path.exists(file_path):
-            break
 
     try:
         # Read the image from bytes
@@ -99,46 +118,40 @@ def save_image_to_storage(image: FileModel, storage_dir: str) -> str:
                 save_kwargs["optimize"] = True
                 save_kwargs["compress_level"] = 9  # Maximum compression
 
-            # Save the image
-            img.save(file_path, format=img_format, **save_kwargs)
+            # Save the image to a bytes buffer
+            buffer = io.BytesIO()
+            img.save(buffer, format=img_format, **save_kwargs)
+            buffer.seek(0)
 
-        logging.info(f"Image saved to storage: {file_path}")
-    except Exception as e:
-        logging.error(f"Failed to save image to storage: {e}")
-        raise
-
-    # Remove RESOURCE_ROOT prefix, making it a relative path
-    relative_path = os.path.relpath(file_path, RESOURCE_ROOT)
-    return relative_path
-
-
-def delete_image_from_storage(path: str):
-    """
-    Delete an image from the storage directory.
-
-    Args:
-        path (str): The relative path of the file to delete (relative to RESOURCE_ROOT).
-    """
-    # Construct the absolute path
-    abs_path = os.path.join(RESOURCE_ROOT, path)
-
-    # Resolve any symbolic links and get the absolute canonical path
-    abs_path = os.path.realpath(abs_path)
-
-    # Ensure that the absolute path is within RESOURCE_ROOT
-    resource_root_realpath = os.path.realpath(RESOURCE_ROOT)
-    if not abs_path.startswith(resource_root_realpath):
-        raise ValueError(
-            "Attempted to delete a file outside of the resource root directory."
+        # Upload the image to S3
+        s3 = _get_s3_client()
+        s3.upload_fileobj(
+            buffer,
+            S3_BUCKET_NAME,
+            as_name,
+            ExtraArgs={"ContentType": image_content_type},
         )
 
-    # Delete the file if it exists
-    if os.path.exists(abs_path):
-        try:
-            os.remove(abs_path)
-            logging.info(f"Image deleted from storage: {abs_path}")
-        except Exception as e:
-            logging.error(f"Failed to delete image from storage: {e}")
-            raise
-    else:
-        logging.warning(f"File does not exist: {abs_path}")
+        logging.info(f"Image saved to S3: {as_name}")
+    except Exception as e:
+        logging.error(f"Failed to save image to S3: {e}")
+        raise
+
+    # Return the S3 key
+    return as_name
+
+
+def delete_image_from_storage(s3_key: str):
+    """
+    Delete an image from the S3 bucket.
+
+    Args:
+        s3_key (str): The key of the file to delete in S3.
+    """
+    try:
+        s3 = _get_s3_client()
+        s3.delete_object(Bucket=S3_BUCKET_NAME, Key=s3_key)
+        logging.info(f"Image deleted from S3: {s3_key}")
+    except Exception as e:
+        logging.error(f"Failed to delete image from S3: {e}")
+        raise

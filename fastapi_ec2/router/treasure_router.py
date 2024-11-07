@@ -77,16 +77,15 @@ from utils.distance_util import (
     is_lat_lng_valid,
 )
 from utils.resource import (
+    construct_s3_link,
     delete_image_from_storage,
     download_file,
+    generate_uuid_filename,
     save_image_to_storage,
 )
 from utils.security import get_current_member
 
 logger = logging.getLogger(__name__)
-
-# Storage
-IMAGE_DIR = os.environ.get("IMAGE_DIR")
 
 # Security
 ALGORITHM = os.environ.get("JWT_ALGORITHM")
@@ -241,10 +240,10 @@ async def insert_new_treasure(
     db: Session = Depends(get_db),
 ):
 
-    hint_image_first_url = None
-    hint_image_second_url = None
-    dot_hint_image_url = None
-    content_image_url = None
+    hint_image_first_name_gen = None
+    hint_image_second_name_gen = None
+    dot_hint_image_name_gen = None
+    content_image_name_gen = None
 
     try:
         if len(title.encode("utf-8")) > VarcharLimit.TITLE.value:
@@ -334,20 +333,36 @@ async def insert_new_treasure(
         if content_image:
             content_image = await download_file(content_image)
 
-        # 이미지 저장
-        hint_image_first_url = save_image_to_storage(hint_image_first, IMAGE_DIR)
-        hint_image_second_url = save_image_to_storage(hint_image_second, IMAGE_DIR)
-        if dot_hint_image is not None:
-            dot_hint_image_url = save_image_to_storage(dot_hint_image, IMAGE_DIR)
-        if content_image is not None:
-            content_image_url = save_image_to_storage(content_image, IMAGE_DIR)
+        # 이미지 이름 생성
+        hint_image_first_name = generate_uuid_filename(hint_image_first)
+        hint_image_second_name = generate_uuid_filename(hint_image_second)
+        dot_hint_image_name = (
+            generate_uuid_filename(dot_hint_image)
+            if dot_hint_image is not None
+            else None
+        )
+        content_image_name = (
+            generate_uuid_filename(content_image) if content_image is not None else None
+        )
+
+        # 이미지 URL 미리 생성
+        hint_image_first_url = construct_s3_link(hint_image_first_name)
+        hint_image_second_url = construct_s3_link(hint_image_second_name)
+        dot_hint_image_url = (
+            construct_s3_link(dot_hint_image_name)
+            if dot_hint_image_name is not None
+            else None
+        )
+        content_image_url = (
+            construct_s3_link(content_image_name)
+            if content_image_name is not None
+            else None
+        )
 
         # 힌트 이미지 임베딩 생성
         embeddings = await get_embedding_of_two_images(
             hint_image_first, hint_image_second
         )
-
-        # 이미지 임베딩 생성에 오랜 시간이 걸렸으므로 flush
 
         # 평균 벡터 계산
         embeddings_array = np.array(embeddings)
@@ -388,18 +403,37 @@ async def insert_new_treasure(
             new_message, result_recieving_members, created_at, db
         )
         result_model = TreasureDTO_Own.get_dto(new_message)
+
+        # 파일 저장
+
+        hint_image_first_name_gen = save_image_to_storage(
+            hint_image_first, hint_image_first_name
+        )
+        hint_image_second_name_gen = save_image_to_storage(
+            hint_image_second, hint_image_second_name
+        )
+        dot_hint_image_name_gen = (
+            save_image_to_storage(dot_hint_image, dot_hint_image_name)
+            if dot_hint_image is not None
+            else None
+        )
+        content_image_name_gen = (
+            save_image_to_storage(content_image, content_image_name)
+            if content_image is not None
+            else None
+        )
         db.commit()
         return ResponseTreasureDTO_Own(code="200", data=result_model)
     except Exception:
         db.rollback()
-        if hint_image_first_url is not None:
-            delete_image_from_storage(hint_image_first_url)
-        if hint_image_second_url is not None:
-            delete_image_from_storage(hint_image_second_url)
-        if dot_hint_image_url is not None:
-            delete_image_from_storage(dot_hint_image_url)
-        if content_image_url is not None:
-            delete_image_from_storage(content_image_url)
+        if hint_image_first_name_gen is not None:
+            delete_image_from_storage(hint_image_first_name)
+        if hint_image_second_name_gen is not None:
+            delete_image_from_storage(hint_image_second_name)
+        if dot_hint_image_name_gen is not None:
+            delete_image_from_storage(dot_hint_image_name)
+        if content_image_name_gen is not None:
+            delete_image_from_storage(content_image_name)
         raise
 
 
@@ -589,7 +623,9 @@ async def authorize_treasure(
             result_message = "already_found"
         else:
             locked_treasure.is_found = True  # 메세지 발견 처리
-            locked_treasure.receiver = [current_member.id] # 수신자 변경(초기 수신자는 Group에 남아있으니 정보 유실은 없음)
+            locked_treasure.receiver = [
+                current_member.id
+            ]  # 수신자 변경(초기 수신자는 Group에 남아있으니 정보 유실은 없음)
             treasure_result = TreasureDTO_Opened.get_dto(locked_treasure)
             if is_public:
                 box_row = insert_new_message_box(
