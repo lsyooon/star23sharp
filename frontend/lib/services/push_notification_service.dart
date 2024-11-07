@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 
+import 'package:star23sharp/main.dart';
 import 'package:star23sharp/utilities/index.dart';
 
 //포그라운드로 알림을 받아서 알림을 탭했을 때 페이지 이동
@@ -16,7 +17,7 @@ void onNotificationTap(NotificationResponse notificationResponse) {
       .pushNamed('/notification', arguments: notificationResponse);
 }
 
-class PushNotification {
+class PushNotificationService {
   static final _firebaseMessaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -35,9 +36,9 @@ class PushNotification {
 
     try {
       _token = await FirebaseMessaging.instance.getToken();
-      print("내 디바이스 토큰: $_token");
+      logger.d("내 디바이스 토큰: $_token");
     } catch (e) {
-      print("Error getting token: $e");
+      logger.e("Error getting token: $e");
     }
   }
 

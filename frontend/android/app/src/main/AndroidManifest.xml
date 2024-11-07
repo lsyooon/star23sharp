@@ -18,7 +18,9 @@
         android:label="star23sharp"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true"> <!--카카오맵 설정-->
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true">
+        <!--카카오맵 설정-->
         <activity
             android:name=".MainActivity"
             android:exported="true"
