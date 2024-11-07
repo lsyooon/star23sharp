@@ -16,8 +16,8 @@ class ProfileScreen extends StatelessWidget {
       children: [
         Center(
           child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.85,
-            height: MediaQuery.of(context).size.height * 0.67,
+            width: UIhelper.deviceWidth(context) * 0.85,
+            height: UIhelper.deviceHeight(context) * 0.67,
             child: Image.asset(
               'assets/img/main_bg.png',
               fit: BoxFit.cover,
@@ -55,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: UIhelper.deviceHeight(context) * 0.5, // 너비 50%
+                width: UIhelper.deviceWidth(context) * 0.5, // 너비 50%
                 child: ElevatedButton(
                   onPressed: () async {
                     var refresh = Provider.of<AuthProvider>(context, listen: false).refreshToken;
