@@ -1,6 +1,7 @@
 package com.ssafy.star.message.repository;
 
 import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
+import com.ssafy.star.message.dto.response.SendMessageListResponseDto;
 import com.ssafy.star.message.entity.MessageBox;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -74,8 +75,19 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
             "AND mb.messageDirection = :messageDirection " +
             "AND mb.isDeleted = false " +
             "AND ((m.isTreasure = true AND mb.state = true) OR (m.isTreasure = false))")
-    List<ReceiveMessageListResponse> findFilteredMessages(
+    List<ReceiveMessageListResponse> findReceivedMessageList(
             @Param("memberId") Long memberId,
             @Param("messageDirection") short messageDirection);
+
+    @Query("SELECT new com.ssafy.star.message.dto.response.SendMessageListResponseDto(" +
+            "m.id, m.title, m.receiverType, m.createdAt, m.isTreasure, mb.state, m.group.id, m.isFound) " +
+            "FROM MessageBox mb " +
+            "JOIN mb.message m " +
+            "WHERE mb.member.id = :memberId " +
+            "AND mb.messageDirection =0" +
+            "AND mb.isDeleted = false ")
+    List<SendMessageListResponseDto> findSendMessageList(@Param("memberId") Long memberId);
+
+
 
 }
