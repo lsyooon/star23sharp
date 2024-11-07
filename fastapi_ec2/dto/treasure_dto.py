@@ -10,7 +10,7 @@ class TreasureDTO_Own(BaseDTO):
     id: int
     sender_id: int
     receiver_type: int
-    receiver: List[int]
+    receiver: Optional[List[int]]
     hint_image_first: str
     hint_image_second: str
     dot_hint_image: str
@@ -29,7 +29,7 @@ class TreasureDTO_Opened(BaseDTO):
     id: int
     sender_id: int
     receiver_type: int
-    receiver: List[int]
+    receiver: Optional[List[int]]
     hint_image_first: str
     hint_image_second: str
     dot_hint_image: str
