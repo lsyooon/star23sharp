@@ -7,9 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Array;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -76,4 +73,9 @@ public class Message {
     @ManyToOne
     @JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "fk_message_group"))
     private MemberGroup group;
+
+
+    @Column(name="receiver")
+    private String receiver;
+
 }

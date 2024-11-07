@@ -56,7 +56,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
@@ -69,7 +69,7 @@ public class JWTFilter extends OncePerRequestFilter {
         int validateJwt = jwtUtil.validateToken(accessToken);
         if(validateJwt == 1) {
             // 응답 상태 코드 설정
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
@@ -80,7 +80,7 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }else if(validateJwt == 2) {
             // 응답 상태 코드 설정
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 

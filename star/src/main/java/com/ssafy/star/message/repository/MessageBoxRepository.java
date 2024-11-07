@@ -1,6 +1,7 @@
 package com.ssafy.star.message.repository;
 
 import com.ssafy.star.message.dto.response.ReceiveMessageListResponse;
+import com.ssafy.star.message.dto.response.SendMessageListProjection;
 import com.ssafy.star.message.dto.response.SendMessageListResponseDto;
 import com.ssafy.star.message.entity.MessageBox;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -80,7 +81,7 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
             @Param("messageDirection") short messageDirection);
 
     @Query("SELECT new com.ssafy.star.message.dto.response.SendMessageListResponseDto(" +
-            "m.id, m.title, m.receiverType, m.createdAt, m.isTreasure, mb.state, m.group.id, m.isFound) " +
+            "m.id, m.title,m.receiver ,m.receiverType, m.createdAt, m.isTreasure, mb.state, m.group.id, m.isFound) " +
             "FROM MessageBox mb " +
             "JOIN mb.message m " +
             "WHERE mb.member.id = :memberId " +
@@ -103,6 +104,34 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
             @Param("messageId") Long messageId,
             @Param("memberId") Long memberId,
             @Param("messageDirection") short messageDirection);
+
+
+
+    @Query(value = """
+    SELECT
+        m.id AS messageId,
+        m.title,
+        CASE
+            WHEN m.receiver_type = 0 THEN (SELECT mem.nickname FROM member mem WHERE mem.id = m.receiver[1])
+            WHEN m.receiver_type = 1 THEN (SELECT mem.nickname || ' 외 ' || (array_length(m.receiver, 1) - 1) || '명'  FROM member mem WHERE mem.id = m.receiver[1])
+            WHEN m.receiver_type = 2 THEN (SELECT mg.group_name FROM member_group mg WHERE mg.id = m.group_id)
+            WHEN m.receiver_type = 3 THEN COALESCE((SELECT mem.nickname FROM member mem WHERE mem.id = m.receiver[1]), '모두에게')
+        END AS recipient,
+        m.created_at AS createdAt,
+        m.is_treasure AS kind,
+        m.receiver_type AS receiverType,
+        m.group_id AS groupId,
+        m.is_found AS isFound
+    FROM message_box mb
+    JOIN message m ON mb.message_id = m.id
+    WHERE mb.member_id = :memberId
+      AND mb.message_direction = 0
+      AND mb.is_deleted = false
+""", nativeQuery = true)
+    List<SendMessageListProjection> findMessagesByMemberId(@Param("memberId") Long memberId);
+
+
+
 
 
 }

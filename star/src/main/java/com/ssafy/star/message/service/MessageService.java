@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -90,129 +91,202 @@ public class MessageService {
     }
 
 
-    // 송신 쪽지 리스트 2번째
-    public List<SendMessageListResponseDto> getSendMessageListResponseDto(Long userId) {
+
+
+    // 송신 쪽지 리스트 4번째
+    public List<SendMessageListResponseDto> getSendMessageListResponse(Long userId) {
         List<SendMessageListResponseDto> responseList = new ArrayList<>();
-        responseList = messageBoxRepository.findSendMessageList(userId);
-
-        List<SendMessageListResponse> list = new ArrayList<>();
+        List<SendMessageListProjection> results = messageBoxRepository.findMessagesByMemberId(userId);
+        responseList = results.stream()
+                .map(result -> new SendMessageListResponseDto(
+                        result.getMessageId(), result.getTitle(), result.getRecipient(),
+                        result.getCreatedAt(), result.isKind(),  result.getIsFound(),
+                        result.getReceiverType(),  result.getGroupId()
+                ))
+                .collect(Collectors.toList());
         LocalDateTime now = LocalDateTime.now();
-        // 여기서 이제 필요한게
-        // 개인한테 보낸거면
-        // 누구한테 보낸건지 messageBox에서 가져와
-
-
-
-
-
-
-        // 우선 message 테이블은 messageId, receiver_type 으로 인덱스 설정
         for (SendMessageListResponseDto message : responseList) {
 
             String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
             message.setCreatedDate(formattedDate);
-
-            int messageType = message.getReceiverType();
-            // 개인 한테 보낸거
-            if(messageType == 0){
-                String receiverNickName = messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(),(short) 1);
-                message.setRecipient(receiverNickName);
-            }
-            // 단체 한테 보냈어
-            // 보물쪽지던 아니던
-            // 단체면
-            // OOO 외 몇명 또는 group_id로 그룹 조회 해야서 보내줘야돼
-            else if(messageType == 1){
-                boolean isConstructed = groupRepository.isConstructed(message.getGroupId());
-
-                if(isConstructed){
-                    String groupName = groupRepository.getConstructedGroupInfo(message.getGroupId());
-                    message.setRecipient(groupName);
-                }else{
-                    Long result = groupRepository.countConstructed(message.getGroupId());
-                    String name = groupRepository.getFirstMemberNameInGroup(message.getGroupId());
-                    message.setRecipient(name+" 외 " + (result - 1) + "명");
-
-                }
-                // 단체한테 보낸거면
-                // 보물쪽지면 확인한 사람이 있는지 is_find로 확인하고 그 사람 이름도 보내줘야돼
-                if(message.isKind() && message.getIsFound()){
-                   String receiverNickName = messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(),(short) 1);
-                    message.setReceiverName(receiverNickName);
-                }
-            }
-
-            else if (message.isKind() && messageType == 2){
-                // 불특정 다수 이면
-                // 찾았는지 확인해서 그 사람 보내줘야돼
-                if(message.getIsFound()){
-                    String receiverNickName = messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(),(short) 1);
-                    message.setRecipient(receiverNickName);
-                    message.setReceiverName(receiverNickName);
-                }else{
-                    message.setRecipient("모두에게");
-                }
-            }
-
-
         }
-
 
         responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
         return responseList;
+
     }
 
-    // 송신 쪽지 리스트
-    public List<SendMessageListResponse> getSendMessageList(Long userId) {
-
-        //  messageBox에서 내가 보낸 메시지 Id 리스트 가져옴
-        List<Long> messageIdList = messageBoxRepository.getMessageIdByMemberId(userId, (short) 0);
-        if (messageIdList == null || messageIdList.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<SendMessageListResponse> list = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-
-        for (Long messageId : messageIdList) {
-            List<SendMessageListResponse> messages = messageRepository.findSendMessageListByMessageIdAndMemberId(messageId, userId);
-
-            if (messages == null) {
-                messages = new ArrayList<>();
-            }
-
-            for (SendMessageListResponse message : messages) {
-                String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
-                message.setCreatedDate(formattedDate);
 
 
-                if (message.getReceiverType() == (short) 0) {   // 한명 전송
-                    message.setRecipient(messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(), (short) 1));
-                } else if (message.getReceiverType() == (short) 1) {    // 단체 or 그룹 전송
-                    // 단체 전송
-                    String recipient = messageBoxRepository.findMemberNicknameByMessageId(message.getMessageId(), (short) 1) + " 외 "
-                            + (messageBoxRepository.getMemberCountByMessageId(message.getMessageId(), (short) 1) - 1) + "명";
-                    // 그룹 전송
-                    if (message.getGroupId() != null) {
-                        Boolean isConstructed = memberGroupRepository.findIsConstructedByGroupId(message.getGroupId());
-                        // 내가 만든 그룹인지 확인
-                        if (isConstructed != null && isConstructed) {
-                            recipient = memberGroupRepository.findGroupNameById(message.getGroupId());
-                        }
-                    }
-                    message.setRecipient(recipient);
-                } else {    // 불특정 다수
-                    message.setRecipient("모두에게");
-                }
-            }
-            list.addAll(messages);
-        }
+    /*
+     *
+     *
+     *   V3 Message Table에 receiver 속성으로 message를 저장하는 시점에 아예 데이터를 넣는 걸로
+     *   바꾼 방식
+     *
+     *
+     *
+     */
 
-        // 날짜 기준 재정렬
-        list.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+//    // 송신 쪽지 리스트 3번째
+//    public List<SendMessageListResponseDto> getSendMessageListResponse(Long userId) {
+//        List<SendMessageListResponseDto> responseList = new ArrayList<>();
+//        responseList = messageBoxRepository.findSendMessageList(userId);
+//
+//        List<SendMessageListResponse> list = new ArrayList<>();
+//        LocalDateTime now = LocalDateTime.now();
+//        for (SendMessageListResponseDto message : responseList) {
+//
+//            String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
+//            message.setCreatedDate(formattedDate);
+//        }
+//
+//        responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+//        return responseList;
+//
+//    }
 
-        return list;
-    }
+
+
+    /*
+*   V2
+*   단순 쿼리 문 개선한 Version
+*
+*
+* */
+
+//    // 송신 쪽지 리스트 2번째
+//    public List<SendMessageListResponseDto> getSendMessageListResponseDto(Long userId) {
+//        List<SendMessageListResponseDto> responseList = new ArrayList<>();
+//        responseList = messageBoxRepository.findSendMessageList(userId);
+//
+//        List<SendMessageListResponse> list = new ArrayList<>();
+//        LocalDateTime now = LocalDateTime.now();
+//        // 여기서 이제 필요한게
+//        // 개인한테 보낸거면
+//        // 누구한테 보낸건지 messageBox에서 가져와
+//
+//
+//
+//
+//
+//
+//        // 우선 message 테이블은 messageId, receiver_type 으로 인덱스 설정
+//        for (SendMessageListResponseDto message : responseList) {
+//
+//            String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
+//            message.setCreatedDate(formattedDate);
+//
+//            int messageType = message.getReceiverType();
+//            // 개인 한테 보낸거
+//            if(messageType == 0){
+//                String receiverNickName = messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(),(short) 1);
+//                message.setRecipient(receiverNickName);
+//            }
+//            // 단체 한테 보냈어
+//            // 보물쪽지던 아니던
+//            // 단체면
+//            // OOO 외 몇명 또는 group_id로 그룹 조회 해야서 보내줘야돼
+//            else if(messageType == 1){
+//                boolean isConstructed = groupRepository.isConstructed(message.getGroupId());
+//
+//                if(isConstructed){
+//                    String groupName = groupRepository.getConstructedGroupInfo(message.getGroupId());
+//                    message.setRecipient(groupName);
+//                }else{
+//                    Long result = groupRepository.countConstructed(message.getGroupId());
+//                    String name = groupRepository.getFirstMemberNameInGroup(message.getGroupId());
+//                    message.setRecipient(name+" 외 " + (result - 1) + "명");
+//
+//                }
+//                // 단체한테 보낸거면
+//                // 보물쪽지면 확인한 사람이 있는지 is_find로 확인하고 그 사람 이름도 보내줘야돼
+//                if(message.isKind() && message.getIsFound()){
+//                   String receiverNickName = messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(),(short) 1);
+//                    message.setReceiverName(receiverNickName);
+//                }
+//            }
+//
+//            else if (message.isKind() && messageType == 2){
+//                // 불특정 다수 이면
+//                // 찾았는지 확인해서 그 사람 보내줘야돼
+//                if(message.getIsFound()){
+//                    String receiverNickName = messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(),(short) 1);
+//                    message.setRecipient(receiverNickName);
+//                    message.setReceiverName(receiverNickName);
+//                }else{
+//                    message.setRecipient("모두에게");
+//                }
+//            }
+//
+//
+//        }
+//
+//
+//        responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+//        return responseList;
+//    }
+
+    /*
+    *
+    *   V1 초기 버전
+    *
+    *
+    *
+    *
+    * */
+
+//    // 송신 쪽지 리스트
+//    public List<SendMessageListResponse> getSendMessageList(Long userId) {
+//
+//        //  messageBox에서 내가 보낸 메시지 Id 리스트 가져옴
+//        List<Long> messageIdList = messageBoxRepository.getMessageIdByMemberId(userId, (short) 0);
+//        if (messageIdList == null || messageIdList.isEmpty()) {
+//            return new ArrayList<>();
+//        }
+//
+//        List<SendMessageListResponse> list = new ArrayList<>();
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        for (Long messageId : messageIdList) {
+//            List<SendMessageListResponse> messages = messageRepository.findSendMessageListByMessageIdAndMemberId(messageId, userId);
+//
+//            if (messages == null) {
+//                messages = new ArrayList<>();
+//            }
+//
+//            for (SendMessageListResponse message : messages) {
+//                String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
+//                message.setCreatedDate(formattedDate);
+//
+//
+//                if (message.getReceiverType() == (short) 0) {   // 한명 전송
+//                    message.setRecipient(messageBoxRepository.getRecipientNameByMessageId(message.getMessageId(), (short) 1));
+//                } else if (message.getReceiverType() == (short) 1) {    // 단체 or 그룹 전송
+//                    // 단체 전송
+//                    String recipient = messageBoxRepository.findMemberNicknameByMessageId(message.getMessageId(), (short) 1) + " 외 "
+//                            + (messageBoxRepository.getMemberCountByMessageId(message.getMessageId(), (short) 1) - 1) + "명";
+//                    // 그룹 전송
+//                    if (message.getGroupId() != null) {
+//                        Boolean isConstructed = memberGroupRepository.findIsConstructedByGroupId(message.getGroupId());
+//                        // 내가 만든 그룹인지 확인
+//                        if (isConstructed != null && isConstructed) {
+//                            recipient = memberGroupRepository.findGroupNameById(message.getGroupId());
+//                        }
+//                    }
+//                    message.setRecipient(recipient);
+//                } else {    // 불특정 다수
+//                    message.setRecipient("모두에게");
+//                }
+//            }
+//            list.addAll(messages);
+//        }
+//
+//        // 날짜 기준 재정렬
+//        list.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+//
+//        return list;
+//    }
 
 
     // 수신 쪽지 상세조회
