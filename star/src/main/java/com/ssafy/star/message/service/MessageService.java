@@ -218,16 +218,15 @@ public class MessageService {
     // 수신 쪽지 상세조회
     @Transactional
     public ReceiveMessageResponse getReceiveMessage(Long userId, Long messageId) {
-        // 쪽지가 존재하는지 확인 & 리스트에서 삭제한 쪽지인지 확인
-        if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
+        ReceiveMessageResponse receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
+
+        if (receiveMessage == null) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
-        // userId가 받은 쪽지 맞는지 확인
-        if (!messageBoxRepository.existsByMemberIdAndMessageIdAndMessageDirection(userId, messageId, (short) 1)) {
+
+        if (!messageBoxRepository.existsByMessageIdAndMemberIdAndMessageDirectionAndIsDeletedFalse(messageId, userId, (short) 1)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
         }
-
-        ReceiveMessageResponse receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
 
         // 메세지 확인 여부가 false일 경우 true로 업데이트
         if (!messageBoxRepository.existsByMemberIdAndMessageIdAndStateTrue(userId, messageId)) {
@@ -239,14 +238,14 @@ public class MessageService {
 
     // 송신 쪽지 상세조회
     public SendMessageResponse getSendMessage(Long userId, Long messageId) {
-        if (!messageRepository.existsById(messageId) || messageBoxRepository.existsByMessageIdAndMemberIdAndIsDeletedFalse(messageId, userId)) {
+        SendMessageResponse sendMessage = messageRepository.findSendMessageById(messageId);
+        if (sendMessage == null) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
         }
-        if (!messageBoxRepository.existsByMemberIdAndMessageIdAndMessageDirection(userId, messageId, (short) 0)) {
+
+        if (!messageBoxRepository.existsByMessageIdAndMemberIdAndMessageDirectionAndIsDeletedFalse(messageId, userId, (short) 0)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_MESSAGE_ACCESS);
         }
-
-        SendMessageResponse sendMessage = messageRepository.findSendMessageById(messageId);
 
         // 받는 사람 리스트 설정
         if (sendMessage.getReceiverType() == (short) 0) {   // 한명 전송
