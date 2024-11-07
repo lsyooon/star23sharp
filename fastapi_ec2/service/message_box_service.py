@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import List, Optional, Union
 
 from dto.member_dto import MemberDTO
@@ -10,6 +11,16 @@ from sqlalchemy.orm.session import Session as Session_Object
 
 from .member_service import find_member_by_id
 from .message_service import is_message_public
+
+
+def _build_check_received_message_accesible(
+    stmt, member: Member, treasure_message: Message
+):
+    return (
+        stmt.where(MessageBox.member_id == member.id)
+        .where(MessageBox.message_id == treasure_message.id)
+        .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
+    )
 
 
 def insert_new_message_box(
@@ -52,7 +63,7 @@ def insert_multiple_new_recieved_message_boxs_to_a_message(
     return boxrows
 
 
-def get_authorizable_nonpublic_treasure_message(
+def get_nonpublic_treasure_messagebox_if_authorizable(
     member: Union[MemberDTO, Member], treasure_message: Message, session: Session_Object
 ) -> Optional[MessageBox]:
     if is_message_public(treasure_message):
@@ -64,13 +75,25 @@ def get_authorizable_nonpublic_treasure_message(
     else:
         orm_member = member
 
-    stmt = (
-        select(MessageBox)
-        .where(MessageBox.member_id == orm_member.id)
-        .where(MessageBox.message_id == treasure_message.id)
-        .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
-        .where(MessageBox.state.is_(False))
+    stmt = _build_check_received_message_accesible(
+        select(MessageBox), orm_member, treasure_message
+    ).where(MessageBox.state.is_(False))
+
+    return session.scalar(stmt)
+
+
+def get_treasure_message_if_accesible(
+    member: Union[MemberDTO, Member], treasure_message: Message, session: Session_Object
+) -> Optional[Message]:
+    if isinstance(member, MemberDTO):
+        orm_member = find_member_by_id(member.id, session)
+    else:
+        orm_member = member
+
+    stmt = _build_check_received_message_accesible(
+        select(Message).join(MessageBox), orm_member, treasure_message
     )
+    # logging.debug(f"get_treasure_message_if_accesible: statement: {str(stmt)}")
     return session.scalar(stmt)
 
 

@@ -6,6 +6,7 @@ from typing import List, Optional
 import numpy as np
 from dto.member_dto import MemberDTO
 from dto.treasure_dto import (
+    ResponseTreasureDTO_Any,
     ResponseTreasureDTO_Opened,
     ResponseTreasureDTO_Own,
     ResponseTreasureDTO_Undiscovered,
@@ -47,12 +48,14 @@ from service.member_service import (
 )
 from service.message_box_service import (
     delete_message_trace,
-    get_authorizable_nonpublic_treasure_message,
+    get_nonpublic_treasure_messagebox_if_authorizable,
+    get_treasure_message_if_accesible,
     insert_multiple_new_recieved_message_boxs_to_a_message,
     insert_new_message_box,
 )
 from service.message_service import (
     authorize_treasure_message,
+    find_multiple_treasures_by_id,
     find_received_near_group_treasures,
     find_received_near_private_treasures,
     find_received_near_public_treasures,
@@ -129,6 +132,19 @@ INSERT_DESCRIPTION = """
 - ResponseTreasureDTO_Own: 생성된 보물 메시지 정보
 """
 
+INSPECT_DESCRIPTION = """
+제공받은 보물 메세지들의 ID 에 대해 최신화된 상세 정보를 제공합니다
+## 매개변수:
+- ids (List[int]): 상세 조회하고 싶은 보물 메세지들의 고유 id
+## 반환값
+- ResponseTreasureDTO_Any
+    - 제공받은 ID 에 대해서 **정보를 가져올 수 있는** 보물 메세지들의 정보만 표시합니다.
+    - 각 보물 메세지의 상세한 정보는 사용자의 접근 권한에 따라 다릅니다.
+        - **자신이 보물 메세지의 작성자인 경우**: 모든 정보를 얻습니다.
+        - **자신이 열람한 보물 메세지인 경우**: 열람 시의 정보를 얻습니다.
+        - **자신이 열람 시도 가능한 보물 메세지인 경우**: 제목과 좌표, 힌트 이미지 정도만 얻습니다.
+"""
+
 FIND_DESCRIPTION = """
 좌표 두 개를 제공하면 두 지점을 지름으로 가지는 원 안의 접근 가능한 보물 메세지들을 제공합니다.
 ## 매개변수:
@@ -136,11 +152,11 @@ FIND_DESCRIPTION = """
 - lng_1 (float): 첫 번째 좌표 경도.
 - lat_2 (float): 두 번째 좌표 위도.
 - lng_2 (float): 두 번째 좌표 경도.
-- get_received (bool): **True이면 자신이 접근 가능한(미열람) 보물 메세지만, False이면 자신이 등록한 보물 메세지(누군가 열람한 것도)만 가져옵니다.** 기본값 True.
-### 아래 세 매개변수가 모두 False 이면 빈 결과를 제공합니다.
-- include_public: 퍼블릭 보물 메세지를 포함할지의 여부. 기본값 True
-- include_group: 그룹 또는 다수 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 True
-- include_private: 개인을 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 True
+- get_received (bool): **true이면 자신이 접근 가능한(미열람) 보물 메세지만, false이면 자신이 등록한 보물 메세지(누군가 열람한 것도)만 가져옵니다.** 기본값 false.
+### 아래 세 매개변수가 모두 false 이면 빈 결과를 제공합니다.
+- include_public: 퍼블릭 보물 메세지를 포함할지의 여부. 기본값 false
+- include_group: 그룹 또는 다수 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 false
+- include_private: 개인을 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 false
 ## 반환값
 - ResponseTreasureDTO_Undiscovered
     - 주어진 두 좌표의 중심점에서 가까운 순서대로 정렬되어 제공됩니다.
@@ -387,6 +403,41 @@ async def insert_new_treasure(
 
 
 @treasure_router.get(
+    "/inspect",
+    response_model=ResponseTreasureDTO_Any,
+    summary="보물 메세지 상세조회",
+    description=INSPECT_DESCRIPTION,
+)
+async def inspect_treasures(
+    ids: List[int] = Query(
+        ..., description="조회하고자 하는 보물 메세지들의 고유 id들"
+    ),
+    member: MemberDTO = Depends(get_current_member),
+    db: Session = Depends(get_db),
+):
+    member_orm = find_member_by_id(member.id, db)
+    if member_orm is None:
+        raise MemberNotFoundException()
+    treasure_orms: List[Message] = find_multiple_treasures_by_id(ids, db)
+    result_dtos = []
+    for treasure in treasure_orms:
+        if treasure.sender_id is member_orm.id:  # 내가 이 메세지를 보낸 사람
+            result_dtos.append(TreasureDTO_Own.get_dto(treasure))
+        elif get_treasure_message_if_accesible(
+            member_orm, treasure, db
+        ):  # 열람하거나 접근 가능한 메세지임(퍼블릭일 수도 있음!)
+            if treasure.is_found:
+                result_dtos.append(TreasureDTO_Opened.get_dto(treasure))
+            else:
+                result_dtos.append(TreasureDTO_Undiscovered.get_dto(treasure))
+        elif treasure.receiver_type is ReceiverTypes.PUBLIC.value:  # public
+            if not treasure.is_found:  # 아무도 못 찾은 public 메세지면 접근 가능
+                result_dtos.append(TreasureDTO_Undiscovered.get_dto(treasure))
+
+    return ResponseTreasureDTO_Any(code="200", data={"treasures": result_dtos})
+
+
+@treasure_router.get(
     "/near",
     response_model=ResponseTreasureDTO_Undiscovered,
     summary="주변 보물 메세지 찾기",
@@ -398,15 +449,15 @@ async def find_near_treasures(
     lat_2: float = Query(..., description="두 번째 좌표의 위도"),
     lng_2: float = Query(..., description="두 번째 좌표의 경도"),
     get_received: bool = Query(
-        True,
-        description="True 이면 자신이 접근 가능한 보물 메세지를, False 이면 자신이 등록한 보물 메세지를 가져옵니다.",
+        False,
+        description="true 이면 자신이 접근 가능한 보물 메세지를, false 이면 자신이 등록한 보물 메세지를 가져옵니다.",
     ),
-    include_public: bool = Query(True, description="퍼블릭 메세지를 가져올지의 여부."),
+    include_public: bool = Query(False, description="퍼블릭 메세지를 가져올지의 여부."),
     include_group: bool = Query(
-        True, description="그룹 또는 여러 명에게 보낸 메세지를 가져올지의 여부."
+        False, description="그룹 또는 여러 명에게 보낸 메세지를 가져올지의 여부."
     ),
     include_private: bool = Query(
-        True, description="1대1 보물 메세지를 가져올지의 여부."
+        False, description="1대1 보물 메세지를 가져올지의 여부."
     ),
     member: MemberDTO = Depends(get_current_member),
     db: Session = Depends(get_db),
@@ -495,7 +546,7 @@ async def authorize_treasure(
 
     is_public = is_message_public(target_treasure)
     if not is_public:
-        box_row = get_authorizable_nonpublic_treasure_message(
+        box_row = get_nonpublic_treasure_messagebox_if_authorizable(
             current_member, target_treasure, db
         )
         if box_row is None:

@@ -10,7 +10,14 @@ from router.image_router import image_router
 from router.treasure_router import treasure_router
 from swagger.fix.swagger_monkeypatch import apply_swaggerfix
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,  # Log all levels, including DEBUG
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("debug.log"),  # Write logs to a file
+        logging.StreamHandler(),  # Optional: Also output logs to console
+    ],
+)
 
 apply_swaggerfix()
 

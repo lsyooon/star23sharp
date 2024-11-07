@@ -79,6 +79,13 @@ def find_treasure_by_id(treasure_id: int, session: Session_Object) -> Optional[M
     )
     return session.scalar(stmt)
 
+def find_multiple_treasures_by_id(treasure_ids: List[int], session: Session_Object) -> List[Message]:
+    stmt = (
+        select(Message)
+        .where(Message.id.in_(treasure_ids))
+        .where(Message.is_treasure.is_(True))
+    )
+    return session.scalars(stmt).all()
 
 def find_similar(
     vector: List[float], limit: int, session: Session_Object

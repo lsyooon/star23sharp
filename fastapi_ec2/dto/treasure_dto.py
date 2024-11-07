@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
 from response.response_model import ResponseModel
 
@@ -69,3 +69,7 @@ class ResponseTreasureDTO_Opened(ResponseModel):
 class ResponseTreasureDTO_Undiscovered(ResponseModel):
     code: Literal["200"]
     data: dict[Literal["treasures"], List[TreasureDTO_Undiscovered]]
+
+class ResponseTreasureDTO_Any(ResponseModel):
+    code: Literal["200"]
+    data: dict[Literal["treasures"], List[Union[TreasureDTO_Own,TreasureDTO_Opened,TreasureDTO_Undiscovered]]]

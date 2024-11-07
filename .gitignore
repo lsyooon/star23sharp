@@ -6,3 +6,6 @@ __pycache__
 
 ## 테스트용 dir은 commit에 포함시키면 안됨=
 test_images
+
+## log
+*.log
