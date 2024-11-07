@@ -34,7 +34,8 @@ CREATE TABLE member_group (
 CREATE TABLE message (
    id               BIGSERIAL       PRIMARY KEY,
    sender_id        BIGINT          NOT NULL, -- member.id
-   receiver_type    SMALLINT        NOT NULL DEFAULT 0 CHECK (receiver_type IN (0, 1, 2)), -- 0: 개인, 1: 단체, 2: 불특정 다수
+   receiver_type    SMALLINT        NOT NULL DEFAULT 0 CHECK (receiver_type IN (0, 1, 2, 3)), -- 0: 개인, 1: 미지정 단체, 2: 지정 단체, 3: 불특정 다수(public)
+   receiver         BIGINT[]        NULL, -- member의 PK.
    hint_image_first VARCHAR(255)    NULL,
    hint_image_second VARCHAR(255)   NULL,
    dot_hint_image   VARCHAR(255)    NULL,

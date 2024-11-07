@@ -1,16 +1,17 @@
 import datetime
 from enum import Enum
+from sqlalchemy import Enum as SAEnum
 from typing import Optional
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
+    ARRAY,
     BigInteger,
     Boolean,
     CheckConstraint,
     DateTime,
     Double,
     ForeignKey,
-    SmallInteger,
     String,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -28,23 +29,27 @@ class VarcharLimit(Enum):
 
 class ReceiverTypes(Enum):
     INDIVIDUAL: int = 0
-    GROUP: int = 1
-    PUBLIC: int = 2
+    GROUP_UNCONSTRUCTED: int = 1
+    GROUP_CONSTRUCTED: int = 2
+    PUBLIC: int = 3
 
 
 class Message(Base):
     __tablename__ = "message"
     __table_args__ = (
         CheckConstraint(
-            f"receiver_type IN ({ReceiverTypes.INDIVIDUAL.value}, {ReceiverTypes.GROUP.value}, {ReceiverTypes.PUBLIC.value})",
+            f"receiver_type IN ({ReceiverTypes.INDIVIDUAL.value}, {ReceiverTypes.GROUP_UNCONSTRUCTED.value}, {ReceiverTypes.PUBLIC.value}, {ReceiverTypes.GROUP_CONSTRUCTED.value})",
             name="receiver_type_check",
         ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     sender_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    receiver_type: Mapped[int] = mapped_column(
-        SmallInteger, nullable=False, server_default=f"{ReceiverTypes.INDIVIDUAL.value}"
+    receiver_type: Mapped[ReceiverTypes] = mapped_column(
+        SAEnum(ReceiverTypes), nullable=False, server_default=ReceiverTypes.INDIVIDUAL.name
+    )
+    receiver: Mapped[Optional[list[int]]] = mapped_column(
+        ARRAY(BigInteger), nullable=True
     )
     hint_image_first: Mapped[str] = mapped_column(String(255), nullable=True)
     hint_image_second: Mapped[str] = mapped_column(String(255), nullable=True)

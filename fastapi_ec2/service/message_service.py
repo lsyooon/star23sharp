@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 def insert_new_treasure_message(
     sender: Member,
     receiver_type: int,
+    receiver: List[int],
     hint_image_first: str,
     hint_image_second: str,
     dot_hint_image: str,
@@ -40,6 +41,7 @@ def insert_new_treasure_message(
     new_msg = Message(
         sender_id=sender.id,
         receiver_type=receiver_type,
+        receiver=receiver,
         hint_image_first=hint_image_first,
         hint_image_second=hint_image_second,
         dot_hint_image=dot_hint_image,
@@ -79,13 +81,17 @@ def find_treasure_by_id(treasure_id: int, session: Session_Object) -> Optional[M
     )
     return session.scalar(stmt)
 
-def find_multiple_treasures_by_id(treasure_ids: List[int], session: Session_Object) -> List[Message]:
+
+def find_multiple_treasures_by_id(
+    treasure_ids: List[int], session: Session_Object
+) -> List[Message]:
     stmt = (
         select(Message)
         .where(Message.id.in_(treasure_ids))
         .where(Message.is_treasure.is_(True))
     )
     return session.scalars(stmt).all()
+
 
 def find_similar(
     vector: List[float], limit: int, session: Session_Object

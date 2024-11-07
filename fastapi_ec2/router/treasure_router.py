@@ -273,13 +273,13 @@ async def insert_new_treasure(
                 result_receiver_type = ReceiverTypes.INDIVIDUAL.value
                 recieving_group = None
             else:
-                result_receiver_type = ReceiverTypes.GROUP.value
+                result_receiver_type = ReceiverTypes.GROUP_UNCONSTRUCTED.value
                 # 새로운 그룹 생성
                 recieving_group = insert_new_group(
                     None, current_member, False, False, receivers_int, created_at, db
                 )
         elif group_id is not None:
-            result_receiver_type = ReceiverTypes.GROUP.value
+            result_receiver_type = ReceiverTypes.GROUP_CONSTRUCTED.value
             recieving_group = find_group_by_id(group_id, db)
             if recieving_group is None:
                 raise GroupNotFoundException()
@@ -358,6 +358,7 @@ async def insert_new_treasure(
         new_message = insert_new_treasure_message(
             sender=current_member,
             receiver_type=result_receiver_type,
+            receiver=receivers_int,
             hint_image_first=hint_image_first_url,
             hint_image_second=hint_image_second_url,
             dot_hint_image=dot_hint_image_url,
@@ -588,6 +589,7 @@ async def authorize_treasure(
             result_message = "already_found"
         else:
             locked_treasure.is_found = True  # 메세지 발견 처리
+            locked_treasure.receiver = [current_member.id] # 수신자 변경(초기 수신자는 Group에 남아있으니 정보 유실은 없음)
             treasure_result = TreasureDTO_Opened.get_dto(locked_treasure)
             if is_public:
                 box_row = insert_new_message_box(
