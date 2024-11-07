@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dart_openai/dart_openai.dart';
 
 import 'package:star23sharp/main.dart';
-import 'package:star23sharp/models/enums/star/writing_style.dart';
+import 'package:star23sharp/utilities/enums/star/writing_style.dart';
 
 class OpenAIService {
   OpenAIService._internal();

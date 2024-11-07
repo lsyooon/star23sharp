@@ -3,10 +3,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/app_global.dart';
 
 class DioService {
-  static String baseUrl = dotenv.env['API_URL'].toString();          
+  static String baseUrl = dotenv.env['API_URL'].toString();
 
   // Private constructor to prevent instantiation
   DioService._internal();
@@ -45,7 +46,7 @@ class DioService {
         onError: (DioException e, handler) async {
           logger.d('Error: ${e.message}');
 
-          if (e.response?.statusCode == 400) {
+          if (e.response?.statusCode == 401) {
             // 토큰 만료 시 갱신 로직 수행
             final authProvider = Provider.of<AuthProvider>(
               AppGlobal.navigatorKey.currentContext!,
@@ -58,6 +59,15 @@ class DioService {
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
               final cloneReq = await authDio.fetch(e.requestOptions);
               return handler.resolve(cloneReq); // 재요청 결과 반환
+            }
+          } else {
+            try {
+              final failure = ErrorHandler.handle(e).failure;
+              logger.e('Error [${failure.code}]: ${failure.message}');
+              handler.reject(e); // 에러를 계속 전파
+            } catch (error) {
+              logger.e('Unhandled Error: $error');
+              handler.reject(e); // 기본 에러 처리
             }
           }
 

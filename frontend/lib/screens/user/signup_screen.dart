@@ -14,7 +14,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController nicknameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   // 아이디 및 닉네임 중복 여부 상태 변수
   bool isIdAvailable = false;
@@ -22,7 +23,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> checkIdAvailability() async {
     // 아이디 중복 검사 로직 구현
-    bool response = await UserService.checkDuplicateId(0, idController.text.trim());
+    bool response =
+        await UserService.checkDuplicateId(0, idController.text.trim());
     setState(() {
       isIdAvailable = !response;
     });
@@ -30,7 +32,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> checkNicknameAvailability() async {
     // 닉네임 중복 검사 로직 구현
-    bool response = await UserService.checkDuplicateId(1, nicknameController.text.trim());
+    bool response =
+        await UserService.checkDuplicateId(1, nicknameController.text.trim());
     setState(() {
       isNicknameAvailable = !response;
     });
@@ -90,10 +93,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTextFieldWithBtn("아이디", idController, isIdAvailable, checkIdAvailability),
-            _buildTextFieldWithBtn("닉네임", nicknameController, isNicknameAvailable, checkNicknameAvailability),
+            _buildTextFieldWithBtn(
+                "아이디", idController, isIdAvailable, checkIdAvailability),
+            _buildTextFieldWithBtn("닉네임", nicknameController,
+                isNicknameAvailable, checkNicknameAvailability),
             _buildTextField("비밀번호", passwordController, obscureText: true),
-            _buildTextField("비밀번호 확인", confirmPasswordController, obscureText: true),
+            _buildTextField("비밀번호 확인", confirmPasswordController,
+                obscureText: true),
             const SizedBox(height: 20),
             _buildSignUpButton(context),
           ],
@@ -102,7 +108,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildTextFieldWithBtn(String label, TextEditingController controller, bool isAvailable, Function onPressed) {
+  Widget _buildTextFieldWithBtn(String label, TextEditingController controller,
+      bool isAvailable, Function onPressed) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -141,7 +148,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                 ),
               ),
             ),
@@ -150,7 +158,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               onPressed: () => onPressed(), // 중복 검사 함수 호출
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFA292EC).withOpacity(0.4),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -244,11 +253,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
               return;
             }
 
-            bool response = await UserService.signup(memberId, password, nickname);
-            if(response){
+            bool response =
+                await UserService.signup(memberId, password, nickname);
+            if (response) {
               // 회원가입 완료
               Navigator.pushNamed(context, '/home');
-            }else{
+            } else {
               // 회원가입 실패
               logger.d("실패");
             }
