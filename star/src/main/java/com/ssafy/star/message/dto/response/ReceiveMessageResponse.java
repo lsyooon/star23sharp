@@ -14,9 +14,7 @@ public class ReceiveMessageResponse {
     private List<String> senderName;
     @JsonIgnore
     private String sender;
-    @JsonIgnore
     private LocalDateTime createdAt;
-    private String createdDate;
     private String title;
     private String content;
     private String image;
@@ -35,10 +33,6 @@ public class ReceiveMessageResponse {
         this.kind = kind;
         this.receiverType = receiverType;
         this.isReported = isReported;
-    }
-
-    public void setCreatedDate(String createdDate) {
-        this.createdDate = createdDate;
     }
 
     public void setSenderName(String sender) {
