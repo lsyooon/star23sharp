@@ -5,9 +5,9 @@ class CorrectModal extends StatelessWidget {
   final Map<String, dynamic> markerData;
 
   const CorrectModal({
-    Key? key,
+    super.key,
     required this.markerData,
-  }) : super(key: key);
+  });
 
   static void show(BuildContext context, Map<String, dynamic> markerData) {
     showDialog(
@@ -18,19 +18,21 @@ class CorrectModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
     return Stack(
       children: [
         Positioned(
-          top: UIhelper.deviceHeight(context) * 0.1,
-          left: UIhelper.deviceWidth(context) * 0.01,
-          right: UIhelper.deviceWidth(context) * 0.01,
+          top: deviceHeight * 0.1,
+          left: deviceWidth * 0.01,
+          right: deviceWidth * 0.01,
           child: Dialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
             child: Container(
-              width: UIhelper.deviceWidth(context),
-              height: UIhelper.deviceHeight(context) * 0.5,
+              width: deviceWidth,
+              height: deviceHeight * 0.5,
               decoration: BoxDecoration(
                 color: const Color(0xFF9588E7).withOpacity(0.9),
                 borderRadius: BorderRadius.circular(15),
@@ -54,13 +56,12 @@ class CorrectModal extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // 주요 내용
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 32), // IconButton 공간 확보
+                        const SizedBox(height: 32),
                         Center(
                           child: Text(
                             markerData['title'] ?? "정답 확인",
@@ -117,9 +118,9 @@ class CorrectModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // 하단 버튼 영역
+                        // 확인 버튼
                         Container(
-                          padding: EdgeInsets.only(
+                          padding: const EdgeInsets.only(
                             bottom: 8,
                           ),
                           child: Row(

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/models/index.dart';
 
@@ -20,6 +21,7 @@ class _MapScreenState extends State<MapScreen>
   Set<Marker> markers = {};
   String message = "";
   final ImagePicker _picker = ImagePicker();
+  bool _isLocationLoaded = false; // 위치 로드 상태 변수
 
   // kakao_map_plugin
   // windowInfo에 값을 넣으면 마커 클릭 시, windowInfo가 표시되게 설계되어 있어서 markerId에 매칭 되는 Map을 만들어야할 것 같음
@@ -90,10 +92,14 @@ class _MapScreenState extends State<MapScreen>
     if (status.isDenied) {
       var result = await Permission.location.request();
       if (result.isGranted) {
-        _goToCurrentLocation();
+        _loadMap();
+      } else if (result.isPermanentlyDenied) {
+        showPermissionDialog(context);
       }
     } else if (status.isGranted) {
-      _goToCurrentLocation();
+      _loadMap();
+    } else if (status.isPermanentlyDenied) {
+      showPermissionDialog(context);
     } else {
       setState(() {
         message = "위치 권한이 필요합니다.";
@@ -112,47 +118,96 @@ class _MapScreenState extends State<MapScreen>
     }
   }
 
-  // 현재 위치로 이동
-  Future<void> _goToCurrentLocation() async {
-    var position = await Geolocator.getCurrentPosition();
+  // 지도 로드 후 캐시된 위치나 현재 위치로 이동
+  Future<void> _loadMap() async {
+    setState(() {
+      _isLocationLoaded = true; // 지도 로딩 상태를 업데이트
+    });
+  }
 
-    mapController.setCenter(LatLng(position.latitude, position.longitude));
+  // 캐시된 위치 불러오기
+  Future<void> _goToCachedOrCurrentLocation() async {
+    if (mapController == null) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      return _goToCachedOrCurrentLocation();
+    }
+    final cachedLocation = await SharedPreferences.getInstance();
+    final lat = cachedLocation.getDouble('lat');
+    final lng = cachedLocation.getDouble('lng');
 
-    // 마커 더미 데이터
+    // 캐시된 위치가 있으면 그 위치로 먼저 이동
+    if (lat != null && lng != null) {
+      final cachedLocationLatLng = LatLng(lat, lng);
+      await _setMarker(cachedLocationLatLng); // 캐시된 위치에 마커 설정
+      mapController.setCenter(cachedLocationLatLng); // 지도 중심을 캐시된 위치로 설정
+    } else {
+      print("캐시된 위치가 없습니다. 현재 위치를 가져옵니다.");
+    }
+
+    // 현재 위치를 가져와 지도 중심 업데이트
+    try {
+      await _goToCurrentLocation();
+    } catch (e) {
+      print("현재 위치를 가져오는 데 실패했습니다: $e");
+    }
+  }
+
+  // 마커 더미데이터 설정 함수
+  Future<void> _setMarker(LatLng location) async {
     setState(() {
       markers = {
         Marker(
           markerId: "1",
-          latLng: LatLng(position.latitude, position.longitude),
+          latLng: LatLng(location.latitude, location.longitude),
           markerImageSrc:
               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
         ),
         Marker(
           markerId: "2",
-          latLng: LatLng(position.latitude + 0.001, position.longitude + 0.001),
+          latLng: LatLng(location.latitude + 0.001, location.longitude + 0.001),
           markerImageSrc:
               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
         ),
         Marker(
           markerId: "3",
-          latLng: LatLng(position.latitude - 0.001, position.longitude - 0.001),
+          latLng: LatLng(location.latitude - 0.001, location.longitude - 0.001),
           markerImageSrc:
               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
         ),
         Marker(
           markerId: "4",
-          latLng: LatLng(position.latitude + 0.001, position.longitude - 0.001),
+          latLng: LatLng(location.latitude + 0.001, location.longitude - 0.001),
           markerImageSrc:
               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
         ),
         Marker(
           markerId: "5",
-          latLng: LatLng(position.latitude + 0.002, position.longitude - 0.001),
+          latLng: LatLng(location.latitude + 0.002, location.longitude - 0.001),
           markerImageSrc:
               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
         ),
       };
     });
+  }
+
+  // 위치 캐시
+  Future<void> _cacheLocation(LatLng location) async {
+    final currentLocation = await SharedPreferences.getInstance();
+    await currentLocation.setDouble('lat', location.latitude);
+    await currentLocation.setDouble('lng', location.longitude);
+
+    print("lat=${location.latitude}, lng=${location.longitude}");
+  }
+
+  // 현재 위치로 이동
+  Future<void> _goToCurrentLocation() async {
+    var position = await Geolocator.getCurrentPosition();
+    final currentLocation = LatLng(position.latitude, position.longitude);
+
+    mapController.setCenter(LatLng(position.latitude, position.longitude));
+
+    await _cacheLocation(LatLng(position.latitude, position.longitude));
+    await _setMarker(currentLocation);
   }
 
   // 사진 촬영
@@ -199,14 +254,17 @@ class _MapScreenState extends State<MapScreen>
   // 사진 검증 후 성공/실패 모달 분기
   void _verifyPicture(XFile image, Map<String, dynamic> markerData) {
     if (isCorrectPicture(image)) {
+      Navigator.pop(context);
       CorrectMessageModal.show(
         context,
         onNoteButtonPressed: () => CorrectModal.show(context, markerData),
+        markerData: markerData,
       );
     } else {
+      Navigator.pop(context);
       IncorrectMessageModal.show(
         context,
-        onRetry: () => _takePhoto(markerData), // markerData를 포함하여 전달
+        onRetry: () => _takePhoto(markerData),
       );
     }
   }
@@ -215,7 +273,7 @@ class _MapScreenState extends State<MapScreen>
   void _handleMenuAction(MenuItem option) {
     switch (option) {
       case MenuItem.hideMyStar:
-        _goToCurrentLocation();
+        Navigator.pushReplacementNamed(context, '/hidestar');
         break;
       case MenuItem.viewHiddenStars:
         _goToCurrentLocation();
@@ -228,25 +286,27 @@ class _MapScreenState extends State<MapScreen>
         break;
     }
   }
-  
+
   // 모든 마커 리스트
   Future<void> _showMarkerList(BuildContext context) async {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Stack(
           children: [
             Positioned(
-              top: UIhelper.deviceHeight(context) * 0.1,
-              left: UIhelper.deviceWidth(context) * 0.01,
-              right: UIhelper.deviceWidth(context) * 0.01,
+              top: deviceHeight * 0.1,
+              left: deviceWidth * 0.01,
+              right: deviceWidth * 0.01,
               child: Dialog(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Container(
-                  width: UIhelper.deviceWidth(context),
-                  height: UIhelper.deviceHeight(context) * 0.5,
+                  width: deviceWidth,
+                  height: deviceHeight * 0.5,
                   decoration: BoxDecoration(
                     color: const Color(0xFF9588E7).withOpacity(0.9),
                     borderRadius: BorderRadius.circular(10),
@@ -256,7 +316,7 @@ class _MapScreenState extends State<MapScreen>
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0), // 여백 추가
+                          padding: const EdgeInsets.all(8.0),
                           child: IconButton(
                             onPressed: () {
                               Navigator.pop(context);
@@ -274,7 +334,7 @@ class _MapScreenState extends State<MapScreen>
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(height: 32), // IconButton 공간 확보
+                            const SizedBox(height: 32),
                             const Center(
                               child: Text(
                                 "별똥별",
@@ -346,6 +406,7 @@ class _MapScreenState extends State<MapScreen>
                                 },
                               ),
                             ),
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),
@@ -368,22 +429,25 @@ class _MapScreenState extends State<MapScreen>
           "hint": "추가 정보 없음",
         };
 
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Stack(
           children: [
             Positioned(
-              top: UIhelper.deviceHeight(context) * 0.1,
-              left: UIhelper.deviceWidth(context) * 0.01,
-              right: UIhelper.deviceWidth(context) * 0.01,
+              top: deviceHeight * 0.1,
+              left: deviceWidth * 0.01,
+              right: deviceWidth * 0.01,
               child: Dialog(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Container(
-                  width: UIhelper.deviceWidth(context),
-                  height: UIhelper.deviceHeight(context) * 0.5,
+                  width: deviceWidth,
+                  height: deviceHeight * 0.5,
                   decoration: BoxDecoration(
                     color: const Color(0xFF9588E7).withOpacity(0.9),
                     borderRadius: BorderRadius.circular(15),
@@ -394,7 +458,7 @@ class _MapScreenState extends State<MapScreen>
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0), // 여백 추가
+                          padding: const EdgeInsets.all(8.0),
                           child: IconButton(
                             onPressed: () {
                               Navigator.pop(context);
@@ -407,13 +471,12 @@ class _MapScreenState extends State<MapScreen>
                           ),
                         ),
                       ),
-                      // 주요 내용
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 32), // IconButton 공간 확보
+                            const SizedBox(height: 32),
                             Center(
                               child: Text(
                                 markerData['title'] ?? "정보 없음",
@@ -430,7 +493,7 @@ class _MapScreenState extends State<MapScreen>
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       "힌트사진!",
                                       style: const TextStyle(
                                         color: Colors.white70,
@@ -450,9 +513,9 @@ class _MapScreenState extends State<MapScreen>
                                       ),
                                     ),
                                     const SizedBox(height: 16),
-                                    Text(
+                                    const Text(
                                       "힌트",
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.white70,
                                         fontSize: 18,
                                       ),
@@ -471,7 +534,9 @@ class _MapScreenState extends State<MapScreen>
                             ),
                             const SizedBox(height: 16),
                             Container(
-                              padding: EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.only(
+                                bottom: 10,
+                              ),
                               // 버튼 영역
                               child: Row(
                                 mainAxisAlignment:
@@ -513,59 +578,63 @@ class _MapScreenState extends State<MapScreen>
 
   @override
   Widget build(BuildContext context) {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
     super.build(context);
 
-    return Stack(
-      children: [
-        Center(
-          child: SizedBox(
-            width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
-            child: KakaoMap(
-              onMapCreated: (controller) async {
-                mapController = controller;
-                await _goToCurrentLocation();
-              },
-              onMarkerTap: (markerId, latLng, zoomLevel) {
-                setState(() {
-                  _showMarkerList(context);
-                });
-              },
-              markers: markers.toList(),
-              currentLevel: 3,
-              onBoundsChangeCallback: ((latLngBounds) {
-                final ne = latLngBounds.getNorthEast();
-                final sw = latLngBounds.getSouthWest();
+    return !_isLocationLoaded
+        ? const Center(child: CircularProgressIndicator())
+        : Stack(
+            children: [
+              Center(
+                child: SizedBox(
+                  width: deviceWidth * 0.85,
+                  height: deviceHeight * 0.67,
+                  child: KakaoMap(
+                    onMapCreated: (controller) async {
+                      mapController = controller;
+                      await _goToCachedOrCurrentLocation();
+                    },
+                    onMarkerTap: (markerId, latLng, zoomLevel) {
+                      setState(() {
+                        _showMarkerList(context);
+                      });
+                    },
+                    markers: markers.toList(),
+                    currentLevel: 3,
+                    onBoundsChangeCallback: ((latLngBounds) {
+                      final ne = latLngBounds.getNorthEast();
+                      final sw = latLngBounds.getSouthWest();
 
-                message =
-                    '남서쪽 위도, 경도\n${sw.latitude}, ${sw.longitude}\n 북동쪽 위도, 경도\n${ne.latitude}, ${ne.longitude}';
-                setState(() {});
-              }),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: UIhelper.deviceWidth(context) * 0.18,
-          right: UIhelper.deviceHeight(context) * 0.34,
-          child: FloatingActionButton(
-            onPressed: _goToCurrentLocation,
-            child: const Icon(Icons.my_location),
-          ),
-        ),
-        Positioned(
-          bottom: UIhelper.deviceWidth(context) * 0.18,
-          right: UIhelper.deviceHeight(context) * 0.06,
-          child: MenuList(
-            onItemSelected: (MenuItem selectedOption) {
-              _handleMenuAction(selectedOption);
-              setState(() {
-                _isMenuTouched = false;
-              });
-            },
-            isMenuTouched: _isMenuTouched,
-          ),
-        ),
-      ],
-    );
+                      message =
+                          '남서쪽 위도, 경도\n${sw.latitude}, ${sw.longitude}\n 북동쪽 위도, 경도\n${ne.latitude}, ${ne.longitude}';
+                      setState(() {});
+                    }),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: deviceHeight * 0.1,
+                left: deviceWidth * 0.12,
+                child: FloatingActionButton(
+                  onPressed: _goToCachedOrCurrentLocation,
+                  child: const Icon(Icons.my_location),
+                ),
+              ),
+              Positioned(
+                bottom: deviceHeight * 0.1,
+                right: deviceWidth * 0.12,
+                child: MenuList(
+                  onItemSelected: (MenuItem selectedOption) {
+                    _handleMenuAction(selectedOption);
+                    setState(() {
+                      _isMenuTouched = false;
+                    });
+                  },
+                  isMenuTouched: _isMenuTouched,
+                ),
+              ),
+            ],
+          );
   }
 }
