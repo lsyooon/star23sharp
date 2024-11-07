@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/utilities/app_global.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -122,14 +123,19 @@ class LoginScreen extends StatelessWidget {
                             if (memberId.isEmpty || password.isEmpty) {
                               logger.d("아이디와 비밀번호를 입력해주세요.");
                             } else {
-                              logger.d("성공");
+                              logger.d("id: $memberId, pwd: $password");   
                               Map<String, String>? loginResponse = await UserService.login(memberId, password);
                               if (loginResponse != null) {
-                                Provider.of<AuthProvider>(context, listen: false)
-                                    .logIn(loginResponse['access']!, loginResponse['refresh']!);
-                                logger.d(loginResponse['access']!);
+                                await Provider.of<AuthProvider>(context, listen: false)
+                                    .setToken(loginResponse['access']!, loginResponse['refresh']!);
+
+                                // 내 정보 provider에 저장
+                                Map<String, dynamic> user = await UserService.getMemberInfo();
+                                logger.d(user);
+                                Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!, listen: false)
+                                  .setUserDetails(id: user['memberId'], name: user['nickname'], isPushEnabled: user['pushNotificationEnabled']);
+                                  
                                 Navigator.pushNamed(context, '/home');
-                                // 로그인 성공 UI 업데이트
                               } else {
                                 // 로그인 실패 UI 처리
                               }

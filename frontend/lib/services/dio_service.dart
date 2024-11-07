@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
+import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/utilities/app_global.dart';
 
 class DioService {
   static String baseUrl = dotenv.env['API_URL'].toString();          
@@ -26,27 +29,46 @@ class DioService {
       receiveTimeout: const Duration(seconds: 10),
       headers: {
         'Content-Type': 'application/json',
-        // 기본 Authorization 헤더 설정 (추후 필요 시 업데이트 가능)
-        'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+        'Authorization': 'Bearer',
       },
     ),
   )..interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
           // 요청 전 처리 (예: 토큰 갱신)
-          logger.d('Request [${options.method}] ${options.path}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
           // 응답 후 처리
-          logger.d('Response: ${response.statusCode}');
           return handler.next(response);
         },
-        onError: (DioException e, handler) {
-          // 에러 처리
+        onError: (DioException e, handler) async {
           logger.d('Error: ${e.message}');
+
+          if (e.response?.statusCode == 400) {
+            // 토큰 만료 시 갱신 로직 수행
+            final authProvider = Provider.of<AuthProvider>(
+              AppGlobal.navigatorKey.currentContext!,
+              listen: false,
+            );
+
+            // 새로운 토큰을 얻기 위한 시도
+            final newToken = await authProvider.refreshTokens();
+            if (newToken != null) {
+              e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+              final cloneReq = await authDio.fetch(e.requestOptions);
+              return handler.resolve(cloneReq); // 재요청 결과 반환
+            }
+          }
+
           return handler.next(e);
         },
       ),
     );
+
+  // Authorization 토큰을 업데이트하는 메서드
+  static void updateAuthorizationHeader(String token) {
+    logger.d(token);
+    authDio.options.headers['Authorization'] = 'Bearer $token';
+  }
 }
