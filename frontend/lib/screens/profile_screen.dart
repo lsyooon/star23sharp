@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/utilities/app_global.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -41,8 +42,8 @@ class ProfileScreen extends StatelessWidget {
                     fontSize: FontSizes.body),
               ),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.3,
+                width: UIhelper.deviceWidth(context) * 0.8,
+                height: UIhelper.deviceHeight(context) * 0.3,
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -54,14 +55,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5, // 너비 50%
+                width: UIhelper.deviceHeight(context) * 0.5, // 너비 50%
                 child: ElevatedButton(
                   onPressed: () async {
                     var refresh = Provider.of<AuthProvider>(context, listen: false).refreshToken;
                     bool response = await UserService.logout(refresh!);
                     if(response){
-                      Provider.of<AuthProvider>(context, listen: false).clearTokens();
-                      Navigator.pushNamed(context, '/home');
+                      Provider.of<AuthProvider>(AppGlobal.navigatorKey.currentContext!, listen: false).clearTokens();
+                      Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/home');
                     }
                   },
                   style: ElevatedButton.styleFrom(
