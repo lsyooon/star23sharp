@@ -122,7 +122,22 @@ public class NotificationService {
     }
 
     // 수신인에게 일반 쪽지가 왔을 경우
+    public void receiveCommonMessage(Long senderId, Long receiverId, Long messageId) {
+        String senderNickname = memberRepository.findNicknameById(senderId);
+        Notification notification = new Notification();
+        notification.setTitle("새로운 쪽지가 도착했어요! \uD83D\uDCEC");
+        notification.setContent(senderNickname + "님에게서 쪽지가 도착했어요 \uD83D\uDE0A 답장을 보내주세요 \uD83C\uDF3C");
+        notification.setMessage(messageRepository.findMessageById(messageId));
+        notification.setMember(memberRepository.findMemberById(senderId));
+        notificationRepository.save(notification);
 
+        String receiverName = memberRepository.findMemberNameById(receiverId);
+        // 레디스에서 토큰 조회 -> 푸시알림 전송
+        DeviceToken senderToken = deviceTokenRepository.findById(receiverName).orElse(null);
+        if (senderToken != null && senderToken.isActive()) {
+            pushNotificationService.sendPushNotification(senderToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
+        }
+    }
 
 
     // 알림 리스트
