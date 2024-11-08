@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -82,4 +81,35 @@ public class Message {
     )
     private List<Long> receiver;
 
+    public void setSender(Member sender) {
+        this.sender = sender;
+    }
+
+    public void setReceiverType(short receiverType) {
+        this.receiverType = receiverType;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setReceiver(List<Long> receiver) {
+        this.receiver = receiver;
+    }
+
+    public void setGroup(MemberGroup group) {
+        this.group = group;
+    }
 }
