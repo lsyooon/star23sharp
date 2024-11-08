@@ -147,7 +147,6 @@ class UserService {
   // 회원 정보 조회
   static Future<dynamic> getMemberInfo() async {
     try {
-      logger.d(DioService.authDio.options);
       final response = await DioService.authDio.get(
         '/member/info',
       );
@@ -156,11 +155,11 @@ class UserService {
       if (result.code == '200') {
         return result.data;
       } else {
-        return null;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
       logger.d('Failed to create post: $e');
-      return null;
+      ErrorHandler.handle(e);
     }
   }
 }

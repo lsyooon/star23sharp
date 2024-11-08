@@ -59,6 +59,8 @@ class DioService {
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
               final cloneReq = await authDio.fetch(e.requestOptions);
               return handler.resolve(cloneReq); // 재요청 결과 반환
+            }else{
+              
             }
           } else {
             try {
