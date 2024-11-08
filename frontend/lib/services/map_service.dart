@@ -12,6 +12,7 @@ class MapService {
   static Future<List<dynamic>?> getTreasures(
       double lat1, double lng1, double lat2, double lng2) async {
     try {
+
       final response = await DioService.fastAuthDio.get(
         '/fastapi_ec2/treasure/near',
         queryParameters: {
@@ -91,8 +92,9 @@ class MapService {
         logger.d("API 응답 오류: ${response.statusCode}");
         return null;
       }
-    } catch (e) {
+    } on DioException catch (e) {
       logger.d("API 호출 실패: $e");
+      ErrorHandler.handle(e);
       return null;
     }
   }
@@ -130,8 +132,9 @@ class MapService {
       } else {
         return null;
       }
-    } catch (e) {
+    } on DioException catch (e) {
       logger.d("API 호출 실패: $e");
+      ErrorHandler.handle(e);
       return null;
     }
   }
