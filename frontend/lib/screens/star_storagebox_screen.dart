@@ -89,7 +89,7 @@ class StarStoragebox extends StatelessWidget {
                                           decoration: BoxDecoration(
                                             color: index % 2 == 1
                                                 ? const Color(0xFFF6F6F6).withOpacity(0.2)
-                                                : Colors.white.withOpacity(0),
+                                                : Colors.transparent,
                                           ),
                                           child: ListItem(
                                             item: itemsData[index],

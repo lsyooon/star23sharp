@@ -60,7 +60,6 @@ class StarService {
       var response = await DioService.authDio.get('/message/send/$messageId');
 
       var result = ResponseModel.fromJson(response.data);
-      logger.d(result.data);
       if (result.code == '200') {
         if (result.data != null) {
           var data = SentStarModel.fromJson(result.data);
