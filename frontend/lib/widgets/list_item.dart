@@ -42,7 +42,11 @@ class ListItem extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.title,
-                        style: const TextStyle(fontSize: FontSizes.body, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: FontSizes.body, 
+                          color: Colors.white,
+                          fontWeight: item.isSent ? FontWeight.normal : (item.state ? FontWeight.normal : FontWeight.bold),
+                        ),
                         overflow: TextOverflow.ellipsis,  
                         maxLines: 1, 
                       ),
