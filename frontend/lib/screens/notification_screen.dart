@@ -44,8 +44,11 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
     });
     // 알림 ID가 주어졌으면 해당 위치로 스크롤하고 펼치기
     if (widget.notificationId != null) {
+      logger.d(widget.notificationId);
+      logger.d(widget.notificationId is String);
       final index = notifications
           .indexWhere((n) => n.notificationId == widget.notificationId);
+      logger.d("index $index");
       if (index != -1) {
         // 데이터를 모두 설정한 뒤에 알림 확장
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -149,61 +152,92 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
               const SizedBox(height: 10.0),
               isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : Expanded(
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        itemCount: notifications.length,
-                        itemBuilder: (context, index) {
-                          final notification = notifications[index];
-                          final isExpanded =
-                              expansionStates[notification.notificationId] ??
+                  : notifications.isNotEmpty
+                      ? Expanded(
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: notifications.length,
+                            itemBuilder: (context, index) {
+                              final notification = notifications[index];
+                              final isExpanded = expansionStates[
+                                      notification.notificationId] ??
                                   false;
-                          return ExpansionTile(
-                            title: Text(
-                              notification.title,
-                              maxLines: isExpanded ? null : 1, // 확장되었을 때 제한 없음
-                              overflow: isExpanded
-                                  ? TextOverflow.visible
-                                  : TextOverflow.ellipsis, // 확장되었을 때 제한 없음
-                              style: TextStyle(
-                                fontSize: 14.0, // 제목 크기 조정
-                                fontWeight: notification.read
-                                    ? FontWeight.w400
-                                    : FontWeight.w700, // 읽음 여부에 따라 가중치 변경
-                                color: notification.read
-                                    ? Colors.grey[700]
-                                    : Colors.black, // 읽음 여부에 따라 색상 변경
-                              ),
-                            ),
-                            subtitle: Text(notification.createdDate),
-                            onExpansionChanged: (isExpanded) async {
-                              setState(() {
-                                expansionStates[notification.notificationId] =
-                                    isExpanded;
-                              });
-                              if (isExpanded) {
-                                await _fetchNotificationDetail(
-                                    notification.notificationId);
-                              }
-                            },
-                            children: [
-                              if (isExpanded)
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: notificationDetails[
-                                              notification.notificationId] !=
-                                          null
-                                      ? _buildNotificationDetail(notification
-                                          .notificationId) // 상세 정보 UI
-                                      : const Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
+                              return ExpansionTile(
+                                title: Text(
+                                  notification.title,
+                                  maxLines: isExpanded ? null : 1,
+                                  overflow: isExpanded
+                                      ? TextOverflow.visible
+                                      : TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 14.0,
+                                    fontWeight: notification.read
+                                        ? FontWeight.w400
+                                        : FontWeight.w700,
+                                    color: notification.read
+                                        ? Colors.grey[700]
+                                        : Colors.black,
+                                  ),
                                 ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
+                                subtitle: Text(notification.createdDate),
+                                onExpansionChanged: (isExpanded) async {
+                                  setState(() {
+                                    expansionStates[notification
+                                        .notificationId] = isExpanded;
+                                  });
+                                  if (isExpanded) {
+                                    await _fetchNotificationDetail(
+                                        notification.notificationId);
+                                  }
+                                },
+                                children: [
+                                  if (isExpanded)
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: notificationDetails[notification
+                                                  .notificationId] !=
+                                              null
+                                          ? _buildNotificationDetail(
+                                              notification.notificationId)
+                                          : const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        )
+                      : Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(16.0),
+                            child: const Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(height: 20.0),
+                                Text(
+                                  "받은 알림이 없어요!",
+                                  style: TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                SizedBox(height: 10.0),
+                                Text(
+                                  "알림은 별을 받았을 때,\n"
+                                  "내가 보낸 보물 편지를 찾았을 때 도착해요!",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14.0,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
             ],
           ),
         ),
@@ -225,7 +259,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
         if (detail.hint != null) ...[
           const SizedBox(height: 8),
           Text(
-            "힌트: ${detail.hint}",
+            "${detail.hint}",
             style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
           ),
         ],
