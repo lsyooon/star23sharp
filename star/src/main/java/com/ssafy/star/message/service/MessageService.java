@@ -19,11 +19,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -429,34 +434,40 @@ public class MessageService {
         }
         message.setCreatedAt(request.getCreatedAt());
 
-        // 받는 사람 닉네임 아이디로 변환 후 리스트에 저장
-
-//        그룹으로 받을 때 리시버즈 널로??
         List<Long> receiverIds = new ArrayList<>();
-        List<String> receiverNames = request.getReceivers();
-        for (String receiverName : receiverNames) {
-            Long receiverId = memberRepository.findIdByNickname(receiverName);
-            if (receiverId != null) {
-                receiverIds.add(receiverId);
-            } else {
-                throw new CustomException(CustomErrorCode.MEMBER_INFO_NOT_MATCH);
+
+        // 한명 전송이거나, 단체 전송(그룹x) 일 경우
+        // 받는 사람 닉네임 아이디로 변환 후 리스트에 저장
+        if (request.getReceiverType() == 0 || request.getReceiverType() == 1) {
+            List<String> receiverNames = request.getReceivers();
+            for (String receiverName : receiverNames) {
+                Long receiverId = memberRepository.findIdByNickname(receiverName);
+                if (receiverId != null) {
+                    receiverIds.add(receiverId);
+                } else {
+                    throw new CustomException(CustomErrorCode.MEMBER_INFO_NOT_MATCH);
+                }
             }
+            message.setReceiver(receiverIds);
+            
+            // 알림 보내야함
         }
-        message.setReceiver(receiverIds);
 
         // 이미지 파일 url로 변환 유효성 검사
         if (image != null && !image.isEmpty()) {
             // 파일 형식 검사
-            String contentType = image.getContentType();
-            if (contentType == null ||
-                    !(contentType.equals("image/png") || contentType.equals("image/jpeg") || contentType.equals("image/jpg"))) {
+            try {
+                validateImageFormat(image.getInputStream());
+            } catch (CustomException e) {
                 throw new CustomException(CustomErrorCode.INVALID_IMAGE_FORMAT);
             }
+
             // 파일 크기 검사
             long maxFileSize = 5 * 1024 * 1024;
             if (image.getSize() > maxFileSize) {
                 throw new CustomException(CustomErrorCode.MAX_UPLOAD_SIZE_EXCEEDED);
             }
+
             // 파일 업로드, url로 변환 후 저장
             String fileUrl = s3Service.uploadFile(image);
             message.setImage(fileUrl);
@@ -486,8 +497,36 @@ public class MessageService {
         // 그룹 전송일 경우 (사용자 생성 그룹 o)
         else if (request.getReceiverType() == 2) {
             message.setGroup(memberGroupRepository.findMemberGroupById(request.getGroupId()));
+            receiverIds = groupMemberRepository.findMemberIdsByGroupId(request.getGroupId());
+            // 알림 보내야함
         }
+    }
 
+    /*
+    1. MultipartFile.getContentType()를 사용해서 검사하면
+       클라이언트가 contentType을 임의로 설정할 수 있기 때문에 보안상 위험함(이상한 파일 보낼 수 있음)
+
+    2. 파일 이름의 확장자(.png, .jpg, .jpeg)로 검사하면 사용자가 파일 이름을 임의로 변경할 수 있기 때문에 위험함
+
+    그래서 보안과 정확성을 위해 ImageIO 사용해서 이미지의 실제 포맷 확인 & png, jpg, jpeg 여부 검사
+    */
+    public void validateImageFormat(InputStream inputStream) {
+        try (ImageInputStream imageInputStream = ImageIO.createImageInputStream(inputStream)) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInputStream);
+
+            if (!readers.hasNext()) {
+                throw new CustomException(CustomErrorCode.INVALID_IMAGE_FORMAT);
+            }
+
+            ImageReader reader = readers.next();
+            String formatName = reader.getFormatName().toLowerCase();
+
+            if (!(formatName.equals("png") || formatName.equals("jpeg") || formatName.equals("jpg"))) {
+                throw new CustomException(CustomErrorCode.INVALID_IMAGE_FORMAT);
+            }
+        } catch (IOException e) {
+            throw new CustomException(CustomErrorCode.INVALID_IMAGE_FORMAT);
+        }
     }
 
 
