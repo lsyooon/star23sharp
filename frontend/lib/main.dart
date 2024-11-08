@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:provider/provider.dart';
-import 'package:star23sharp/screens/choose_star_style_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -161,7 +160,8 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
         '/message_style_editor': (context) =>
             const MainLayout(child: ChooseStarStyleScreen()),
-        '/stardetail': (context) => const MainLayout(child: StarDetailScreen()),
+        '/star_received_detail': (context) => const MainLayout(child: StarReceivedDetailScreen()),
+        '/star_sent_detail': (context) => const MainLayout(child: StarSentDetailScreen()),
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );

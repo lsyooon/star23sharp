@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/utilities/app_global.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _accessToken;
@@ -31,17 +32,25 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> refreshTokens() async {
     try {
-      Map<String, String>? response = await UserService.refreshToken(refreshToken!);
-      logger.d(response);
-      if(response != null){
-        await setToken(response['access']!, response['refresh']!);
-        return response['access']!;
+      logger.d(refreshToken);
+      if(refreshToken != null){
+        Map<String, String>? response = await UserService.refreshToken(refreshToken!);
+        if(response != null){
+          await setToken(response['access']!, response['refresh']!);
+          return response['access']!;
+        }else{
+          return null;
+        }
       }else{
-        return null;
+        //TODO - 로그아웃 처리 -> 로그인화면으로 이동
+        clearTokens();
+        Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/login'); 
       }
+      
     } catch (e) {
       logger.d('토큰 갱신 실패: $e');
       return null;
     }
+    return null;
   }
 }
