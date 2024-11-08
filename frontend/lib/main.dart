@@ -84,7 +84,6 @@ Future<void> loadAccessToken(AuthProvider authProvider) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: "assets/env/.env");
 
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
