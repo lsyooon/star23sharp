@@ -17,9 +17,6 @@ import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-//TODO - 카카오 연결
-//TODO - 카메라 연결
-
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -69,18 +66,13 @@ Future<void> loadAccessToken(AuthProvider authProvider) async {
   if (access != null && refresh != null) {
     logger.d("access: $access, refresh: $refresh");
     authProvider.setToken(access, refresh);
-  } else{
+  } else {
     logger.d("토큰 없음 -> 로그인 안된 상태");
   }
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: "assets/env/.env");
-
-  final appKey = dotenv.env['APP_KEY'] ?? '';
-  AuthRepository.initialize(
-    appKey: appKey, 
-  );
 
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -115,6 +107,10 @@ void main() async {
 
   // env 파일 설정
   await dotenv.load(fileName: '.env');
+  final appKey = dotenv.env['KAKAO_MAP_APP_KEY'] ?? '';
+  AuthRepository.initialize(
+    appKey: appKey,
+  );
 
   runApp(
     MultiProvider(
@@ -123,6 +119,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => MessageFormProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => MessageFormProvider()),
       ],
       child: const MyApp(),
     ),
@@ -163,6 +160,8 @@ class MyApp extends StatelessWidget {
         '/star_received_detail': (context) => const MainLayout(child: StarReceivedDetailScreen()),
         '/star_sent_detail': (context) => const MainLayout(child: StarSentDetailScreen()),
         '/modify_profile' : (context) => const MainLayout(child: ModifyProfileScreen()),
+        '/hidestar': (context) => const MainLayout(child: HideStarScreen()),
+
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );

@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:star23sharp/models/index.dart';
-import 'package:star23sharp/widgets/index.dart';
 
 class MenuList extends StatelessWidget {
   final Function(MenuItem) onItemSelected;
   final bool isMenuTouched;
 
-  const MenuList({
-    Key? key,
+  final GlobalKey _menuKey = GlobalKey();
+
+  MenuList({
+    super.key,
     required this.onItemSelected,
     required this.isMenuTouched,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      key: _menuKey,
       onTap: () {
         _showMenu(context);
       },
@@ -35,13 +37,17 @@ class MenuList extends StatelessWidget {
   }
 
   void _showMenu(BuildContext context) {
+    final RenderBox menuBox =
+        _menuKey.currentContext!.findRenderObject() as RenderBox;
+    final Offset position = menuBox.localToGlobal(Offset.zero);
+
     showMenu<MenuItem>(
       context: context,
       color: const Color(0xFF505050),
       position: RelativeRect.fromLTRB(
-        UIhelper.deviceWidth(context),
-        UIhelper.deviceHeight(context) * 0.32,
-        UIhelper.deviceWidth(context) * 0.13,
+        position.dx - menuBox.size.width * 2.3,
+        position.dy - menuBox.size.height * 5,
+        position.dx + menuBox.size.width,
         0,
       ),
       items: MenuItem.values.map((option) {
