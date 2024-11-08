@@ -17,6 +17,7 @@ import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -141,6 +142,10 @@ void main() async {
 
   // env 파일 설정
   await dotenv.load(fileName: '.env');
+  final appKey = dotenv.env['KAKAO_MAP_APP_KEY'] ?? '';
+  AuthRepository.initialize(
+    appKey: appKey,
+  );
 
   runApp(
     MultiProvider(
@@ -149,6 +154,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => MessageFormProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => MessageFormProvider()),
       ],
       child: const MyApp(),
     ),
@@ -192,6 +198,8 @@ class MyApp extends StatelessWidget {
             const MainLayout(child: StarSentDetailScreen()),
         '/modify_profile': (context) =>
             const MainLayout(child: ModifyProfileScreen()),
+        '/hidestar': (context) => const MainLayout(child: HideStarScreen()),
+
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
