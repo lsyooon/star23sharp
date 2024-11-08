@@ -86,11 +86,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/env/.env");
 
-  final appKey = dotenv.env['APP_KEY'] ?? '';
-  AuthRepository.initialize(
-    appKey: appKey,
-  );
-
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //FCM 푸시 알림 관련 초기화

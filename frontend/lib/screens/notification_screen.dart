@@ -87,9 +87,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-await _fetchNotificationDetail(
-                                    notification.notificationId);
-                              }
+
       // 해당 ExpansionTile을 펼침
       setState(() {
         expansionStates[notificationId] = true;
