@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum CustomErrorCode {
-    MAX_UPLOAD_SIZE_EXCEEDED("E0003", "업로드 가능한 파일 크기를 초과했습니다.", HttpStatus.PAYLOAD_TOO_LARGE),
+    MAX_UPLOAD_SIZE_EXCEEDED("L0024", "업로드 가능한 파일 크기를 초과했습니다.", HttpStatus.PAYLOAD_TOO_LARGE),
     EMPTY_REFRESH_TOKEN("M0007", "Refresh Token이 비어있습니다.",HttpStatus.UNAUTHORIZED),
     EMPTY_ACCESS_TOKEN("M0008", "Access Token이 비어있습니다.",HttpStatus.UNAUTHORIZED),
     EXPIRED_TOKEN("M0000","만료된 토큰입니다.",HttpStatus.UNAUTHORIZED),
@@ -30,6 +30,9 @@ public enum CustomErrorCode {
     PUSH_NOTIFICATION_MESSAGE_TOO_LARGE("P0006", "푸시 알림 메시지 크기가 초과되었습니다.", HttpStatus.BAD_REQUEST),
     NOT_FOUND_NOTIFICATION("P0007", "알림이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_NOTIFICATION_ACCESS("P0008", "알림에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
+    TITLE_TOO_LONG("L0019", "쪽지 제목이 너무 깁니다.", HttpStatus.BAD_REQUEST),
+    CONTENT_TOO_LONG("L0020", "쪽지 내용이 너무 깁니다.", HttpStatus.BAD_REQUEST),
+    INVALID_IMAGE_FORMAT("L0025", "잘못된 이미지 형식입니다. png, jpg, jpeg 파일만 허용됩니다.", HttpStatus.BAD_REQUEST),
     ;
     private final String code;
     private final String message;

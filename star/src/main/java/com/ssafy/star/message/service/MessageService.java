@@ -2,18 +2,24 @@ package com.ssafy.star.message.service;
 
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
+import com.ssafy.star.member.entity.GroupMember;
+import com.ssafy.star.member.entity.MemberGroup;
 import com.ssafy.star.member.repository.GroupMemberRepository;
 import com.ssafy.star.member.repository.MemberGroupRepository;
 import com.ssafy.star.member.repository.MemberRepository;
+import com.ssafy.star.message.dto.request.CommonMessageRequest;
 import com.ssafy.star.message.dto.request.ComplaintMessageRequest;
 import com.ssafy.star.message.dto.response.*;
 import com.ssafy.star.message.entity.Complaint;
 import com.ssafy.star.message.entity.ComplaintReason;
 import com.ssafy.star.message.entity.Message;
 import com.ssafy.star.message.repository.*;
+import com.ssafy.star.message.util.S3Service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -31,8 +37,9 @@ public class MessageService {
     private final ComplaintRepository complaintRepository;
     private final ComplaintReasonRepository complaintReasonRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final S3Service s3Service;
 
-    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository, ComplaintRepository complaintRepository, MemberRepository memberRepository, ComplaintReasonRepository complaintReasonRepository, GroupMemberRepository groupMemberRepository) {
+    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository, ComplaintRepository complaintRepository, MemberRepository memberRepository, ComplaintReasonRepository complaintReasonRepository, GroupMemberRepository groupMemberRepository, S3Service s3Service) {
         this.messageRepository = messageRepository;
         this.messageBoxRepository = messageBoxRepository;
         this.memberGroupRepository = memberGroupRepository;
@@ -40,11 +47,13 @@ public class MessageService {
         this.memberRepository = memberRepository;
         this.complaintRepository = complaintRepository;
         this.groupMemberRepository = groupMemberRepository;
+        this.s3Service = s3Service;
     }
+
     public List<ReceiveMessageListResponse> getReceiveMessageListResponse(Long userId) {
 
         List<ReceiveMessageListResponse> responseList = new ArrayList<>();
-        responseList = messageBoxRepository.findReceivedMessageList(userId,(short) 1);
+        responseList = messageBoxRepository.findReceivedMessageList(userId, (short) 1);
         LocalDateTime now = LocalDateTime.now();
         for (ReceiveMessageListResponse res : responseList) {
             String formattedDate = formatCreatedDate(res.getCreatedAt(), now);
@@ -55,11 +64,11 @@ public class MessageService {
         return responseList;
     }
     /*
-    *
-    *  수신 쪽지 리스트 V1
-    *
-    *
-    * */
+     *
+     *  수신 쪽지 리스트 V1
+     *
+     *
+     * */
 
 ////    // 수신 쪽지 리스트
 //    public List<ReceiveMessageListResponse> getReceiveMessageList(Long userId) {
@@ -99,8 +108,6 @@ public class MessageService {
 //    }
 
 
-
-
     // 송신 쪽지 리스트 4번째
     public List<SendMessageListResponseDto> getSendMessageListResponse(Long userId) {
         List<SendMessageListResponseDto> responseList = new ArrayList<>();
@@ -108,8 +115,8 @@ public class MessageService {
         responseList = results.stream()
                 .map(result -> new SendMessageListResponseDto(
                         result.getMessageId(), result.getTitle(), result.getRecipient(),
-                        result.getCreatedAt(), result.isKind(),  result.getIsFound(),
-                        result.getReceiverType(),  result.getGroupId()
+                        result.getCreatedAt(), result.isKind(), result.getIsFound(),
+                        result.getReceiverType(), result.getGroupId()
                 ))
                 .collect(Collectors.toList());
         LocalDateTime now = LocalDateTime.now();
@@ -156,11 +163,11 @@ public class MessageService {
 
 
     /*
-*   V2
-*   단순 쿼리 문 개선한 Version
-*
-*
-* */
+     *   V2
+     *   단순 쿼리 문 개선한 Version
+     *
+     *
+     * */
 
 //    // 송신 쪽지 리스트 2번째
 //    public List<SendMessageListResponseDto> getSendMessageListResponseDto(Long userId) {
@@ -235,13 +242,13 @@ public class MessageService {
 //    }
 
     /*
-    *
-    *   V1 초기 버전
-    *
-    *
-    *
-    *
-    * */
+     *
+     *   V1 초기 버전
+     *
+     *
+     *
+     *
+     * */
 
 //    // 송신 쪽지 리스트
 //    public List<SendMessageListResponse> getSendMessageList(Long userId) {
@@ -400,8 +407,87 @@ public class MessageService {
 
     // 안 읽은 쪽지 존재 여부
     public boolean stateFalse(Long userId) {
-        int count = messageBoxRepository.existsByMemberIdANDMessageDirection(userId, (short)1);
+        int count = messageBoxRepository.existsByMemberIdANDMessageDirection(userId, (short) 1);
         return count != 0;
+    }
+
+    // 일반 쪽지 작성
+    @Transactional
+    public void commonMessage(Long userId, CommonMessageRequest request, MultipartFile image) throws IOException {
+        Message message = new Message();
+        message.setSender(memberRepository.findMemberById(userId));
+        message.setReceiverType(request.getReceiverType());
+        if (request.getTitle().length() > 15) {
+            throw new CustomException(CustomErrorCode.TITLE_TOO_LONG);
+        } else {
+            message.setTitle(request.getTitle());
+        }
+        if (request.getContent().length() > 70) {
+            throw new CustomException(CustomErrorCode.CONTENT_TOO_LONG);
+        } else {
+            message.setContent(request.getContent());
+        }
+        message.setCreatedAt(request.getCreatedAt());
+
+        // 받는 사람 닉네임 아이디로 변환 후 리스트에 저장
+
+//        그룹으로 받을 때 리시버즈 널로??
+        List<Long> receiverIds = new ArrayList<>();
+        List<String> receiverNames = request.getReceivers();
+        for (String receiverName : receiverNames) {
+            Long receiverId = memberRepository.findIdByNickname(receiverName);
+            if (receiverId != null) {
+                receiverIds.add(receiverId);
+            } else {
+                throw new CustomException(CustomErrorCode.MEMBER_INFO_NOT_MATCH);
+            }
+        }
+        message.setReceiver(receiverIds);
+
+        // 이미지 파일 url로 변환 유효성 검사
+        if (image != null && !image.isEmpty()) {
+            // 파일 형식 검사
+            String contentType = image.getContentType();
+            if (contentType == null ||
+                    !(contentType.equals("image/png") || contentType.equals("image/jpeg") || contentType.equals("image/jpg"))) {
+                throw new CustomException(CustomErrorCode.INVALID_IMAGE_FORMAT);
+            }
+            // 파일 크기 검사
+            long maxFileSize = 5 * 1024 * 1024;
+            if (image.getSize() > maxFileSize) {
+                throw new CustomException(CustomErrorCode.MAX_UPLOAD_SIZE_EXCEEDED);
+            }
+            // 파일 업로드, url로 변환 후 저장
+            String fileUrl = s3Service.uploadFile(image);
+            message.setImage(fileUrl);
+        }
+
+        messageRepository.save(message);
+
+        // 단체 메시지일 경우 (사용자 생성 그룹 x)
+        if (request.getReceiverType() == 1) {
+            // 그룹 생성
+            MemberGroup memberGroup = new MemberGroup();
+            memberGroup.setCreator(memberRepository.findMemberById(userId));
+            memberGroup.setCreatedAt(request.getCreatedAt());
+            memberGroupRepository.save(memberGroup);
+
+            // 메시지에 그룹 아이디 set
+            message.setGroup(memberGroup);
+
+            // 그룹 멤버들 저장
+            for (Long receiverId : receiverIds) {
+                GroupMember groupMember = new GroupMember();
+                groupMember.setGroup(memberGroup);
+                groupMember.setMember(memberRepository.findMemberById(receiverId));
+                groupMemberRepository.save(groupMember);
+            }
+        }
+        // 그룹 전송일 경우 (사용자 생성 그룹 o)
+        else if (request.getReceiverType() == 2) {
+            message.setGroup(memberGroupRepository.findMemberGroupById(request.getGroupId()));
+        }
+
     }
 
 
