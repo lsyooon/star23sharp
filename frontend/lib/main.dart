@@ -103,7 +103,7 @@ void main() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
     String? imageUrl = message.notification?.android?.imageUrl;
-    logger.d("Handling message: $message");
+
     if (notification != null) {
       if (imageUrl != null) {
         // 이미지가 포함된 경우
