@@ -10,4 +10,6 @@ public interface MemberGroupRepository extends JpaRepository<MemberGroup, Long> 
 
     @Query("SELECT mg.isConstructed FROM MemberGroup mg WHERE mg.id = :id")
     Boolean findIsConstructedByGroupId(Long id);
+
+    MemberGroup findMemberGroupById(Long id);
 }
