@@ -79,7 +79,7 @@ class CorrectModal extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "힌트사진!",
+                                  "사진!",
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 18,
@@ -90,16 +90,16 @@ class CorrectModal extends StatelessWidget {
                                   child: SizedBox(
                                     width: 320,
                                     height: 200,
-                                    child: markerData["hintImg"] != null
-                                        ? Image(
-                                            image: markerData["hintImg"],
+                                    child: markerData["image"] != null
+                                        ? Image.network(
+                                            markerData["image"],
                                           )
                                         : const SizedBox(),
                                   ),
                                 ),
                                 const SizedBox(height: 16),
                                 const Text(
-                                  "정답 메시지",
+                                  "내용",
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 18,
@@ -107,7 +107,7 @@ class CorrectModal extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  markerData['hint'] ?? "축하합니다, 정답을 맞추셨습니다!",
+                                  markerData['content'] ?? "축하합니다, 정답을 맞추셨습니다!",
                                   style: const TextStyle(
                                     color: Colors.white70,
                                     fontSize: 18,

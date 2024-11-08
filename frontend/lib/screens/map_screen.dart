@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:star23sharp/main.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/models/index.dart';
+import 'package:star23sharp/services/index.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -19,60 +22,10 @@ class _MapScreenState extends State<MapScreen>
   late KakaoMapController mapController;
   bool _isMenuTouched = false;
   Set<Marker> markers = {};
+  Map<String, Map<String, dynamic>> markerInfo = {};
   String message = "";
   final ImagePicker _picker = ImagePicker();
-  bool _isLocationLoaded = false; // 위치 로드 상태 변수
-
-  // kakao_map_plugin
-  // windowInfo에 값을 넣으면 마커 클릭 시, windowInfo가 표시되게 설계되어 있어서 markerId에 매칭 되는 Map을 만들어야할 것 같음
-  // markerId 에 매칭되는 더미 데이터
-  final Map<String, Map<String, dynamic>> markerInfo = {
-    "1": {
-      "title": "이거 찾아봐",
-      "hint": "맞춰보셈.",
-      "hintImg": const AssetImage(
-        "assets/img/map/test.png",
-      ),
-      "nickname": "가나다",
-      "isTreasure": true,
-    },
-    "2": {
-      "title": "맞춰보셈",
-      "hint": "여기는 새로운 발견이 있는 맞춰보셈.",
-      "hintImg": const AssetImage(
-        "assets/img/map/test.png",
-      ),
-      "nickname": "라마나",
-      "isTreasure": true,
-    },
-    "3": {
-      "title": "행운의 별",
-      "hint": "행운을 가져다 주는 장소입니다.",
-      "hintImg": const AssetImage(
-        "assets/img/map/test.png",
-      ),
-      "nickname": "",
-      "isTreasure": true,
-    },
-    "4": {
-      "title": "하이하이",
-      "hint": "친구들과 함께하는 즐거운 장소입니다.",
-      "hintImg": const AssetImage(
-        "assets/img/map/test.png",
-      ),
-      "nickname": "ㅋㅋㅋ",
-      "isTreasure": false,
-    },
-    "5": {
-      "title": "ㅜㅜㅜ",
-      "hint": "장소입니다.",
-      "hintImg": const AssetImage(
-        "assets/img/map/test.png",
-      ),
-      "nickname": "ㅋㅋㅋ",
-      "isTreasure": false,
-    },
-  };
+  bool _isLocationLoaded = false;
 
   // 탭 간의 이동이나 스크롤을 할 때 상태가 리셋되지 않고 그대로 유지
   @override
@@ -121,7 +74,7 @@ class _MapScreenState extends State<MapScreen>
   // 지도 로드 후 캐시된 위치나 현재 위치로 이동
   Future<void> _loadMap() async {
     setState(() {
-      _isLocationLoaded = true; // 지도 로딩 상태를 업데이트
+      _isLocationLoaded = true;
     });
   }
 
@@ -138,56 +91,17 @@ class _MapScreenState extends State<MapScreen>
     // 캐시된 위치가 있으면 그 위치로 먼저 이동
     if (lat != null && lng != null) {
       final cachedLocationLatLng = LatLng(lat, lng);
-      await _setMarker(cachedLocationLatLng); // 캐시된 위치에 마커 설정
-      mapController.setCenter(cachedLocationLatLng); // 지도 중심을 캐시된 위치로 설정
+      mapController.setCenter(cachedLocationLatLng);
     } else {
-      print("캐시된 위치가 없습니다. 현재 위치를 가져옵니다.");
+      logger.d("캐시된 위치가 없습니다. 현재 위치를 가져옵니다.");
     }
 
     // 현재 위치를 가져와 지도 중심 업데이트
     try {
       await _goToCurrentLocation();
     } catch (e) {
-      print("현재 위치를 가져오는 데 실패했습니다: $e");
+      logger.d("현재 위치를 가져오는 데 실패했습니다: $e");
     }
-  }
-
-  // 마커 더미데이터 설정 함수
-  Future<void> _setMarker(LatLng location) async {
-    setState(() {
-      markers = {
-        Marker(
-          markerId: "1",
-          latLng: LatLng(location.latitude, location.longitude),
-          markerImageSrc:
-              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
-        ),
-        Marker(
-          markerId: "2",
-          latLng: LatLng(location.latitude + 0.001, location.longitude + 0.001),
-          markerImageSrc:
-              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
-        ),
-        Marker(
-          markerId: "3",
-          latLng: LatLng(location.latitude - 0.001, location.longitude - 0.001),
-          markerImageSrc:
-              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
-        ),
-        Marker(
-          markerId: "4",
-          latLng: LatLng(location.latitude + 0.001, location.longitude - 0.001),
-          markerImageSrc:
-              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
-        ),
-        Marker(
-          markerId: "5",
-          latLng: LatLng(location.latitude + 0.002, location.longitude - 0.001),
-          markerImageSrc:
-              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s",
-        ),
-      };
-    });
   }
 
   // 위치 캐시
@@ -196,18 +110,16 @@ class _MapScreenState extends State<MapScreen>
     await currentLocation.setDouble('lat', location.latitude);
     await currentLocation.setDouble('lng', location.longitude);
 
-    print("lat=${location.latitude}, lng=${location.longitude}");
+    logger.d("lat=${location.latitude}, lng=${location.longitude}");
   }
 
   // 현재 위치로 이동
   Future<void> _goToCurrentLocation() async {
     var position = await Geolocator.getCurrentPosition();
-    final currentLocation = LatLng(position.latitude, position.longitude);
 
     mapController.setCenter(LatLng(position.latitude, position.longitude));
 
     await _cacheLocation(LatLng(position.latitude, position.longitude));
-    await _setMarker(currentLocation);
   }
 
   // 사진 촬영
@@ -237,7 +149,7 @@ class _MapScreenState extends State<MapScreen>
       source: ImageSource.camera,
     );
     if (image != null) {
-      _verifyPicture(image, markerData); // markerData 전달
+      _verifyPicture(image, markerData);
     } else {
       setState(() {
         message = "사진 촬영이 취소되었습니다.";
@@ -246,14 +158,27 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // 사진 검증 함수
-  bool isCorrectPicture(XFile image) {
-    // TODO - 사진 검증 api 호출
-    return true;
+  Future<bool> isCorrectPicture(
+      XFile image, Map<String, dynamic> markerData) async {
+    final data = await MapService.verifyPhoto(
+      file: File(image.path),
+      id: markerData['id'],
+      lat: markerData['lat'],
+      lng: markerData['lng'],
+    );
+
+    if (data != null) {
+      markerData.addAll(data);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // 사진 검증 후 성공/실패 모달 분기
-  void _verifyPicture(XFile image, Map<String, dynamic> markerData) {
-    if (isCorrectPicture(image)) {
+  void _verifyPicture(XFile image, Map<String, dynamic> markerData) async {
+    bool isCorrect = await isCorrectPicture(image, markerData);
+    if (isCorrect) {
       Navigator.pop(context);
       CorrectMessageModal.show(
         context,
@@ -265,6 +190,7 @@ class _MapScreenState extends State<MapScreen>
       IncorrectMessageModal.show(
         context,
         onRetry: () => _takePhoto(markerData),
+        markerData: markerData,
       );
     }
   }
@@ -355,10 +281,17 @@ class _MapScreenState extends State<MapScreen>
                                   final markerData =
                                       markerInfo[marker.markerId] ??
                                           {
+                                            "id": -1,
                                             "title": "정보 없음",
                                             "hint": "추가 정보 없음",
-                                            "nickname": "",
                                             "isTreasure": false,
+                                            "isFound": false,
+                                            "senderId": "1",
+                                            "lat": -1,
+                                            "lng": -1,
+                                            "image": "",
+                                            "content": "",
+                                            "hint_image_first": "",
                                           };
 
                                   return GestureDetector(
@@ -393,7 +326,7 @@ class _MapScreenState extends State<MapScreen>
                                             ),
                                           ),
                                           Text(
-                                            markerData['nickname'],
+                                            markerData['senderId'],
                                             style: const TextStyle(
                                               color: Colors.white54,
                                               fontSize: 16,
@@ -425,8 +358,18 @@ class _MapScreenState extends State<MapScreen>
   Future<void> _showMarkerDetail(BuildContext context, String markerId) async {
     final markerData = markerInfo[markerId] ??
         {
+          "id": -1,
           "title": "정보 없음",
           "hint": "추가 정보 없음",
+          "isTreasure": true,
+          "isFound": false,
+          "senderId": "정보 없음",
+          "dot_hint_image": "정보 없음",
+          "lat": -1,
+          "lng": -1,
+          "image": "",
+          "content": "",
+          "hint_image_first": "",
         };
 
     final deviceWidth = UIhelper.deviceWidth(context);
@@ -495,7 +438,7 @@ class _MapScreenState extends State<MapScreen>
                                   children: [
                                     const Text(
                                       "힌트사진!",
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.white70,
                                         fontSize: 18,
                                       ),
@@ -505,10 +448,10 @@ class _MapScreenState extends State<MapScreen>
                                       child: SizedBox(
                                         width: 320,
                                         height: 200,
-                                        child: markerData["hintImg"] != null
-                                            ? Image(
-                                                image: markerData["hintImg"],
-                                              )
+                                        child: markerData["dot_hint_image"] !=
+                                                null
+                                            ? Image.network(
+                                                markerData["dot_hint_image"])
                                             : const SizedBox(),
                                       ),
                                     ),
@@ -576,6 +519,79 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
+  Future<void> fetchTreasureDetail(double id) async {
+    final result = await MapService.getTreasureDetail(id);
+
+    if (result != null) {
+      setState(() {
+        // Treasure 데이터 기반으로 markerInfo 업데이트
+        result.forEach((dynamic item) {
+          final treasure = item as TreasureModel;
+          markerInfo[treasure.id.toString()] = {
+            "id": treasure.id,
+            "title": treasure.title,
+            "hint": treasure.hint,
+            "isTreasure": treasure.isTreasure,
+            "isFound": treasure.isFound,
+            "senderId": treasure.senderId.toString(),
+            "dot_hint_image": treasure.dotHintImage,
+            "lat": treasure.lat,
+            "lng": treasure.lng,
+            "image": treasure.image,
+            "content": treasure.content,
+            "hint_image_first": treasure.hintImageFirst,
+          };
+        });
+      });
+    } else {
+      logger.d("서버에서 Treasure Detail 데이터를 가져오지 못했습니다.");
+    }
+  }
+
+  Future<void> _fetchTreasuresInBounds(LatLngBounds bounds) async {
+    final ne = bounds.getNorthEast();
+    final sw = bounds.getSouthWest();
+
+    final treasures = await MapService.getTreasures(
+      sw.latitude,
+      sw.longitude,
+      ne.latitude,
+      ne.longitude,
+    );
+
+    if (treasures != null) {
+      setState(() {
+        markers = treasures
+            .map((dynamic item) => item as TreasureModel)
+            .map((TreasureModel treasure) {
+          markerInfo[treasure.id.toString()] = {
+            "id": treasure.id,
+            "title": treasure.title,
+            "hint": treasure.hint,
+            "isTreasure": treasure.isTreasure,
+            "isFound": treasure.isFound,
+            "senderId": treasure.senderId.toString(),
+            "dot_hint_image": treasure.dotHintImage,
+            "lat": treasure.lat,
+            "lng": treasure.lng,
+            "image": treasure.image,
+            "content": treasure.content,
+            "hint_image_first": treasure.hintImageFirst,
+          };
+
+          return Marker(
+            markerId: treasure.id.toString(),
+            latLng: LatLng(treasure.lat, treasure.lng),
+            markerImageSrc:
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s',
+          );
+        }).toSet();
+      });
+    } else {
+      logger.d("서버에서 데이터를 가져오지 못했습니다.");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final deviceWidth = UIhelper.deviceWidth(context);
@@ -603,12 +619,7 @@ class _MapScreenState extends State<MapScreen>
                     markers: markers.toList(),
                     currentLevel: 3,
                     onBoundsChangeCallback: ((latLngBounds) {
-                      final ne = latLngBounds.getNorthEast();
-                      final sw = latLngBounds.getSouthWest();
-
-                      message =
-                          '남서쪽 위도, 경도\n${sw.latitude}, ${sw.longitude}\n 북동쪽 위도, 경도\n${ne.latitude}, ${ne.longitude}';
-                      setState(() {});
+                      _fetchTreasuresInBounds(latLngBounds);
                     }),
                   ),
                 ),

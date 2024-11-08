@@ -27,7 +27,6 @@ class CorrectMessageModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageProvider = markerData['hintImg'] as ImageProvider?;
     final deviceWidth = UIhelper.deviceWidth(context);
     final deviceHeight = UIhelper.deviceHeight(context);
 
@@ -96,16 +95,25 @@ class CorrectMessageModal extends StatelessWidget {
                                   const SizedBox(
                                     height: 8,
                                   ),
-                                  if (imageProvider != null)
-                                    Container(
-                                      width: 200,
-                                      height: 200,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        image: DecorationImage(
-                                          image: imageProvider,
-                                          fit: BoxFit.cover,
-                                        ),
+                                  if (markerData['hint_image_first'] != null)
+                                    Center(
+                                      child: SizedBox(
+                                        width: 320,
+                                        height: 200,
+                                        child: markerData["hint_image_first"] !=
+                                                null
+                                            ? Image.network(
+                                                markerData[
+                                                    "hint_image_first"], // hint_image_first URL을 네트워크 이미지로 표시
+                                                fit: BoxFit
+                                                    .cover, // 이미지가 컨테이너에 맞게 조정되도록 설정
+                                              )
+                                            : const Icon(
+                                                Icons
+                                                    .image, // 이미지를 표시할 수 없을 때 대체 아이콘
+                                                color: Colors.grey,
+                                                size: 50,
+                                              ),
                                       ),
                                     ),
                                 ],

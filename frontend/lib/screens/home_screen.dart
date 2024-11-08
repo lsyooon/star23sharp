@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:star23sharp/main.dart';
+import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/utilities/index.dart';
 
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/widgets/modals/star_write_type_modal.dart';
@@ -22,6 +25,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
 //TODO - 쪽지 다 확인했는지 api 연결..
 
+  // 비동기 초기화 작업을 위한 별도 메서드
+  Future<void> _initialize() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await loadAccessToken(authProvider); // Secure Storage에서 토큰 불러오기
+
+    if (authProvider.accessToken != null) {
+      // 회원정보
+      Map<String, dynamic> user = await UserService.getMemberInfo();
+      logger.d(user);
+      Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!, listen: false)
+        .setUserDetails(id: user['memberId'], name: user['nickname'], isPushEnabled: user['pushNotificationEnabled']);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+      _initialize();
+  }
+  
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -86,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 30),
             const Logo(),
             // 로그인 여부에 따른 UI 변경
-            !authProvider.isLoggedIn
+            authProvider.isLoggedIn
                 ? Expanded(
                     child: Stack(
                       children: [
@@ -111,6 +134,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   // 선택된 URL이 null이 아닌 경우 페이지 이동
                                   if (selectedUrl != null) {
                                     url = selectedUrl;
+                                    Provider.of<MessageFormProvider>(context,
+                                            listen: false)
+                                        .setMessageFormType(type: url);
                                     Navigator.pushNamed(context, url);
                                   }
                                 } else {

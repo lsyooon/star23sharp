@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
@@ -14,15 +15,13 @@ import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
-
-//TODO - 카카오 연결
-//TODO - 카메라 연결
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   if (message.notification != null) {
-    print("Notification Received!");
+    logger.d("Notification Received!");
   }
 }
 
@@ -42,27 +41,45 @@ Future<void> setupInteractedMessage() async {
 //FCM에서 전송한 data를 처리합니다. /message 페이지로 이동하면서 해당 데이터를 화면에 보여줍니다.
 void _handleMessage(RemoteMessage message) {
   Future.delayed(const Duration(seconds: 1), () {
-    print("알림 페이지로 이동!!!!!");
     AppGlobal.navigatorKey.currentState!
         .pushNamed("/notification", arguments: message);
   });
 }
 
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 2, // 호출 스택 깊이
+    errorMethodCount: 5, // 에러 발생 시 호출 스택 깊이
+    lineLength: 50, // 한 줄의 길이 제한
+    colors: true, // 컬러 출력 여부
+    printEmojis: true, // 이모지 출력 여부
+  ),
+);
+
+// 토큰 저장 관련
+const storage = FlutterSecureStorage();
+
+// storage에 저장해둔 내용 받아오기
+Future<void> loadAccessToken(AuthProvider authProvider) async {
+  String? access = await storage.read(key: 'access');
+  String? refresh = await storage.read(key: 'refresh');
+  if (access != null && refresh != null) {
+    logger.d("access: $access, refresh: $refresh");
+    authProvider.setToken(access, refresh);
+  } else {
+    logger.d("토큰 없음 -> 로그인 안된 상태");
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: "assets/env/.env");
-
-  final appKey = dotenv.env['APP_KEY'] ?? '';
-  AuthRepository.initialize(
-    appKey: appKey,
-  );
 
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //FCM 푸시 알림 관련 초기화
-  PushNotification.init();
+  PushNotificationService.init();
   //flutter_local_notifications 패키지 관련 초기화
-  PushNotification.localNotiInit();
+  PushNotificationService.localNotiInit();
   //백그라운드 알림 수신 리스너
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -88,11 +105,21 @@ void main() async {
   //메시지 상호작용 함수 호출
   setupInteractedMessage();
 
+  // env 파일 설정
+  await dotenv.load(fileName: '.env');
+  final appKey = dotenv.env['KAKAO_MAP_APP_KEY'] ?? '';
+  AuthRepository.initialize(
+    appKey: appKey,
+  );
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => MessageFormProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => MessageFormProvider()),
       ],
       child: const MyApp(),
     ),
@@ -128,6 +155,9 @@ class MyApp extends StatelessWidget {
             const MainLayout(child: PushAlarmScreen()),
         '/signin': (context) => const MainLayout(child: LoginScreen()),
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
+        '/message_style_editor': (context) =>
+            const MainLayout(child: ChooseStarStyleScreen()),
+        '/stardetail': (context) => const MainLayout(child: StarDetailScreen()),
         '/hidestar': (context) => const MainLayout(child: HideStarScreen()),
 
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),

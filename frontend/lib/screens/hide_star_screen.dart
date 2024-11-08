@@ -1,6 +1,12 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/services/map_service.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class HideStarScreen extends StatefulWidget {
@@ -15,6 +21,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
   final ImagePicker _picker = ImagePicker();
   List<XFile?> images = [null, null];
   int _currentIndex = 0;
+  Uint8List? _pixelizedImageData;
   final PageController _pageController = PageController();
 
   Future<void> _takePhoto(int index) async {
@@ -26,39 +33,95 @@ class _HideStarScreenState extends State<HideStarScreen> {
     }
   }
 
-// 원본 사진 모달 띄우기
-  void _showFullImage(XFile image) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.height * 0.7,
-                  child: Image.file(
-                    File(image.path),
-                    fit: BoxFit.contain,
+// 픽셀화된 이미지 전체 보기 모달
+  void _showPixelizedImageModal() {
+    if (_pixelizedImageData != null) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Image.memory(
+                      _pixelizedImageData!,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("확인"),
-              ),
-            ],
-          ),
+                const SizedBox(height: 4),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("확인"),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> _pixelizeImages() async {
+    if (images[0] != null) {
+      final Uint8List? pixelizedResult = await MapService.pixelizeImage(
+        file: File(images[0]!.path),
+        kernelSize: 7,
+        pixelSize: 48,
+      );
+
+      if (pixelizedResult != null) {
+        setState(() {
+          _pixelizedImageData = pixelizedResult;
+        });
+
+        final File dotHintImageFile =
+            await uint8ListToFile(_pixelizedImageData!, 'dot_hint_image.png');
+
+        final messageProvider =
+            Provider.of<MessageFormProvider>(context, listen: false);
+
+        messageProvider.setMessageFormType(type: '/map');
+
+        final cachedLocation = await SharedPreferences.getInstance();
+        final lat = cachedLocation.getDouble('lat');
+        final lng = cachedLocation.getDouble('lng');
+
+        messageProvider.saveMessageData(
+          hintImageFirst: File(images[0]!.path),
+          hintImageSecond: File(images[1]!.path),
+          dotHintImage: File(dotHintImageFile.path),
+          lat: lat!,
+          lng: lng!,
         );
-      },
-    );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("이미지 픽셀화에 실패했습니다.")),
+        );
+      }
+    }
+  }
+
+  Future<File> uint8ListToFile(Uint8List data, String fileName) async {
+    // 1. 저장할 디렉토리 경로 가져오기
+    final directory = await getTemporaryDirectory();
+
+    // 2. 저장할 파일 경로 설정
+    final filePath = '${directory.path}/$fileName';
+
+    // 3. 파일 생성 및 바이트 데이터 작성
+    final file = File(filePath);
+    await file.writeAsBytes(data);
+
+    return file;
   }
 
   Widget _buildCaptureMode() {
@@ -174,8 +237,9 @@ class _HideStarScreenState extends State<HideStarScreen> {
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (images[0] != null && images[1] != null) {
+              await _pixelizeImages();
               setState(() {
                 isPreviewMode = true;
               });
@@ -216,7 +280,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
           child: Column(
             children: [
               const Text(
-                "힌트 사진\n 사진을 누르면 크게 확인이 가능합니다.",
+                "힌트 사진\n 누르면 크게 확인할 수 있어요!",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -225,11 +289,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
               ),
               const SizedBox(height: 20),
               GestureDetector(
-                onTap: () {
-                  if (images[0] != null) {
-                    _showFullImage(images[0]!);
-                  }
-                },
+                onTap: _showPixelizedImageModal,
                 child: Container(
                   width: 200,
                   height: 200,
@@ -237,19 +297,33 @@ class _HideStarScreenState extends State<HideStarScreen> {
                     color: Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: images[0] != null
+                  child: _pixelizedImageData != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.file(
-                            File(images[0]!.path),
-                            fit: BoxFit.cover,
+                          child: SizedBox(
+                            height: 150,
+                            child: Image.memory(
+                              _pixelizedImageData!,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         )
-                      : const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 50,
-                        ),
+                      : (images[0] != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: SizedBox(
+                                height: 150,
+                                child: Image.file(
+                                  File(images[0]!.path),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          : const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 50,
+                            )),
                 ),
               ),
               const SizedBox(height: 20),
@@ -259,10 +333,13 @@ class _HideStarScreenState extends State<HideStarScreen> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        isPreviewMode = false;
-                        images[0] = null;
-                        images[1] = null;
-                        _currentIndex = 0;
+                        setState(() {
+                          isPreviewMode = false;
+                          images[0] = null;
+                          images[1] = null;
+                          _currentIndex = 0;
+                          _pixelizedImageData = null;
+                        });
                       });
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         _pageController.jumpToPage(0);

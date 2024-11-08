@@ -3,20 +3,24 @@ import 'package:star23sharp/widgets/index.dart';
 
 class IncorrectMessageModal extends StatelessWidget {
   final VoidCallback onRetry;
+  final Map<String, dynamic> markerData;
 
   const IncorrectMessageModal({
     required this.onRetry,
+    required this.markerData,
     super.key,
   });
 
   static void show(
     BuildContext context, {
     required VoidCallback onRetry,
+    required Map<String, dynamic> markerData,
   }) {
     showDialog(
       context: context,
       builder: (_) => IncorrectMessageModal(
         onRetry: onRetry,
+        markerData: markerData,
       ),
     );
   }
@@ -71,24 +75,44 @@ class IncorrectMessageModal extends StatelessWidget {
                         const SizedBox(
                           height: 32,
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Center(
                             child: SingleChildScrollView(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
+                                  const Text(
                                     "틀렸습니다",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 24,
                                     ),
                                   ),
-                                  SizedBox(
-                                    height: 16,
+                                  const SizedBox(
+                                    height: 8,
                                   ),
-                                  Text(
-                                    "다시 시도해 주세요.",
+                                  Center(
+                                    child: SizedBox(
+                                      width: 270,
+                                      height: 150,
+                                      child:
+                                          markerData["dot_hint_image"] != null
+                                              ? Image.network(
+                                                  markerData["dot_hint_image"],
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : const Icon(
+                                                  Icons.image,
+                                                  color: Colors.grey,
+                                                  size: 50,
+                                                ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                  const Text(
+                                    "다시 시도해 주세요!",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,

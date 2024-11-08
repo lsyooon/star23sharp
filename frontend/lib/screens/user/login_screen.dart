@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:star23sharp/main.dart';
+import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/utilities/app_global.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -6,6 +11,10 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TextEditingController를 생성하여 아이디와 비밀번호 필드의 입력 값을 관리
+    final TextEditingController memberIdController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+
     return Stack(
       children: [
         // 배경 이미지
@@ -56,6 +65,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     TextField(
+                      controller: memberIdController, 
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFA292EC).withOpacity(0.4),
@@ -81,6 +91,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     TextField(
+                      controller: passwordController, 
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
@@ -105,8 +116,30 @@ class LoginScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextButton(
-                          onPressed: () {
-                            // 로그인 버튼 클릭 시 처리
+                          onPressed: () async {
+                            String memberId = memberIdController.text.trim();
+                            String password = passwordController.text.trim();
+
+                            if (memberId.isEmpty || password.isEmpty) {
+                              logger.d("아이디와 비밀번호를 입력해주세요.");
+                            } else {
+                              logger.d("id: $memberId, pwd: $password");   
+                              Map<String, String>? loginResponse = await UserService.login(memberId, password);
+                              if (loginResponse != null) {
+                                await Provider.of<AuthProvider>(context, listen: false)
+                                    .setToken(loginResponse['access']!, loginResponse['refresh']!);
+
+                                // 내 정보 provider에 저장
+                                Map<String, dynamic> user = await UserService.getMemberInfo();
+                                logger.d(user);
+                                Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!, listen: false)
+                                  .setUserDetails(id: user['memberId'], name: user['nickname'], isPushEnabled: user['pushNotificationEnabled']);
+                                  
+                                Navigator.pushNamed(context, '/home');
+                              } else {
+                                // 로그인 실패 UI 처리
+                              }
+                            }
                           },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
