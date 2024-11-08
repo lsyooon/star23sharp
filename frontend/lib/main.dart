@@ -157,7 +157,9 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
         '/message_style_editor': (context) =>
             const MainLayout(child: ChooseStarStyleScreen()),
-        '/stardetail': (context) => const MainLayout(child: StarDetailScreen()),
+        '/star_received_detail': (context) => const MainLayout(child: StarReceivedDetailScreen()),
+        '/star_sent_detail': (context) => const MainLayout(child: StarSentDetailScreen()),
+        '/modify_profile' : (context) => const MainLayout(child: ModifyProfileScreen()),
         '/hidestar': (context) => const MainLayout(child: HideStarScreen()),
 
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),

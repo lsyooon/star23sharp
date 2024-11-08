@@ -5,7 +5,7 @@ import 'package:star23sharp/main.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
-import 'package:star23sharp/models/enums/star/writing_style.dart';
+import 'package:star23sharp/utilities/enums/index.dart';
 
 class ChooseStarStyleScreen extends StatefulWidget {
   const ChooseStarStyleScreen({super.key});

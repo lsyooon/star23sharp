@@ -18,16 +18,16 @@ class UserService {
 
       var result = ResponseModel.fromJson(response.data);
       if (result.code == '200') {
-        if (result.data) {
-          return false;
-        } else {
-          return true;
-        }
+        return result.data;
       } else {
-        return true;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
-      logger.d('Failed to create post: $e');
+      logger.e('Failed to create post: $e');
+      ErrorHandler.handle(e); // 에러 처리 및 Snackbar 표시
+      return true;
+    } catch (e) {
+      logger.e('Unexpected error: $e');
       return true;
     }
   }
@@ -50,11 +50,15 @@ class UserService {
       if (result.code == '200') {
         return true;
       } else {
-        return false;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
       logger.e('Failed to create post: $e');
-      throw Exception('Failed to create post');
+      ErrorHandler.handle(e); // 에러 처리 및 Snackbar 표시
+      return false; // 에러 발생 시 false 반환
+    } catch (e) {
+      logger.e('Unexpected error: $e');
+      return false; // 기타 예외 발생 시 false 반환
     }
   }
 
@@ -76,10 +80,11 @@ class UserService {
         String refresh = response.headers['refresh']?.first ?? '';
         return {'access': access, 'refresh': refresh};
       } else {
-        return null;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
       logger.e('Failed to create post: $e');
+      ErrorHandler.handle(e); // 에러 처리 및 Snackbar 표시
       return null;
     }
   }
@@ -89,7 +94,7 @@ class UserService {
     try {
       logger.d(refresh);
 
-      final response = await DioService.authDio.post(
+      final response = await DioService.dio.post(
         '/logout',
         options: Options(
           headers: {
@@ -130,18 +135,18 @@ class UserService {
         String refresh = response.headers['refresh']?.first ?? '';
         return {'access': access, 'refresh': refresh};
       } else {
-        return null;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
       logger.e('Failed to create post: $e');
-      return null;
+      ErrorHandler.handle(e); // 에러 처리 및 Snackbar 표시
     }
+    return null;
   }
 
   // 회원 정보 조회
   static Future<dynamic> getMemberInfo() async {
     try {
-      logger.d(DioService.authDio.options);
       final response = await DioService.authDio.get(
         '/member/info',
       );
@@ -150,11 +155,11 @@ class UserService {
       if (result.code == '200') {
         return result.data;
       } else {
-        return null;
+        throw Exception(result.message);
       }
     } on DioException catch (e) {
       logger.d('Failed to create post: $e');
-      return null;
+      ErrorHandler.handle(e);
     }
   }
 }
