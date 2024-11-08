@@ -104,8 +104,9 @@ public class NotificationService {
         String address = addressService.getAddressFromCoordinates(latitude, longitude);
 
         Notification notification = new Notification();
-        notification.setTitle(senderNickname + "님이 " + receiverNickname + "님에게 살짝 보물 쪽지를 남겼어요! \uD83D\uDC8C 힌트를 보고 쪽지를 찾아보세요\uD83D\uDE04");
-        notification.setContent("위치 : " + address);
+        notification.setTitle("새로운 쪽지가 도착했어요! \uD83D\uDCEC");
+        String content = senderNickname + "님이 " + receiverNickname + "님에게 살짝 보물 쪽지를 남겼어요! \uD83D\uDC8C 힌트를 보고 쪽지를 찾아보세요\uD83D\uDE04\n위치 : " + address;
+        notification.setContent(content);
         notification.setMember(memberRepository.findMemberById(receiverId));
         notification.setMessage(messageRepository.findMessageById(messageId));
         notification.setImage(message.getDotHintImage());
@@ -133,9 +134,9 @@ public class NotificationService {
 
         String receiverName = memberRepository.findMemberNameById(receiverId);
         // 레디스에서 토큰 조회 -> 푸시알림 전송
-        DeviceToken senderToken = deviceTokenRepository.findById(receiverName).orElse(null);
-        if (senderToken != null && senderToken.isActive()) {
-            pushNotificationService.sendPushNotification(senderToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
+        DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
+        if (receiverToken != null && receiverToken.isActive()) {
+            pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
         }
     }
 
