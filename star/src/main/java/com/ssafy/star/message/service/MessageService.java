@@ -41,11 +41,11 @@ public class MessageService {
         this.complaintRepository = complaintRepository;
         this.groupMemberRepository = groupMemberRepository;
     }
-    LocalDateTime now = LocalDateTime.now();
     public List<ReceiveMessageListResponse> getReceiveMessageListResponse(Long userId) {
 
         List<ReceiveMessageListResponse> responseList = new ArrayList<>();
         responseList = messageBoxRepository.findReceivedMessageList(userId,(short) 1);
+        LocalDateTime now = LocalDateTime.now();
         for (ReceiveMessageListResponse res : responseList) {
             String formattedDate = formatCreatedDate(res.getCreatedAt(), now);
             res.setCreatedDate(formattedDate);
@@ -54,43 +54,49 @@ public class MessageService {
 
         return responseList;
     }
+    /*
+    *
+    *  수신 쪽지 리스트 V1
+    *
+    *
+    * */
 
-//    // 수신 쪽지 리스트
-    public List<ReceiveMessageListResponse> getReceiveMessageList(Long userId) {
-
-        // message_box 테이블에서 userId로 수신 쪽지 조회 하는 쿼리
-        List<Long> messageIdList = messageBoxRepository.getMessageIdByMemberId(userId, (short) 1);
-
-        // 없으면 빈 리스트 반환
-        if (messageIdList == null || messageIdList.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // 반환할 리스트 초기화
-        List<ReceiveMessageListResponse> list = new ArrayList<>();
-        // 현재 시간을 LocalDateTime 형식으로 구함
-        LocalDateTime now = LocalDateTime.now();
-
-        // 조회한 messageId 리스트를 순회하면서 message 테이블에서 messageId 와 userId로 messageBox와 join 해서 messageBox의 state
-        for (Long messageId : messageIdList) {
-            List<ReceiveMessageListResponse> messages = messageRepository.findReceiveMessageListByMessageIdAndMemberId(messageId, userId);
-
-            if (messages == null) {
-                messages = new ArrayList<>();
-            }
-
-            for (ReceiveMessageListResponse message : messages) {
-                String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
-                message.setCreatedDate(formattedDate);
-            }
-            list.addAll(messages);
-        }
-
-        // 날짜 기준 재정렬
-        list.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
-
-        return list;
-    }
+////    // 수신 쪽지 리스트
+//    public List<ReceiveMessageListResponse> getReceiveMessageList(Long userId) {
+//
+//        // message_box 테이블에서 userId로 수신 쪽지 조회 하는 쿼리
+//        List<Long> messageIdList = messageBoxRepository.getMessageIdByMemberId(userId, (short) 1);
+//
+//        // 없으면 빈 리스트 반환
+//        if (messageIdList == null || messageIdList.isEmpty()) {
+//            return new ArrayList<>();
+//        }
+//
+//        // 반환할 리스트 초기화
+//        List<ReceiveMessageListResponse> list = new ArrayList<>();
+//        // 현재 시간을 LocalDateTime 형식으로 구함
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        // 조회한 messageId 리스트를 순회하면서 message 테이블에서 messageId 와 userId로 messageBox와 join 해서 messageBox의 state
+//        for (Long messageId : messageIdList) {
+//            List<ReceiveMessageListResponse> messages = messageRepository.findReceiveMessageListByMessageIdAndMemberId(messageId, userId);
+//
+//            if (messages == null) {
+//                messages = new ArrayList<>();
+//            }
+//
+//            for (ReceiveMessageListResponse message : messages) {
+//                String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
+//                message.setCreatedDate(formattedDate);
+//            }
+//            list.addAll(messages);
+//        }
+//
+//        // 날짜 기준 재정렬
+//        list.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+//
+//        return list;
+//    }
 
 
 

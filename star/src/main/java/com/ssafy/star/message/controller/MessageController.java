@@ -20,8 +20,8 @@ public class MessageController {
         this.messageService = messageService;
     }
 
-    @GetMapping("/reception/list2")
-    public ResponseEntity<?> getReceptionList2(@AuthenticationPrincipal CustomUserDetails user){
+    @GetMapping("/reception/list")
+    public ResponseEntity<?> getReceptionList(@AuthenticationPrincipal CustomUserDetails user){
         List<ReceiveMessageListResponse> response = messageService.getReceiveMessageListResponse(user.getId());
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
@@ -32,58 +32,9 @@ public class MessageController {
 
 
 
-    @GetMapping("/reception/list")
-    public ResponseEntity<?> getReceptionList(@AuthenticationPrincipal CustomUserDetails user){
-        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(user.getId());
-        if (response.isEmpty()){
-            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
-        }
-
-        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
-    }
-
-
-//    @GetMapping("/send/list")
-//    public ResponseEntity<ApiResponse<List<SendMessageListResponse>>> getSendMessageList(@AuthenticationPrincipal CustomUserDetails user){
-//        System.out.println("--------list1------------------");
-//        List<SendMessageListResponse> response = messageService.getSendMessageList(user.getId());
-//        if (response.isEmpty()){
-//            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
-//        }
-//        System.out.println("--------list1 End!!------------------");
-//        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
-//    }
-
-
-//    @GetMapping("/send/list2")
-//    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList2(@AuthenticationPrincipal CustomUserDetails user){
-//        System.out.println("--------list2------------------");
-//        List<SendMessageListResponseDto> response = messageService.getSendMessageListResponseDto(user.getId());
-//        System.out.println("--------list2 End!!------------------");
-//        if (response.isEmpty()){
-//            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
-//        }
-//        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
-//    }
-
-
-//    @GetMapping("/send/list3")
-//    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList3(@AuthenticationPrincipal CustomUserDetails user){
-//        System.out.println("--------list3------------------");
-//        List<SendMessageListResponseDto> response = messageService.getSendMessageListResponse(user.getId());
-//        System.out.println("--------list3 End!!------------------");
-//        if (response.isEmpty()){
-//            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
-//        }
-//        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
-//    }
-
-
     @GetMapping("/send/list")
-    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList4(@AuthenticationPrincipal CustomUserDetails user){
-        System.out.println("--------list4------------------");
+    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList(@AuthenticationPrincipal CustomUserDetails user){
         List<SendMessageListResponseDto> response = messageService.getSendMessageListResponse(user.getId());
-        System.out.println("--------list4 End!!------------------");
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
         }
@@ -131,4 +82,69 @@ public class MessageController {
         boolean result = messageService.stateFalse(user.getId());
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", result));
     }
+
+
+
+    /*
+    *
+    *  휴지통
+    *
+    *
+    *
+    * */
+
+
+//    @GetMapping("/reception/list")
+//    public ResponseEntity<?> getReceptionList(@AuthenticationPrincipal CustomUserDetails user){
+//        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageList(user.getId());
+//        if (response.isEmpty()){
+//            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
+//        }
+//
+//        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
+//    }
+
+
+//    @GetMapping("/send/list")
+//    public ResponseEntity<ApiResponse<List<SendMessageListResponse>>> getSendMessageList(@AuthenticationPrincipal CustomUserDetails user){
+//        System.out.println("--------list1------------------");
+//        List<SendMessageListResponse> response = messageService.getSendMessageList(user.getId());
+//        if (response.isEmpty()){
+//            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
+//        }
+//        System.out.println("--------list1 End!!------------------");
+//        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
+//    }
+
+
+//    @GetMapping("/send/list2")
+//    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList2(@AuthenticationPrincipal CustomUserDetails user){
+//        System.out.println("--------list2------------------");
+//        List<SendMessageListResponseDto> response = messageService.getSendMessageListResponseDto(user.getId());
+//        System.out.println("--------list2 End!!------------------");
+//        if (response.isEmpty()){
+//            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
+//        }
+//        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
+//    }
+
+
+//    @GetMapping("/send/list3")
+//    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList3(@AuthenticationPrincipal CustomUserDetails user){
+//        System.out.println("--------list3------------------");
+//        List<SendMessageListResponseDto> response = messageService.getSendMessageListResponse(user.getId());
+//        System.out.println("--------list3 End!!------------------");
+//        if (response.isEmpty()){
+//            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
+//        }
+//        return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
+//    }
+
+
+
+
+
+
+
+
 }
