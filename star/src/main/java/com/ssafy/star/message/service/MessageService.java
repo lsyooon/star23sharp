@@ -7,6 +7,7 @@ import com.ssafy.star.member.entity.MemberGroup;
 import com.ssafy.star.member.repository.GroupMemberRepository;
 import com.ssafy.star.member.repository.MemberGroupRepository;
 import com.ssafy.star.member.repository.MemberRepository;
+import com.ssafy.star.member.service.NotificationService;
 import com.ssafy.star.message.dto.request.CommonMessageRequest;
 import com.ssafy.star.message.dto.request.ComplaintMessageRequest;
 import com.ssafy.star.message.dto.response.*;
@@ -43,8 +44,9 @@ public class MessageService {
     private final ComplaintReasonRepository complaintReasonRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final S3Service s3Service;
+    private final NotificationService notificationService;
 
-    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository, ComplaintRepository complaintRepository, MemberRepository memberRepository, ComplaintReasonRepository complaintReasonRepository, GroupMemberRepository groupMemberRepository, S3Service s3Service) {
+    public MessageService(MessageRepository messageRepository, MessageBoxRepository messageBoxRepository, MemberGroupRepository memberGroupRepository, ComplaintRepository complaintRepository, MemberRepository memberRepository, ComplaintReasonRepository complaintReasonRepository, GroupMemberRepository groupMemberRepository, S3Service s3Service, NotificationService notificationService) {
         this.messageRepository = messageRepository;
         this.messageBoxRepository = messageBoxRepository;
         this.memberGroupRepository = memberGroupRepository;
@@ -53,6 +55,7 @@ public class MessageService {
         this.complaintRepository = complaintRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.s3Service = s3Service;
+        this.notificationService = notificationService;
     }
 
     public List<ReceiveMessageListResponse> getReceiveMessageListResponse(Long userId) {
@@ -449,8 +452,6 @@ public class MessageService {
                 }
             }
             message.setReceiver(receiverIds);
-            
-            // 알림 보내야함
         }
 
         // 이미지 파일 url로 변환 유효성 검사
@@ -498,7 +499,10 @@ public class MessageService {
         else if (request.getReceiverType() == 2) {
             message.setGroup(memberGroupRepository.findMemberGroupById(request.getGroupId()));
             receiverIds = groupMemberRepository.findMemberIdsByGroupId(request.getGroupId());
-            // 알림 보내야함
+        }
+
+        for(Long receiverId : receiverIds) {
+            notificationService.receiveCommonMessage(userId, receiverId, message.getId());
         }
     }
 
