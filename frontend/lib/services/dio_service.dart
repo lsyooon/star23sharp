@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
@@ -60,7 +61,10 @@ class DioService {
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
               final cloneReq = await authDio.fetch(e.requestOptions);
               return handler.resolve(cloneReq); // 재요청 결과 반환
-            } else {}
+            } else {
+              // 로그인 화면으로 이동
+              Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/signin'); 
+            }
           } else {
             try {
               final failure = ErrorHandler.handle(e).failure;
@@ -101,7 +105,7 @@ class DioService {
         onError: (DioException e, handler) async {
           logger.d('Error: ${e.message}');
 
-          if (e.response?.statusCode == 400) {
+          if (e.response?.statusCode == 401) {
             // 토큰 만료 시 갱신 로직 수행
             final authProvider = Provider.of<AuthProvider>(
               AppGlobal.navigatorKey.currentContext!,
@@ -114,6 +118,18 @@ class DioService {
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
               final cloneReq = await authDio.fetch(e.requestOptions);
               return handler.resolve(cloneReq); // 재요청 결과 반환
+            } else {
+              // 로그인 화면으로 이동
+              Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/signin'); 
+            }
+          } else {
+            try {
+              final failure = ErrorHandler.handle(e).failure;
+              logger.e('Error [${failure.code}]: ${failure.message}');
+              handler.reject(e); // 에러를 계속 전파
+            } catch (error) {
+              logger.e('Unhandled Error: $error');
+              handler.reject(e); // 기본 에러 처리
             }
           }
 
@@ -126,5 +142,6 @@ class DioService {
   static void updateAuthorizationHeader(String token) {
     logger.d(token);
     authDio.options.headers['Authorization'] = 'Bearer $token';
+    fastAuthDio.options.headers['Authorization'] = 'Bearer $token';
   }
 }

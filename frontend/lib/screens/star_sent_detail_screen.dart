@@ -40,7 +40,7 @@ class StarSentDetailScreen extends StatelessWidget {
                       width: UIhelper.deviceWidth(context) * 0.85,
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        item.recipient ?? '${item.receiverNames.first} 외 ${item.receiverNames.length-1}명',
+                        item.recipient ?? (item.receiverNames.length == 1 ? item.receiverNames.first : '${item.receiverNames.first} 외 ${item.receiverNames.length-1}명'),
                         style: const TextStyle(
                           fontSize: 20.0,
                           color: Colors.white,

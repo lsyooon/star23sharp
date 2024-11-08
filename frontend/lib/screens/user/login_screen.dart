@@ -5,6 +5,7 @@ import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/app_global.dart';
 import 'package:star23sharp/widgets/index.dart';
+import 'package:star23sharp/widgets/modals/error_snackbar.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -121,7 +122,7 @@ class LoginScreen extends StatelessWidget {
                             String password = passwordController.text.trim();
 
                             if (memberId.isEmpty || password.isEmpty) {
-                              logger.d("아이디와 비밀번호를 입력해주세요.");
+                              ErrorSnackbar.show("아이디 및 비밀번호를 입력해주세요.");
                             } else {
                               logger.d("id: $memberId, pwd: $password");   
                               Map<String, String>? loginResponse = await UserService.login(memberId, password);

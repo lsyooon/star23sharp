@@ -522,7 +522,7 @@ class _MapScreenState extends State<MapScreen>
   Future<void> fetchTreasureDetail(double id) async {
     final result = await MapService.getTreasureDetail(id);
 
-    if (result != null) {
+    if (result != null && mounted) {
       setState(() {
         // Treasure 데이터 기반으로 markerInfo 업데이트
         result.forEach((dynamic item) {
@@ -559,7 +559,7 @@ class _MapScreenState extends State<MapScreen>
       ne.longitude,
     );
 
-    if (treasures != null) {
+    if (treasures != null && mounted) {
       setState(() {
         markers = treasures
             .map((dynamic item) => item as TreasureModel)

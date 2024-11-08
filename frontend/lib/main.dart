@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -8,7 +10,7 @@ import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:star23sharp/screens/index.dart';
 import 'package:star23sharp/providers/index.dart';
@@ -38,11 +40,20 @@ Future<void> setupInteractedMessage() async {
   FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
 }
 
-//FCM에서 전송한 data를 처리합니다. /message 페이지로 이동하면서 해당 데이터를 화면에 보여줍니다.
 void _handleMessage(RemoteMessage message) {
+  logger.d("Handling message: $message");
+  // 데이터에서 notificationId 추출
+  final notificationId = message.data['notificationId'];
+
   Future.delayed(const Duration(seconds: 1), () {
-    AppGlobal.navigatorKey.currentState!
-        .pushNamed("/notification", arguments: message);
+    if (notificationId != null) {
+      AppGlobal.navigatorKey.currentState!.pushNamed(
+        "/notification",
+        arguments: int.tryParse(notificationId), // notificationId를 전달
+      );
+    } else {
+      logger.e("Notification ID is missing in the message data.");
+    }
   });
 }
 
@@ -77,31 +88,49 @@ void main() async {
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //FCM 푸시 알림 관련 초기화
-  PushNotificationService.init();
+  FCMService.init();
   //flutter_local_notifications 패키지 관련 초기화
-  PushNotificationService.localNotiInit();
+  FCMService.localNotiInit();
   //백그라운드 알림 수신 리스너
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   //포그라운드 알림 수신 리스너
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
+    String? imageUrl = message.notification?.android?.imageUrl;
 
     if (notification != null) {
-      FlutterLocalNotificationsPlugin().show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'high_importance_notification',
-            importance: Importance.max,
-          ),
-        ),
-      );
+      if (imageUrl != null) {
+        // 이미지가 포함된 경우
+        await FCMService.showImageNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          imageUrl: imageUrl,
+          payload: jsonEncode(message.data),
+        );
+      } else {
+        // 일반 알림
+        await FCMService.showSimpleNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          payload: jsonEncode(message.data),
+        );
+      }
+      // 알림 화면을 업데이트
+      if (AppGlobal.navigatorKey.currentState?.overlay != null) {
+        final currentRoute =
+            ModalRoute.of(AppGlobal.navigatorKey.currentState!.context);
+        if (currentRoute?.settings.name == '/notification') {
+          final alarmScreenState = AppGlobal.navigatorKey.currentState!.context
+              .findAncestorStateOfType<PushAlarmScreenState>();
+          if (alarmScreenState != null) {
+            alarmScreenState.fetchNotifications();
+          }
+        }
+      }
     }
   });
+
   //메시지 상호작용 함수 호출
   setupInteractedMessage();
 
@@ -157,9 +186,12 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
         '/message_style_editor': (context) =>
             const MainLayout(child: ChooseStarStyleScreen()),
-        '/star_received_detail': (context) => const MainLayout(child: StarReceivedDetailScreen()),
-        '/star_sent_detail': (context) => const MainLayout(child: StarSentDetailScreen()),
-        '/modify_profile' : (context) => const MainLayout(child: ModifyProfileScreen()),
+        '/star_received_detail': (context) =>
+            const MainLayout(child: StarReceivedDetailScreen()),
+        '/star_sent_detail': (context) =>
+            const MainLayout(child: StarSentDetailScreen()),
+        '/modify_profile': (context) =>
+            const MainLayout(child: ModifyProfileScreen()),
         '/hidestar': (context) => const MainLayout(child: HideStarScreen()),
 
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
