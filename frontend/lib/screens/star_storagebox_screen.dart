@@ -71,7 +71,7 @@ class StarStoragebox extends StatelessWidget {
                                   } else if (snapshot.hasError) {
                                     return Center(child: Text('Error: ${snapshot.error}'));
                                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                    return const Center(child: Text('보낸 별이 없습니다.', style: TextStyle( fontSize: FontSizes.body),));
+                                    return const Center(child: Text('보낸 별이 없습니다.', style: TextStyle( fontSize: FontSizes.body, color: Colors.white)));
                                   } else {
                                     final List<StarListItemModel> itemsData = snapshot.data!;
                                     return GridView.builder(
@@ -114,7 +114,7 @@ class StarStoragebox extends StatelessWidget {
                                   } else if (snapshot.hasError) {
                                     return Center(child: Text('Error: ${snapshot.error}'));
                                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                    return const Center(child: Text('받은 별이 없습니다.', style: TextStyle( fontSize: FontSizes.body),));
+                                    return const Center(child: Text('받은 별이 없습니다.', style: TextStyle( fontSize: FontSizes.body, color: Colors.white),));
                                   } else {
                                     final List<StarListItemModel> itemsData = snapshot.data!;
                                     return GridView.builder(

@@ -61,9 +61,9 @@ class StarReceivedDetailScreen extends StatelessWidget {
                     child: Container(
                       width: UIhelper.deviceWidth(context) * 0.85,
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        item.senderName.first,
-                        style: const TextStyle(
+                      child: const Text(
+                        "받은 별 보기",
+                        style: TextStyle(
                           fontSize: 20.0,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -129,7 +129,13 @@ class StarReceivedDetailScreen extends StatelessWidget {
                   const Spacer(),
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, bottom: 2),
-                    child: Text('📅 ${formatDate(item.createdAt)}')
+                    child:  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('👥 ${item.senderName.first}', style: const TextStyle(fontSize: FontSizes.small),),
+                        Text('📅 ${formatDate(item.createdAt)}', style: const TextStyle(fontSize: FontSizes.small)),
+                      ],
+                    ),
                   ),
                 ],
               ),

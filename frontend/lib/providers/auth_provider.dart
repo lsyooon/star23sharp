@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
-import 'package:star23sharp/utilities/app_global.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _accessToken;
@@ -42,19 +41,16 @@ class AuthProvider with ChangeNotifier {
           return response['access']!;
         }else{
           clearTokens();
-          Navigator.pushReplacementNamed(AppGlobal.navigatorKey.currentContext!, '/login'); 
           return null;
         }
       }else{
         //TODO - 로그아웃 처리 -> 로그인화면으로 이동
         clearTokens();
-        Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/login'); 
+        return null;
       }
-      
     } catch (e) {
       logger.d('토큰 갱신 실패: $e');
       return null;
     }
-    return null;
   }
 }

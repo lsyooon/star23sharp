@@ -11,6 +11,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = UserService.getMemberInfo();
+    logger.d(user);
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
       {'text':'닉네임 변경', 'goto': '/modify_nickname'}, 
@@ -113,7 +115,11 @@ class ProfileScreen extends StatelessWidget {
                     bool response = await UserService.logout(refresh!);
                     if(response){
                       Provider.of<AuthProvider>(AppGlobal.navigatorKey.currentContext!, listen: false).clearTokens();
-                      Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/home');
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/home', // 네임드 라우트 사용
+                        (Route<dynamic> route) => false, // 모든 이전 화면 제거
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
