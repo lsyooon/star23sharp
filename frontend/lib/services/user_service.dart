@@ -75,6 +75,7 @@ class UserService {
       );
 
       var result = ResponseModel.fromJson(response.data);
+      logger.d(result);
       if (result.code == '200') {
         String access = response.headers['access']?.first ?? '';
         String refresh = response.headers['refresh']?.first ?? '';
