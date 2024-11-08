@@ -15,7 +15,7 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
     @Query("SELECT new com.ssafy.star.member.dto.response.NotificationListResponse(n.id, n.title, n.createdAt, n.isRead) " +
-            "FROM Notification n WHERE n.member.id = :memberId")
+            "FROM Notification n WHERE n.member.id = :memberId ORDER BY n.createdAt DESC")
     List<NotificationListResponse> getNotificationListByMemberId(Long memberId);
 
     @Query("SELECT new com.ssafy.star.member.dto.response.NotificationResponse(n.id, n.title, n.content, n.hint, n.image, n.createdAt ) " +
