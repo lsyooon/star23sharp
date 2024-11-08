@@ -43,35 +43,42 @@ class MainLayout extends StatelessWidget {
           Positioned.fill(
             child: Image.asset(
               themeProvider.bottomNavigationImage, // 여기에 이미지 경로를 넣으세요.
-              fit: BoxFit.cover,
+              fit: BoxFit.fill,
             ),
           ),
           // BottomNavigationBar
           SizedBox(
             height: bottomNavHeight,
             child: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
               backgroundColor: Colors.transparent, // 배경을 투명하게 설정
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: '알림함',
+                ),
+                BottomNavigationBarItem(
                   icon: Icon(Icons.home),
-                  label: 'Home',
+                  label: '홈',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.business),
-                  label: 'Map',
+                  label: '지도',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.school),
-                  label: 'Profile',
+                  label: '프로필',
                 ),
               ],
               onTap: (index) {
-                // 페이지 전환 논리 구현
+                // 페eee이지 전환 논리 구현
                 if (index == 0) {
-                  Navigator.pushReplacementNamed(context, '/home');
+                  Navigator.pushReplacementNamed(context, '/notification');
                 } else if (index == 1) {
-                  Navigator.pushReplacementNamed(context, '/map');
+                  Navigator.pushReplacementNamed(context, '/home');
                 } else if (index == 2) {
+                  Navigator.pushReplacementNamed(context, '/map');
+                } else if (index == 3) {
                   Navigator.pushReplacementNamed(context, '/profile');
                 }
               },
