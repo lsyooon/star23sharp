@@ -21,7 +21,9 @@ logging.basicConfig(
 
 apply_swaggerfix()
 
-app = FastAPI()
+app = FastAPI(
+    openapi_url="/fastapi_ec2/docs/openapi.json", docs_url="/fastapi_ec2/docs"
+)
 
 
 @app.middleware("http")
