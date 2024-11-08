@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from dto.member_dto import MemberDTO
@@ -17,7 +17,7 @@ from dto.treasure_dto import (
 from entity.member import Member
 from entity.message import Message, ReceiverTypes, VarcharLimit
 from entity.message_box import MessageDirections
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Query, UploadFile
 from response.exceptions import (
     AmbiguousTargetException,
     ContentLengthExceededException,
@@ -65,6 +65,10 @@ from service.message_service import (
     find_treasure_by_id,
     insert_new_treasure_message,
     is_message_public,
+)
+from service.notification_service import (
+    treasure_hidden_notification_to_receivers,
+    treasure_revealed_notification_to_sender,
 )
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -204,6 +208,7 @@ AUTHORIZE_DESCRIPTION = f"""
     description=INSERT_DESCRIPTION,
 )
 async def insert_new_treasure(
+    background_tasks: BackgroundTasks,
     hint_image_first: UploadFile = File(..., description="첫 번째 힌트 이미지"),
     hint_image_second: UploadFile = File(..., description="두 번째 힌트 이미지"),
     dot_hint_image: Optional[UploadFile] = File(
@@ -237,23 +242,28 @@ async def insert_new_treasure(
     created_at: Optional[datetime.datetime] = Form(
         None, description="메시지 송신 시각. 제공되지 않으면 현재 시각으로 저장됩니다."
     ),
-    current_member: MemberDTO = Depends(get_current_member),
+    current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
     db: Session = Depends(get_db),
 ):
-
     hint_image_first_name_gen = None
     hint_image_second_name_gen = None
     dot_hint_image_name_gen = None
     content_image_name_gen = None
-
+    result_receivers_int = None
+    result_message_id = None
     try:
+        # 멤버 존재 검증
+        current_member = find_member_by_id(current_member_info[0].id, db)
+        if current_member is None:
+            raise MemberNotFoundException()
+
+        # 입력값 검증
         if len(title.encode("utf-8")) > VarcharLimit.TITLE.value:
             raise TitleLengthExceededException()
         if content and len(content.encode("utf-8")) > VarcharLimit.CONTENT.value:
             raise ContentLengthExceededException()
         if hint and len(hint.encode("utf-8")) > VarcharLimit.HINT.value:
             raise HintLengthExceededException()
-        # 입력값 검증
         if not is_lat_lng_valid(lat, lng):
             raise InvalidCoordinatesException()
 
@@ -265,18 +275,18 @@ async def insert_new_treasure(
         if receivers is not None and group_id is not None:
             raise AmbiguousTargetException()
         elif receivers is not None:
-            receivers_int = [
+            _receivers_int = [
                 member.id
                 for member in find_members_by_nickname_no_validation(receivers, db)
             ]  # TODO: Inefficient
-            if len(receivers_int) == 1:
+            if len(_receivers_int) == 1:
                 result_receiver_type = ReceiverTypes.INDIVIDUAL.value
                 recieving_group = None
             else:
                 result_receiver_type = ReceiverTypes.GROUP_UNCONSTRUCTED.value
                 # 새로운 그룹 생성
                 recieving_group = insert_new_group(
-                    None, current_member, False, False, receivers_int, created_at, db
+                    None, current_member, False, False, _receivers_int, created_at, db
                 )
         elif group_id is not None:
             result_receiver_type = ReceiverTypes.GROUP_CONSTRUCTED.value
@@ -287,6 +297,7 @@ async def insert_new_treasure(
             result_receiver_type = ReceiverTypes.PUBLIC.value
             recieving_group = None
 
+        # 수신자 목록 생성
         result_recieving_members: List[Member] = []
         if recieving_group:  # 이미 존재하는 그룹에게 발신
             if (
@@ -299,15 +310,20 @@ async def insert_new_treasure(
                 else:
                     raise SelfRecipientException()
         elif result_receiver_type != ReceiverTypes.PUBLIC.value:  # 개인에게 발신
-            _recieving_member = find_member_by_id(receivers_int[0], db)
+            _recieving_member = find_member_by_id(_receivers_int[0], db)
             if _recieving_member is None:
                 logging.error(
-                    f"수신자 id={receivers_int[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다."
+                    f"수신자 id={_receivers_int[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다."
                 )
                 raise MemberNotFoundException()
             if _recieving_member.id == current_member.id:
                 raise SelfRecipientException()
             result_recieving_members.append(_recieving_member)
+        result_receivers_int = (
+            [member.id for member in result_recieving_members]
+            if len(result_recieving_members) > 0
+            else None
+        )
 
         # 이미지 내용 읽기
         hint_image_first = await download_file(hint_image_first)
@@ -374,11 +390,7 @@ async def insert_new_treasure(
         new_message = insert_new_treasure_message(
             sender=current_member,
             receiver_type=result_receiver_type,
-            receiver=(
-                [member.id for member in result_recieving_members]
-                if len(result_recieving_members) > 0
-                else None
-            ),
+            receiver=result_receivers_int,
             hint_image_first=hint_image_first_url,
             hint_image_second=hint_image_second_url,
             dot_hint_image=dot_hint_image_url,
@@ -393,6 +405,7 @@ async def insert_new_treasure(
             group=recieving_group,
             session=db,
         )
+        result_message_id = new_message.id
 
         # 발송함에 추가
         insert_new_message_box(
@@ -428,6 +441,14 @@ async def insert_new_treasure(
             else None
         )
         db.commit()
+        # 수신자에게 알림 보내기
+        if result_receivers_int is not None:
+            background_tasks.add_task(
+                treasure_hidden_notification_to_receivers,
+                messageId=result_message_id,
+                receivers=result_receivers_int,
+                token=current_member_info[1],
+            )
         return ResponseTreasureDTO_Own(code="200", data=result_model)
     except Exception:
         db.rollback()
@@ -452,10 +473,10 @@ async def inspect_treasures(
     ids: List[int] = Query(
         ..., description="조회하고자 하는 보물 메세지들의 고유 id들"
     ),
-    member: MemberDTO = Depends(get_current_member),
+    current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
     db: Session = Depends(get_db),
 ):
-    member_orm = find_member_by_id(member.id, db)
+    member_orm = find_member_by_id(current_member_info[0].id, db)
     if member_orm is None:
         raise MemberNotFoundException()
     treasure_orms: List[Message] = find_multiple_treasures_by_id(ids, db)
@@ -503,10 +524,10 @@ async def find_near_treasures(
     include_private: bool = Query(
         False, description="1대1 보물 메세지를 가져올지의 여부."
     ),
-    member: MemberDTO = Depends(get_current_member),
+    current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
     db: Session = Depends(get_db),
 ):
-    member_orm = find_member_by_id(member.id, db)
+    member_orm = find_member_by_id(current_member_info[0].id, db)
     if member_orm is None:
         raise MemberNotFoundException()
     if not is_lat_lng_valid(lat_1, lng_1) or not is_lat_lng_valid(lat_2, lng_2):
@@ -577,13 +598,19 @@ async def find_near_treasures(
     description=AUTHORIZE_DESCRIPTION,
 )
 async def authorize_treasure(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="테스트할 이미지"),
     id: int = Form(..., description="보물 메시지의 ID"),
     lat: float = Form(..., description="현재 위도"),
     lng: float = Form(..., description="현재 경도"),
-    member: MemberDTO = Depends(get_current_member),
+    current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
     db: Session = Depends(get_db),
 ):
+    # 시도자 검증
+    current_member = find_member_by_id(current_member_info[0].id, db)
+    if current_member is None:
+        raise MemberNotFoundException()
+
     # 인증 시도 시각
     created_at = datetime.datetime.now()
 
@@ -592,10 +619,6 @@ async def authorize_treasure(
         raise InvalidCoordinatesException()
 
     # 메세지 검증
-    current_member = find_member_by_id(member.id, db)
-    if current_member is None:
-        raise MemberNotFoundException()
-
     target_treasure = find_treasure_by_id(id, db)
     if target_treasure is None:
         raise TreasureNotFoundException()
@@ -660,6 +683,12 @@ async def authorize_treasure(
             db.flush()  # 세션 동기화
             delete_message_trace(locked_treasure, db)
             db.commit()
+            # 알림 처리
+            background_tasks.add_task(
+                treasure_revealed_notification_to_sender,
+                messageId=id,
+                token=current_member_info[1],
+            )
             result_message = "success"
     else:
         if auth_result[1] is None:

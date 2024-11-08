@@ -1,7 +1,6 @@
 import datetime
 from typing import List, Literal, Optional, Union, override
 
-from entity.member import Member
 from entity.message import Message
 from response.response_model import ResponseModel
 
@@ -15,7 +14,8 @@ class BaseTreasureDTOWithMemberInfo(BaseDTO):
     @classmethod
     def get_dto(cls, orm: Message):
         dto = cls.model_validate(orm)
-        dto.sender_nickname = orm.member.nickname
+        if orm.member is not None:
+            dto.sender_nickname = orm.member.nickname
         return dto
 
 

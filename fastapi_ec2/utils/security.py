@@ -1,7 +1,7 @@
 # security.py
 import logging
 import os
-
+from typing import Tuple
 import jwt
 from dto.member_dto import MemberDTO
 from dto.token_dto import TokenDTO
@@ -30,13 +30,16 @@ security = HTTPBearer()
 async def get_current_member(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     Session: Session = Depends(get_db),
-) -> MemberDTO:
+) -> Tuple[MemberDTO, str]:
     token = credentials.credentials  # Bearer blabla의 blabla 부분
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         try:
             token_obj = TokenDTO.model_validate(payload)
         except ValidationError:
+            raise InvalidTokenException()
+        except Exception:
+            logging.exception("get_current_member: exception occured")
             raise InvalidTokenException()
     except jwt.ExpiredSignatureError:
         raise ExpiredTokenException()
@@ -59,4 +62,4 @@ async def get_current_member(
         )
         raise InvalidTokenException()
     member_dto = MemberDTO.get_dto(member)
-    return member_dto
+    return member_dto, token

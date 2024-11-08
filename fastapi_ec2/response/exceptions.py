@@ -10,6 +10,13 @@ class AppException(Exception):
     def to_response_model(self, message=None, data=None):
         return ResponseModel(code=self.code, message=message, data=data)
 
+    @classmethod
+    def construct(cls, status_code: int, code: str):
+        obj = cls()
+        obj.status_code = status_code
+        obj.code = code
+        return obj
+
 
 class InvalidInputException(AppException):
     """
