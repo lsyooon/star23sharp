@@ -1,12 +1,25 @@
 import datetime
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union, override
 
+from entity.member import Member
+from entity.message import Message
 from response.response_model import ResponseModel
 
 from .base_dto import BaseDTO
 
 
-class TreasureDTO_Own(BaseDTO):
+class BaseTreasureDTOWithMemberInfo(BaseDTO):
+    sender_nickname: Optional[str] = None
+
+    @override
+    @classmethod
+    def get_dto(cls, orm: Message):
+        dto = cls.model_validate(orm)
+        dto.sender_nickname = orm.member.nickname
+        return dto
+
+
+class TreasureDTO_Own(BaseTreasureDTOWithMemberInfo):
     id: int
     sender_id: int
     receiver_type: int
@@ -25,7 +38,7 @@ class TreasureDTO_Own(BaseDTO):
     image: Optional[str]
 
 
-class TreasureDTO_Opened(BaseDTO):
+class TreasureDTO_Opened(BaseTreasureDTOWithMemberInfo):
     id: int
     sender_id: int
     receiver_type: int
@@ -44,7 +57,7 @@ class TreasureDTO_Opened(BaseDTO):
     image: Optional[str]
 
 
-class TreasureDTO_Undiscovered(BaseDTO):
+class TreasureDTO_Undiscovered(BaseTreasureDTOWithMemberInfo):
     id: int
     sender_id: int
     receiver_type: int
@@ -72,6 +85,10 @@ class ResponseTreasureDTO_Undiscovered(ResponseModel):
     code: Literal["200"]
     data: dict[Literal["treasures"], List[TreasureDTO_Undiscovered]]
 
+
 class ResponseTreasureDTO_Any(ResponseModel):
     code: Literal["200"]
-    data: dict[Literal["treasures"], List[Union[TreasureDTO_Own,TreasureDTO_Opened,TreasureDTO_Undiscovered]]]
+    data: dict[
+        Literal["treasures"],
+        List[Union[TreasureDTO_Own, TreasureDTO_Opened, TreasureDTO_Undiscovered]],
+    ]

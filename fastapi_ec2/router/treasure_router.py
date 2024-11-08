@@ -151,7 +151,8 @@ FIND_DESCRIPTION = """
 - lng_1 (float): 첫 번째 좌표 경도.
 - lat_2 (float): 두 번째 좌표 위도.
 - lng_2 (float): 두 번째 좌표 경도.
-- get_received (bool): **true이면 자신이 접근 가능한(미열람) 보물 메세지만, false이면 자신이 등록한 보물 메세지(누군가 열람한 것도)만 가져옵니다.** 기본값 false.
+- include_opened: 누군가 이미 열람한 보물 메세지도 포함할지의 여부. 기본값 false.
+- get_received (bool): **true이면 자신이 접근 가능한 보물 메세지만, false이면 자신이 등록한 보물 메세지만 가져옵니다.** 기본값 false.
 ### 아래 세 매개변수가 모두 false 이면 빈 결과를 제공합니다.
 - include_public: 퍼블릭 보물 메세지를 포함할지의 여부. 기본값 false
 - include_group: 그룹 또는 다수 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 false
@@ -373,7 +374,11 @@ async def insert_new_treasure(
         new_message = insert_new_treasure_message(
             sender=current_member,
             receiver_type=result_receiver_type,
-            receiver=[member.id for member in  result_recieving_members] if len(result_recieving_members) > 0 else None,
+            receiver=(
+                [member.id for member in result_recieving_members]
+                if len(result_recieving_members) > 0
+                else None
+            ),
             hint_image_first=hint_image_first_url,
             hint_image_second=hint_image_second_url,
             dot_hint_image=dot_hint_image_url,
@@ -483,6 +488,10 @@ async def find_near_treasures(
     lng_1: float = Query(..., description="첫 번째 좌표의 경도"),
     lat_2: float = Query(..., description="두 번째 좌표의 위도"),
     lng_2: float = Query(..., description="두 번째 좌표의 경도"),
+    include_opened: bool = Query(
+        False,
+        description="이미 열람된 메세지를 가져올 지의 여부.",
+    ),
     get_received: bool = Query(
         False,
         description="true 이면 자신이 접근 가능한 보물 메세지를, false 이면 자신이 등록한 보물 메세지를 가져옵니다.",
@@ -518,29 +527,41 @@ async def find_near_treasures(
     if include_public:
         if get_received:
             query_result.extend(
-                find_received_near_public_treasures(center_xyz, radius, db)
+                find_received_near_public_treasures(
+                    center_xyz, radius, include_opened, db
+                )
             )
         else:
             query_result.extend(
-                find_sent_near_public__treasures(member_orm, center_xyz, radius, db)
+                find_sent_near_public__treasures(
+                    member_orm, center_xyz, radius, include_opened, db
+                )
             )
     if include_group:
         if get_received:
             query_result.extend(
-                find_received_near_group_treasures(member_orm, center_xyz, radius, db)
+                find_received_near_group_treasures(
+                    member_orm, center_xyz, radius, include_opened, db
+                )
             )
         else:
             query_result.extend(
-                find_sent_near_group_treasures(member_orm, center_xyz, radius, db)
+                find_sent_near_group_treasures(
+                    member_orm, center_xyz, radius, include_opened, db
+                )
             )
     if include_private:
         if get_received:
             query_result.extend(
-                find_received_near_private_treasures(member_orm, center_xyz, radius, db)
+                find_received_near_private_treasures(
+                    member_orm, center_xyz, radius, include_opened, db
+                )
             )
         else:
             query_result.extend(
-                find_sent_near_private_treasures(member_orm, center_xyz, radius, db)
+                find_sent_near_private_treasures(
+                    member_orm, center_xyz, radius, include_opened, db
+                )
             )
     result_dtos = [
         TreasureDTO_Undiscovered.get_dto(treasure) for treasure in query_result

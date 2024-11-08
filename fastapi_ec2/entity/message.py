@@ -3,11 +3,21 @@ from enum import Enum
 from typing import Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import ARRAY, BigInteger, Boolean, CheckConstraint, DateTime, Double
-from sqlalchemy import ForeignKey, SmallInteger, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import (
+    ARRAY,
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Double,
+    ForeignKey,
+    SmallInteger,
+    String,
+)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+from .member import Member
 
 IMAGE_VECTOR_SIZE = 12288
 
@@ -68,6 +78,11 @@ class Message(Base):
     )
     group_id: Mapped[Optional[int]] = mapped_column(
         BigInteger, ForeignKey("member_group.id", ondelete="SET NULL"), nullable=True
+    )
+    member: Mapped[Optional["Member"]] = relationship(
+        "Member",
+        primaryjoin="foreign(Message.sender_id) == Member.id",
+        viewonly=True,
     )
 
     def __repr__(self) -> str:

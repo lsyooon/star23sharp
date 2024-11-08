@@ -182,13 +182,12 @@ def _build_stmt_search_near_treasures(
 def find_received_near_public_treasures(
     xyz: List[float] | np.ndarray,
     radius: float,
+    include_opened: bool,
     session: Session_Object,
 ):
-    stmt = (
-        select(Message)
-        .where(Message.receiver_type == ReceiverTypes.PUBLIC.value)
-        .where(Message.is_found.is_(False))
-    )
+    stmt = select(Message).where(Message.receiver_type == ReceiverTypes.PUBLIC.value)
+    if not include_opened:
+        stmt = stmt.where(Message.is_found.is_(False))
     final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
     return session.scalars(final_stmt).all()
 
@@ -197,6 +196,7 @@ def find_sent_near_public__treasures(
     valid_member: Member,
     xyz: List[float] | np.ndarray,
     radius: float,
+    include_opened: bool,
     session: Session_Object,
 ):
     stmt = (
@@ -204,6 +204,8 @@ def find_sent_near_public__treasures(
         .where(Message.sender_id == valid_member.id)
         .where(Message.receiver_type == ReceiverTypes.PUBLIC.value)
     )
+    if not include_opened:
+        stmt = stmt.where(Message.is_found.is_(False))
     final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
     return session.scalars(final_stmt).all()
 
@@ -212,6 +214,7 @@ def find_received_near_group_treasures(
     valid_member: Member,
     xyz: List[float] | np.ndarray,
     radius: float,
+    include_opened: bool,
     session: Session_Object,
 ):
     stmt = (
@@ -219,9 +222,10 @@ def find_received_near_group_treasures(
         .join(MessageBox.message)
         .where(MessageBox.member_id == valid_member.id)
         .where(Message.group_id.is_not(None))
-        .where(Message.is_found.is_(False))
         .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
     )
+    if not include_opened:
+        stmt = stmt.where(Message.is_found.is_(False))
     final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
     return session.scalars(final_stmt).all()
 
@@ -230,6 +234,7 @@ def find_sent_near_group_treasures(
     valid_member: Member,
     xyz: List[float] | np.ndarray,
     radius: float,
+    include_opened: bool,
     session: Session_Object,
 ):
     stmt = (
@@ -237,6 +242,8 @@ def find_sent_near_group_treasures(
         .where(Message.sender_id == valid_member.id)
         .where(Message.group_id.is_not(None))
     )
+    if not include_opened:
+        stmt = stmt.where(Message.is_found.is_(False))
     final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
     return session.scalars(final_stmt).all()
 
@@ -245,6 +252,7 @@ def find_received_near_private_treasures(
     valid_member: Member,
     xyz: List[float] | np.ndarray,
     radius: float,
+    include_opened: bool,
     session: Session_Object,
 ):
     stmt = (
@@ -252,10 +260,11 @@ def find_received_near_private_treasures(
         .join(MessageBox.message)
         .where(MessageBox.member_id == valid_member.id)
         .where(Message.group_id.is_(None))
-        .where(Message.is_found.is_(False))
         .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
         .where(Message.receiver_type != ReceiverTypes.PUBLIC.value)
     )
+    if not include_opened:
+        stmt = stmt.where(Message.is_found.is_(False))
     final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
     return session.scalars(final_stmt).all()
 
@@ -264,6 +273,7 @@ def find_sent_near_private_treasures(
     valid_member: Member,
     xyz: List[float] | np.ndarray,
     radius: float,
+    include_opened: bool,
     session: Session_Object,
 ):
     stmt = (
@@ -273,5 +283,7 @@ def find_sent_near_private_treasures(
         .where(MessageBox.message_direction == MessageDirections.SENT.value)
         .where(Message.group_id.is_(None))
     )
+    if not include_opened:
+        stmt = stmt.where(Message.is_found.is_(False))
     final_stmt = _build_stmt_search_near_treasures(stmt, xyz, radius)
     return session.scalars(final_stmt).all()
