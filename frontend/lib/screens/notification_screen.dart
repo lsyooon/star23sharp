@@ -12,12 +12,11 @@ class PushAlarmScreen extends StatefulWidget {
   final int? notificationId; // 푸시 알림에서 전달받은 notificationId
 
   const PushAlarmScreen({super.key, this.notificationId});
-
   @override
-  State<PushAlarmScreen> createState() => _PushAlarmScreenState();
+  State<PushAlarmScreen> createState() => PushAlarmScreenState();
 }
 
-class _PushAlarmScreenState extends State<PushAlarmScreen> {
+class PushAlarmScreenState extends State<PushAlarmScreen> {
   final ScrollController _scrollController = ScrollController();
 
   List<NotificationModel> notifications = [];
@@ -32,10 +31,10 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchNotifications();
+    fetchNotifications();
   }
 
-  Future<void> _fetchNotifications() async {
+  Future<void> fetchNotifications() async {
     final fetchedNotifications = await NotificationService.getNotifications();
 
     setState(() {
@@ -45,9 +44,16 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
     });
     // 알림 ID가 주어졌으면 해당 위치로 스크롤하고 펼치기
     if (widget.notificationId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToNotification(widget.notificationId!);
-      });
+      final index = notifications
+          .indexWhere((n) => n.notificationId == widget.notificationId);
+      if (index != -1) {
+        // 데이터를 모두 설정한 뒤에 알림 확장
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToNotification(widget.notificationId!);
+        });
+      } else {
+        logger.e("Invalid notificationId: ${widget.notificationId}");
+      }
     }
   }
 
@@ -58,6 +64,11 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
       if (notificationDetail != null) {
         setState(() {
           notificationDetails[notificationId] = notificationDetail;
+          final index = notifications.indexWhere(
+              (notification) => notification.notificationId == notificationId);
+          if (index != -1) {
+            notifications[index] = notifications[index].copyWith(read: true);
+          }
         });
       } else {
         logger.e('알림 상세 정보를 불러오는 데 실패했습니다.');
@@ -76,11 +87,15 @@ class _PushAlarmScreenState extends State<PushAlarmScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-
+await _fetchNotificationDetail(
+                                    notification.notificationId);
+                              }
       // 해당 ExpansionTile을 펼침
       setState(() {
         expansionStates[notificationId] = true;
       });
+    } else {
+      logger.e("Notification ID not found in the list.");
     }
   }
 

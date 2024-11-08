@@ -39,6 +39,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
     return nicknameRegExp.hasMatch(nickname);
   }
 
+  //FIXME - 리시버 타입 설정하기!
   bool _sendToAll = false; // "모든 사용자에게 보내기" 체크박스 상태
   @override
   void initState() {

@@ -21,6 +21,17 @@ class NotificationModel {
   }
 }
 
+extension NotificationModelExtension on NotificationModel {
+  NotificationModel copyWith({bool? read}) {
+    return NotificationModel(
+      notificationId: notificationId,
+      title: title,
+      createdDate: createdDate,
+      read: read ?? this.read,
+    );
+  }
+}
+
 class NotificationDetailModel {
   final int notificationId;
   final String title;

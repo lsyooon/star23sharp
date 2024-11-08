@@ -121,6 +121,18 @@ void main() async {
           payload: jsonEncode(message.data),
         );
       }
+      // 알림 화면을 업데이트
+      if (AppGlobal.navigatorKey.currentState?.overlay != null) {
+        final currentRoute =
+            ModalRoute.of(AppGlobal.navigatorKey.currentState!.context);
+        if (currentRoute?.settings.name == '/notification') {
+          final alarmScreenState = AppGlobal.navigatorKey.currentState!.context
+              .findAncestorStateOfType<PushAlarmScreenState>();
+          if (alarmScreenState != null) {
+            alarmScreenState.fetchNotifications();
+          }
+        }
+      }
     }
   });
 
@@ -174,9 +186,12 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const MainLayout(child: SignUpScreen()),
         '/message_style_editor': (context) =>
             const MainLayout(child: ChooseStarStyleScreen()),
-        '/star_received_detail': (context) => const MainLayout(child: StarReceivedDetailScreen()),
-        '/star_sent_detail': (context) => const MainLayout(child: StarSentDetailScreen()),
-        '/modify_profile' : (context) => const MainLayout(child: ModifyProfileScreen()),
+        '/star_received_detail': (context) =>
+            const MainLayout(child: StarReceivedDetailScreen()),
+        '/star_sent_detail': (context) =>
+            const MainLayout(child: StarSentDetailScreen()),
+        '/modify_profile': (context) =>
+            const MainLayout(child: ModifyProfileScreen()),
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );

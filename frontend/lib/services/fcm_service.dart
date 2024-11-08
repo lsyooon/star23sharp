@@ -159,11 +159,11 @@ class FCMService {
         imageUrl, // 다운로드 URL
         filePath, // 저장할 파일 경로
         onReceiveProgress: (received, total) {
-          if (total != -1) {
-            // 다운로드 진행 상황 출력 (선택사항)
-            print(
-                'Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
-          }
+          // if (total != -1) {
+          //   // 다운로드 진행 상황 출력 (선택사항)
+          //   print(
+          //       'Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
+          // }
         },
       );
 
