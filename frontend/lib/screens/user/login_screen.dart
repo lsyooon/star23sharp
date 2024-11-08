@@ -135,7 +135,11 @@ class LoginScreen extends StatelessWidget {
                                 Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!, listen: false)
                                   .setUserDetails(id: user['memberId'], name: user['nickname'], isPushEnabled: user['pushNotificationEnabled']);
                                   
-                                Navigator.pushNamed(context, '/home');
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  '/home', // 네임드 라우트 사용
+                                  (Route<dynamic> route) => false, // 모든 이전 화면 제거
+                                );
                               } else {
                                 // 로그인 실패 UI 처리
                               }

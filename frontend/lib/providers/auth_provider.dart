@@ -23,6 +23,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> clearTokens() async{
+    logger.d("토큰 clear!");
     _accessToken = null;
     _refreshToken = null;
     await storage.delete(key: 'access');
@@ -35,10 +36,13 @@ class AuthProvider with ChangeNotifier {
       logger.d(refreshToken);
       if(refreshToken != null){
         Map<String, String>? response = await UserService.refreshToken(refreshToken!);
+        logger.d(response);
         if(response != null){
           await setToken(response['access']!, response['refresh']!);
           return response['access']!;
         }else{
+          clearTokens();
+          Navigator.pushReplacementNamed(AppGlobal.navigatorKey.currentContext!, '/login'); 
           return null;
         }
       }else{

@@ -40,7 +40,7 @@ class StarSentDetailScreen extends StatelessWidget {
                       width: UIhelper.deviceWidth(context) * 0.85,
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        item.recipient ?? item.receiverNames.first,
+                        item.recipient ?? '${item.receiverNames.first} 외 ${item.receiverNames.length-1}명',
                         style: const TextStyle(
                           fontSize: 20.0,
                           color: Colors.white,
@@ -108,9 +108,10 @@ class StarSentDetailScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, bottom: 2),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('👥 ${item.receiverNames.join(', ')}'),
-                        Text('📅 ${formatDate(item.createdAt)}'),
+                        Text('👥 ${item.receiverNames.join(', ')}', style: const TextStyle(fontSize: FontSizes.small),),
+                        Text('📅 ${formatDate(item.createdAt)}', style: const TextStyle(fontSize: FontSizes.small)),
                       ],
                     ),
                   ),

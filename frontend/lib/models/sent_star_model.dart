@@ -12,7 +12,7 @@ class SentStarModel {
         title = json['title'],
         receiverNames = List<String>.from(json['receiverNames']), // List<String>으로 변환
         receiverType = json['receiverType'],
-        createdAt = json['createdAt'],
+        createdAt = json['createdDate'],
         content = json['content'],
         image = json['image'],
         recipient = json['recipient'],
