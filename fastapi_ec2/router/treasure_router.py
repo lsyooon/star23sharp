@@ -113,7 +113,7 @@ INSERT_DESCRIPTION = """
 - 메시지 제목, 내용, 첨부 이미지, 텍스트 힌트를 포함할 수 있습니다.
 
 ## 매개변수
-- receiver_type (int, Optional): 수신자 타입. 0 : 개인, 1:그룹 지정 x 단체, 2: 그룹 지정 O 단체, 3 :불특정 다수. 지정하지 않으면 입력값에서 추론합니다.
+- receiverType (int, Optional): 수신자 타입. 0 : 개인, 1:그룹 지정 x 단체, 2: 그룹 지정 O 단체, 3 :불특정 다수. 지정하지 않으면 입력값에서 추론합니다.
 - hint_image_first (UploadFile): 첫 번째 힌트 이미지
 - hint_image_second (UploadFile): 두 번째 힌트 이미지
 - dot_hint_image (UploadFile, Optional): 픽셀 힌트 이미지. 제공되지 않을 경우 dot_target에 따라 지정된 힌트 이미지를 픽셀화합니다.
@@ -122,13 +122,13 @@ INSERT_DESCRIPTION = """
 - pixel_size (int, Optional): 픽셀화 시 사용할 픽셀 크기. 미제공 시 기본값 사용.
 - title (str): 메시지 제목
 - content (str, Optional): 메시지 내용
-- content_image (UploadFile, Optional): 메시지 첨부 이미지
+- contentImage (UploadFile, Optional): 메시지 첨부 이미지
 - hint (str, Optional): 텍스트 힌트
-- group_id (int, Optional): 그룹 ID
+- groupId (int, Optional): 그룹 ID
 - receivers (List[str], Optional): 수신자들의 멤버 닉네임 목록
 - lat (float): 위도
 - lng (float): 경도
-- created_at (datetime, Optional): 메시지 송신 시각. 미제공 시 현재 시각 사용.
+- createdAt (datetime, Optional): 메시지 송신 시각. 미제공 시 현재 시각 사용.
 
 ## 반환값
 - ResponseTreasureDTO_Own: 생성된 보물 메시지 정보
@@ -228,9 +228,9 @@ async def insert_new_treasure(
     ),
     title: str = Form(..., description="메시지 제목"),
     content: Optional[str] = Form(None, description="메시지 내용"),
-    content_image: Optional[UploadFile] = File(None, description="메시지 첨부 이미지"),
+    contentImage: Optional[UploadFile] = File(None, description="메시지 첨부 이미지"),
     hint: Optional[str] = Form(None, description="텍스트 힌트"),
-    receiver_type: Optional[int] = Form(
+    receiverType: Optional[int] = Form(
         None,
         description="수신자 타입. 0 : 개인, 1:그룹 지정 x 단체, 2: 그룹 지정 O 단체, 3 :불특정 다수. 지정하지 않으면 입력값에서 추론합니다.",
     ),
@@ -256,8 +256,10 @@ async def insert_new_treasure(
     result_message_id = None
     try:
         # Form parameter translation
+        receiver_type=receiverType
         group_id = groupId
         created_at = createdAt
+        content_image = contentImage
 
         # 멤버 존재 검증
         current_member = find_member_by_id(current_member_info[0].id, db)
