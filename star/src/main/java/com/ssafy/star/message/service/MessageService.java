@@ -456,6 +456,9 @@ public class MessageService {
                 }
             }
             message.setReceiver(receiverIds);
+        } else {
+            receiverIds = groupMemberRepository.findMemberIdsByGroupId(request.getGroupId(), userId);
+            message.setReceiver(receiverIds);
         }
 
         // 이미지 파일 url로 변환 유효성 검사
@@ -510,7 +513,6 @@ public class MessageService {
         // 그룹 전송일 경우 (사용자 생성 그룹 o)
         else if (request.getReceiverType() == 2) {
             message.setGroup(memberGroupRepository.findMemberGroupById(request.getGroupId()));
-            receiverIds = groupMemberRepository.findMemberIdsByGroupId(request.getGroupId(), userId);
         }
 
         for(Long receiverId : receiverIds) {
