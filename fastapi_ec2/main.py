@@ -10,6 +10,7 @@ from router.image_router import image_router
 from router.treasure_router import treasure_router
 from swagger.fix.swagger_monkeypatch import apply_swaggerfix
 
+# 멀티파트 디버그 메세지 너무많은거 이결로 해결가능?
 # logging.getLogger("multipart").setLevel(logging.ERROR)
 
 logging.basicConfig(
