@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/map_service.dart';
 import 'package:star23sharp/widgets/index.dart';
@@ -70,44 +71,55 @@ class _HideStarScreenState extends State<HideStarScreen> {
     }
   }
 
-  Future<void> _pixelizeImages() async {
+  Future<bool> _pixelizeImages() async {
     if (images[0] != null) {
-      final Uint8List? pixelizedResult = await MapService.pixelizeImage(
-        file: File(images[0]!.path),
-        kernelSize: 7,
-        pixelSize: 48,
-      );
-
-      if (pixelizedResult != null) {
-        setState(() {
-          _pixelizedImageData = pixelizedResult;
-        });
-
-        final File dotHintImageFile =
-            await uint8ListToFile(_pixelizedImageData!, 'dot_hint_image.png');
-
-        final messageProvider =
-            Provider.of<MessageFormProvider>(context, listen: false);
-
-        messageProvider.setMessageFormType(type: '/map');
-
-        final cachedLocation = await SharedPreferences.getInstance();
-        final lat = cachedLocation.getDouble('lat');
-        final lng = cachedLocation.getDouble('lng');
-
-        messageProvider.saveMessageData(
-          hintImageFirst: File(images[0]!.path),
-          hintImageSecond: File(images[1]!.path),
-          dotHintImage: File(dotHintImageFile.path),
-          lat: lat!,
-          lng: lng!,
+      try {
+        final Uint8List? pixelizedResult = await MapService.pixelizeImage(
+          file: File(images[0]!.path),
+          kernelSize: 7,
+          pixelSize: 48,
         );
-      } else {
+
+        if (pixelizedResult != null) {
+          setState(() {
+            _pixelizedImageData = pixelizedResult;
+          });
+
+          final File dotHintImageFile =
+              await uint8ListToFile(_pixelizedImageData!, 'dot_hint_image.png');
+
+          final messageProvider =
+              Provider.of<MessageFormProvider>(context, listen: false);
+
+          messageProvider.setMessageFormType(type: '/map');
+
+          final cachedLocation = await SharedPreferences.getInstance();
+          final lat = cachedLocation.getDouble('lat');
+          final lng = cachedLocation.getDouble('lng');
+
+          messageProvider.saveMessageData(
+            hintImageFirst: File(images[0]!.path),
+            hintImageSecond: File(images[1]!.path),
+            dotHintImage: File(dotHintImageFile.path),
+            lat: lat!,
+            lng: lng!,
+          );
+          return true;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("이미지 픽셀화에 실패했습니다.")),
+          );
+          return false;
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("이미지 픽셀화에 실패했습니다.")),
+          const SnackBar(content: Text("권한이 없어 작업을 수행할 수 없습니다.")),
         );
+        logger.d("픽셀화 Error : $e");
+        return false;
       }
     }
+    return false;
   }
 
   Future<File> uint8ListToFile(Uint8List data, String fileName) async {
@@ -239,10 +251,13 @@ class _HideStarScreenState extends State<HideStarScreen> {
         ElevatedButton(
           onPressed: () async {
             if (images[0] != null && images[1] != null) {
-              await _pixelizeImages();
-              setState(() {
-                isPreviewMode = true;
-              });
+              bool pixelizedSuccessfully = await _pixelizeImages();
+              if (pixelizedSuccessfully) {
+                await _pixelizeImages();
+                setState(() {
+                  isPreviewMode = true;
+                });
+              }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
