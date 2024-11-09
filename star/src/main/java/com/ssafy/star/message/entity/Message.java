@@ -38,7 +38,7 @@ public class Message {
     @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(nullable = false)
     private String content;
 
     @Column
