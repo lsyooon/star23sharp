@@ -1,6 +1,5 @@
 package com.ssafy.star.security.jwt;
 
-import com.ssafy.star.member.service.NotificationService;
 import com.ssafy.star.security.entity.TokenEntity;
 import com.ssafy.star.security.repository.TokenRepository;
 import jakarta.servlet.FilterChain;
@@ -20,13 +19,11 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JWTUtil jwtUtil;
     private final TokenRepository tokenRepository;
-    private final NotificationService notificationService;
 
-    public CustomLogoutFilter(JWTUtil jwtUtil, TokenRepository refreshRepository, NotificationService notificationService) {
+    public CustomLogoutFilter(JWTUtil jwtUtil, TokenRepository refreshRepository) {
 
         this.jwtUtil = jwtUtil;
         this.tokenRepository = refreshRepository;
-        this.notificationService = notificationService;
     }
 
 
@@ -144,10 +141,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
         // 로그아웃 진행
         //Refresh 토큰 DB에서 제거
         tokenRepository.deleteById(username);
-
-        // 알림 설정 off
-        Long userId = jwtUtil.getId(refresh);
-        notificationService.offNotification(userId);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
