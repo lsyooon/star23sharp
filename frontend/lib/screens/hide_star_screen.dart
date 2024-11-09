@@ -284,6 +284,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
