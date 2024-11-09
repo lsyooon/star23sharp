@@ -11,8 +11,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = UserService.getMemberInfo();
-    logger.d(user);
+    UserService.getMemberInfo();
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
       {'text':'닉네임 변경', 'goto': '/modify_nickname'}, 

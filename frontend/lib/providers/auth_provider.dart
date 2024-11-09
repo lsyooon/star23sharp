@@ -32,10 +32,10 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> refreshTokens() async {
     try {
-      logger.d(refreshToken);
+      logger.d("토큰 갱신 중 - 현재 리프레시 토큰: $refreshToken");
       if(refreshToken != null){
         Map<String, String>? response = await UserService.refreshToken(refreshToken!);
-        logger.d(response);
+        logger.d("토큰 갱신 response: $response");
         if(response != null){
           await setToken(response['access']!, response['refresh']!);
           return response['access']!;

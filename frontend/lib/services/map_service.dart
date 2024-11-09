@@ -99,7 +99,6 @@ class MapService {
     }
   }
 
-  // 사진 검증 API 호출
   static Future<Map<String, dynamic>?> verifyPhoto({
     required File file,
     required int id,
@@ -108,8 +107,10 @@ class MapService {
   }) async {
     try {
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path,
-            filename: file.path.split('/').last),
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: file.path.split('/').last,
+        ),
         'id': id,
         'lat': lat,
         'lng': lng,
@@ -126,12 +127,11 @@ class MapService {
       );
 
       final responseData = jsonDecode(response.toString());
-
+      logger.d(responseData);
       if (responseData['code'] == "200") {
         return responseData['data'];
-      } else {
-        return null;
-      }
+      } 
+      return null;
     } on DioException catch (e) {
       logger.d("API 호출 실패: $e");
       ErrorHandler.handle(e);

@@ -47,7 +47,6 @@ class DioService {
         },
         onError: (DioException e, handler) async {
           logger.d('Error: ${e.message}');
-
           if (e.response?.statusCode == 401) {
             // 토큰 만료 시 갱신 로직 수행
             final authProvider = Provider.of<AuthProvider>(
@@ -59,6 +58,23 @@ class DioService {
             final newToken = await authProvider.refreshTokens();
             if (newToken != null) {
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+
+              if (e.requestOptions.data is FormData) {
+                final originalData = e.requestOptions.data as FormData;
+
+                // 새 FormData 생성
+                final newFormData = FormData();
+                newFormData.fields.addAll(originalData.fields);
+
+                for (var fileEntry in originalData.files) {
+                  newFormData.files.add(MapEntry(
+                    fileEntry.key,
+                    fileEntry.value.clone(),
+                  ));
+                }
+                e.requestOptions.data = newFormData;
+              }
+
               final cloneReq = await authDio.fetch(e.requestOptions);
               return handler.resolve(cloneReq); // 재요청 결과 반환
             } else {
@@ -106,30 +122,45 @@ class DioService {
           logger.d('Error: ${e.message}');
 
           if (e.response?.statusCode == 401) {
-            // 토큰 만료 시 갱신 로직 수행
             final authProvider = Provider.of<AuthProvider>(
               AppGlobal.navigatorKey.currentContext!,
               listen: false,
             );
 
-            // 새로운 토큰을 얻기 위한 시도
             final newToken = await authProvider.refreshTokens();
             if (newToken != null) {
+              // 새 토큰 설정
               e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-              final cloneReq = await authDio.fetch(e.requestOptions);
-              return handler.resolve(cloneReq); // 재요청 결과 반환
+
+              if (e.requestOptions.data is FormData) {
+                final originalData = e.requestOptions.data as FormData;
+
+                // 새 FormData 생성
+                final newFormData = FormData();
+                newFormData.fields.addAll(originalData.fields);
+
+                for (var fileEntry in originalData.files) {
+                  newFormData.files.add(MapEntry(
+                    fileEntry.key,
+                    fileEntry.value.clone(),
+                  ));
+                }
+                e.requestOptions.data = newFormData;
+              }
+
+              final cloneReq = await fastAuthDio.fetch(e.requestOptions);
+              return handler.resolve(cloneReq);
             } else {
-              // 로그인 화면으로 이동
-              Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/signin'); 
+              Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/signin');
             }
           } else {
             try {
               final failure = ErrorHandler.handle(e).failure;
               logger.e('Error [${failure.code}]: ${failure.message}');
-              handler.reject(e); // 에러를 계속 전파
+              handler.reject(e);
             } catch (error) {
               logger.e('Unhandled Error: $error');
-              handler.reject(e); // 기본 에러 처리
+              handler.reject(e);
             }
           }
 
