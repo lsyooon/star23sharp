@@ -72,6 +72,16 @@ public class NotificationService {
         memberRepository.updatePushNotificationEnabledById(userId, newActiveStatus);
     }
 
+    // 로그아웃 시 푸시 알림 off 설정
+    public void offNotification(Long userId) {
+        String userName = memberRepository.findMemberNameById(userId);
+        DeviceToken deviceToken = deviceTokenRepository.findById(userName)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.DEVICE_TOKEN_NOT_FOUND));
+        deviceToken.setActive(false);
+        deviceTokenRepository.save(deviceToken);
+        memberRepository.updatePushNotificationEnabledById(userId, false);
+    }
+
     // 수신인이 읽었을 경우 발신인한테 알림 전송
     public void readReceiver(Long messageId, Long receiverId) {
         Long senderId = messageRepository.findSenderIdByMessageId(messageId);
