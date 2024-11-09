@@ -8,7 +8,11 @@ class AppException(Exception):
     code: str
 
     def to_response_model(self, message=None, data=None):
-        return ResponseModel(code=self.code, message=message, data=data)
+        return ResponseModel(
+            code=self.code,
+            message=str(self.args[0]) if len(self.args) > 0 else message,
+            data=data,
+        )
 
     @classmethod
     def construct(cls, status_code: int, code: str):

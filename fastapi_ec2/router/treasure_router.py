@@ -1,6 +1,5 @@
 import datetime
 import logging
-import os
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -25,8 +24,10 @@ from response.exceptions import (
     GroupNotFoundException,
     HintLengthExceededException,
     InvalidCoordinatesException,
+    InvalidInputException,
     InvalidPixelTargetException,
     MemberNotFoundException,
+    RecipientNotFoundException,
     SelfRecipientException,
     TitleLengthExceededException,
     TreasureNotFoundException,
@@ -91,9 +92,6 @@ from utils.security import get_current_member
 
 logger = logging.getLogger(__name__)
 
-# Security
-ALGORITHM = os.environ.get("JWT_ALGORITHM")
-
 # 코사인 거리 임계값
 # THRESHOLD_COSINE_DISTANCE_LOW = (
 #     0.55  # 코사인 거리가 이 값 미만이면 지나치게 유사해서 저장 불가
@@ -115,6 +113,7 @@ INSERT_DESCRIPTION = """
 - 메시지 제목, 내용, 첨부 이미지, 텍스트 힌트를 포함할 수 있습니다.
 
 ## 매개변수
+- receiver_type (int, Optional): 수신자 타입. 0 : 개인, 1:그룹 지정 x 단체, 2: 그룹 지정 O 단체, 3 :불특정 다수. 지정하지 않으면 입력값에서 추론합니다.
 - hint_image_first (UploadFile): 첫 번째 힌트 이미지
 - hint_image_second (UploadFile): 두 번째 힌트 이미지
 - dot_hint_image (UploadFile, Optional): 픽셀 힌트 이미지. 제공되지 않을 경우 dot_target에 따라 지정된 힌트 이미지를 픽셀화합니다.
@@ -231,7 +230,11 @@ async def insert_new_treasure(
     content: Optional[str] = Form(None, description="메시지 내용"),
     content_image: Optional[UploadFile] = File(None, description="메시지 첨부 이미지"),
     hint: Optional[str] = Form(None, description="텍스트 힌트"),
-    group_id: Optional[int] = Form(
+    receiver_type: Optional[int] = Form(
+        None,
+        description="수신자 타입. 0 : 개인, 1:그룹 지정 x 단체, 2: 그룹 지정 O 단체, 3 :불특정 다수. 지정하지 않으면 입력값에서 추론합니다.",
+    ),
+    groupId: Optional[int] = Form(
         None, description="그룹을 지정해서 보낼 경우 해당 그룹 ID"
     ),
     receivers: Optional[List[str]] = Form(
@@ -239,7 +242,7 @@ async def insert_new_treasure(
     ),
     lat: float = Form(..., description="위도"),
     lng: float = Form(..., description="경도"),
-    created_at: Optional[datetime.datetime] = Form(
+    createdAt: Optional[datetime.datetime] = Form(
         None, description="메시지 송신 시각. 제공되지 않으면 현재 시각으로 저장됩니다."
     ),
     current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
@@ -252,6 +255,10 @@ async def insert_new_treasure(
     result_receivers_int = None
     result_message_id = None
     try:
+        # Form parameter translation
+        group_id = groupId
+        created_at = createdAt
+
         # 멤버 존재 검증
         current_member = find_member_by_id(current_member_info[0].id, db)
         if current_member is None:
@@ -267,6 +274,28 @@ async def insert_new_treasure(
         if not is_lat_lng_valid(lat, lng):
             raise InvalidCoordinatesException()
 
+        # 수신 Type에 따른 Sanitize
+        if receiver_type is not None:
+            if receiver_type == ReceiverTypes.INDIVIDUAL.value:
+                if receivers is None or len(receivers) != 1:
+                    raise InvalidInputException("수신 대상이 유효하지 않습니다.")
+                group_id = None
+            elif receiver_type == ReceiverTypes.GROUP_UNCONSTRUCTED.value:
+                if receivers is None or len(receivers) < 2:
+                    raise InvalidInputException("수신 대상이 유효하지 않습니다.")
+                group_id = None
+            elif receiver_type == ReceiverTypes.GROUP_CONSTRUCTED.value:
+                if group_id is None:
+                    raise InvalidInputException("수신 대상이 유효하지 않습니다.")
+                receivers = None
+            elif receiver_type == ReceiverTypes.PUBLIC.value:
+                receivers = None
+                group_id = None
+            else:
+                raise InvalidInputException(
+                    f"receiver_type이 들어왔지만 유효한 값이 아닙니다! 들어온 값 : {receiver_type}"
+                )
+
         # 송신 시각 처리
         if created_at is None:
             created_at = datetime.datetime.now()
@@ -279,6 +308,10 @@ async def insert_new_treasure(
                 member.id
                 for member in find_members_by_nickname_no_validation(receivers, db)
             ]  # TODO: Inefficient
+            if len(_receivers_int) == 0 or len(_receivers_int) != len(receivers):
+                raise RecipientNotFoundException(
+                    "수신 대상 전체 또는 일부를 찾을 수 없습니다."
+                )
             if len(_receivers_int) == 1:
                 result_receiver_type = ReceiverTypes.INDIVIDUAL.value
                 recieving_group = None
