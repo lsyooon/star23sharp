@@ -79,30 +79,38 @@ class _HomeScreenState extends State<HomeScreen> {
       {
         'text': '별 보관함',
         'goto': '/starstorage',
-        'position': const Offset(250, 0),
+        'position': Offset(
+          UIhelper.deviceWidth(context) * 0.65,
+          UIhelper.deviceHeight(context) * -0.1,
+        ),
         'img': 'assets/img/planet/planet1.png',
       },
       {
         'text': '별 숨기기',
         'goto': '/starform',
-        'position': const Offset(70, 80),
+        'position': Offset(
+          UIhelper.deviceWidth(context) * 0.15,
+          UIhelper.deviceHeight(context) * 0.0,
+        ),
         'img': 'assets/img/planet/planet2.png',
       },
       {
         'text': '내 정보',
         'goto': '/profile',
-        'position': const Offset(230, 170),
+        'position': Offset(
+          UIhelper.deviceWidth(context) * 0.6, // 너비의 60%
+          UIhelper.deviceHeight(context) * 0.1, // 높이의 50%
+        ),
         'img': 'assets/img/planet/planet3.png',
       },
     ];
-
     return Stack(
       children: [
         // 배경 이미지
         Center(
           child: SizedBox(
-            width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            width: UIhelper.deviceWidth(context) * 0.9,
+            height: UIhelper.deviceHeight(context) * 0.7,
             child: Image.asset(
               'assets/img/home_bg.png',
               fit: BoxFit.cover,
@@ -118,8 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
             authProvider.isLoggedIn
                 ? Expanded(
                     child: Stack(
+                      clipBehavior: Clip.none, // Overflow를 허용
+
                       children: [
-                        // menuList 표시
                         ...menuList.map((menu) {
                           return Positioned(
                             left: menu['position'].dx,

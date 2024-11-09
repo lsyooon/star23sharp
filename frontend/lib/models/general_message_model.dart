@@ -6,7 +6,7 @@ class GeneralMessageModel {
   final String? content;
   final List<String>? receivers;
   final DateTime? createdAt;
-  final File? image;
+  final File? contentImage;
   final int? groupId;
 
   GeneralMessageModel({
@@ -15,17 +15,17 @@ class GeneralMessageModel {
     this.content,
     this.receivers,
     this.createdAt,
-    this.image,
+    this.contentImage,
     this.groupId,
   });
 
   Map<String, dynamic> toJson() => {
-        'receiver_type': receiverType,
+        'receiverType': receiverType,
         'title': title,
         'content': content,
         'receivers': receivers,
-        'created_at': createdAt.toString(),
-        'image': image,
-        'group_id': groupId,
+        'createdAt': createdAt.toString(),
+        'contentImage': contentImage,
+        'groupId': groupId,
       };
 }

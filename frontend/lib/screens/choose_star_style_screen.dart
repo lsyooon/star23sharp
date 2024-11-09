@@ -178,7 +178,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               child: Container(
                 constraints: BoxConstraints(
                   minWidth: UIhelper.deviceWidth(context) * 0.8,
-                  minHeight: UIhelper.deviceHeight(context) * 0.33,
+                  minHeight: UIhelper.deviceHeight(context) * 0.3,
                 ),
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(

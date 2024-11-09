@@ -74,27 +74,22 @@ class MessageFormProvider with ChangeNotifier {
         hintImageFirst: hintImageFirst!,
         hintImageSecond: hintImageSecond!,
         dotHintImage: dotHintImage,
-        dotTarget: dotTarget,
-        kernelSize: kernelSize,
-        pixelSize: pixelSize,
+        // dotTarget: dotTarget,
+        // kernelSize: kernelSize,
+        // pixelSize: pixelSize,
         createdAt: DateTime.now(),
         lat: lat!,
         lng: lng!,
-        image: image,
       );
     } else {
       // GeneralMessageModel 생성 및 저장
-      int type = 0;
-      if (receivers != null && receivers.length > 1) {
-        type = 1;
-      }
       _generalMessage = GeneralMessageModel(
-        receiverType: type,
+        receiverType: receiverType,
         title: title,
         content: content,
-        receivers: receivers ?? [], // null일 경우 빈 리스트로 설정
+        receivers: receivers ?? [],
         createdAt: DateTime.now(),
-        image: image,
+        contentImage: contentImage,
         groupId: groupId,
       );
     }

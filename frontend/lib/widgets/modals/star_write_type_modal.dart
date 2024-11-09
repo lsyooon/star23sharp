@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:star23sharp/widgets/index.dart';
 
 class StarWriteTypeModal extends StatelessWidget {
   const StarWriteTypeModal({super.key});
@@ -6,7 +7,8 @@ class StarWriteTypeModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 200, // 모달의 높이 설정
+      height: UIhelper.deviceWidth(context) * 0.07,
+      width: UIhelper.deviceWidth(context),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,7 +18,6 @@ import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -140,6 +140,7 @@ void main() async {
   AuthRepository.initialize(
     appKey: appKey,
   );
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
   runApp(
     MultiProvider(
