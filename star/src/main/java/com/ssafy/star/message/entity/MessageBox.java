@@ -1,6 +1,7 @@
 package com.ssafy.star.message.entity;
 
 import com.ssafy.star.member.entity.Member;
+import com.ssafy.star.member.entity.MemberGroup;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -42,4 +43,21 @@ public class MessageBox {
 
     @Column(name = "is_reported")
     private boolean isReported = false;
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    public void setMessageDirection(short messageDirection) {
+        this.messageDirection = messageDirection;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
 }

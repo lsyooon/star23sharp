@@ -89,8 +89,8 @@ public class MessageController {
     @PostMapping("/common")
     public ResponseEntity<ApiResponse<?>> insertMessage(@AuthenticationPrincipal CustomUserDetails user,
                                                         @RequestPart("request") CommonMessageRequest request,
-                                                        @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-        messageService.commonMessage(user.getId(), request, image);
+                                                        @RequestPart(value = "contentImage", required = false) MultipartFile contentImage) throws IOException {
+        messageService.commonMessage(user.getId(), request, contentImage);
         return ResponseEntity.ok().body(new ApiResponse<>("200", "전송 완료"));
     }
 

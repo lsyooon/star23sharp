@@ -15,6 +15,6 @@ public class CommonMessageRequest {
     private String content;
     private List<String> receivers;
     private LocalDateTime createdAt;
-    private MultipartFile image;
+    private MultipartFile contentImage;
     private Long groupId;
 }
