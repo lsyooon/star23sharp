@@ -204,7 +204,7 @@ class _MapScreenState extends State<MapScreen>
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withOpacity(0.7),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
