@@ -41,8 +41,8 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-
         String requestURI = request.getRequestURI();
+        log.info("jwt filter Insert -> request url : {}", requestURI);
         if (whiteListedPaths.stream().anyMatch(requestURI::startsWith)) {
             log.info("jwt filter skip -> request url : {}", requestURI);
             filterChain.doFilter(request, response);

@@ -47,7 +47,6 @@ public class RefreshService {
 
         // 유효한 토큰이지만 토큰이 refresh 토큰이 아닌 경우
         if (!category.equals("refresh")) {
-            System.out.println(2);
 
             throw new CustomException(CustomErrorCode.INVALID_TOKEN);
         }
