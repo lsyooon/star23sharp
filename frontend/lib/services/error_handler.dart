@@ -20,9 +20,6 @@ class ErrorHandler implements Exception {
   ResponseModel _handleDioError(DioException error) {
     final errorCode = error.response?.data['code'] as String?;
     if (errorCode != null) {
-      // if(errorCode.startsWith("M")){
-      //   Provider.of<AuthProvider>(AppGlobal.navigatorKey.currentContext!, listen: false).refreshTokens();
-      // }
       return errorCode.getFailure();
     } else {
       return ResponseCode.unhandledException.getFailure();
