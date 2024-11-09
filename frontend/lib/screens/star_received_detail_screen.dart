@@ -60,11 +60,11 @@ class StarReceivedDetailScreen extends StatelessWidget {
                         const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
                     child: Container(
                       width: UIhelper.deviceWidth(context) * 0.85,
-                      alignment: Alignment.centerLeft,
+                      alignment: Alignment.center,
                       child: const Text(
                         "받은 별 보기",
                         style: TextStyle(
-                          fontSize: 20.0,
+                          fontSize: FontSizes.body,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -102,12 +102,12 @@ class StarReceivedDetailScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // item.image가 null이 아닌 경우에만 네트워크 이미지를 렌더링
-                                  if (item.image != null) 
+                                  if (item.image != null)
                                     Image.network(
                                       item.image!,
                                       fit: BoxFit.contain,
                                       width: UIhelper.deviceWidth(context) * 0.8,
+                                      height: UIhelper.deviceHeight(context) * 0.3, // 이미지 높이 제한
                                     ),
                                   const SizedBox(height: 10),
                                   Text(
