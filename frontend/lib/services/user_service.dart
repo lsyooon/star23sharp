@@ -96,7 +96,6 @@ class UserService {
   static Future<bool> logout(String refresh) async {
     try {
       logger.d(refresh);
-
       final response = await DioService.dio.post(
         '/logout',
         options: Options(
@@ -188,8 +187,8 @@ static String getTimeRemaining(String token) {
   // 회원 정보 조회
   static Future<dynamic> getMemberInfo() async {
     try {
-      // logger.d('회원 조회 시 헤더! : ${DioService.authDio.options.headers}');
-      // logger.d(getTimeRemaining(DioService.authDio.options.headers['Authorization']));
+      logger.d('회원 조회 시 헤더! : ${DioService.authDio.options.headers}');
+      logger.d(getTimeRemaining(DioService.authDio.options.headers['Authorization']));
       final response = await DioService.authDio.get(
         '/member/info',
       );
