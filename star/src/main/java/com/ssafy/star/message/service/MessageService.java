@@ -3,6 +3,7 @@ package com.ssafy.star.message.service;
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
 import com.ssafy.star.member.entity.GroupMember;
+import com.ssafy.star.member.entity.Member;
 import com.ssafy.star.member.entity.MemberGroup;
 import com.ssafy.star.member.repository.GroupMemberRepository;
 import com.ssafy.star.member.repository.MemberGroupRepository;
@@ -14,6 +15,7 @@ import com.ssafy.star.message.dto.response.*;
 import com.ssafy.star.message.entity.Complaint;
 import com.ssafy.star.message.entity.ComplaintReason;
 import com.ssafy.star.message.entity.Message;
+import com.ssafy.star.message.entity.MessageBox;
 import com.ssafy.star.message.repository.*;
 import com.ssafy.star.message.util.S3Service;
 import org.springframework.stereotype.Service;
@@ -423,7 +425,9 @@ public class MessageService {
     @Transactional
     public void commonMessage(Long userId, CommonMessageRequest request, MultipartFile image) throws IOException {
         Message message = new Message();
-        message.setSender(memberRepository.findMemberById(userId));
+
+        Member senderId = memberRepository.findMemberById(userId);
+        message.setSender(senderId);
         message.setReceiverType(request.getReceiverType());
         if (request.getTitle().length() > 15) {
             throw new CustomException(CustomErrorCode.TITLE_TOO_LONG);
@@ -476,6 +480,13 @@ public class MessageService {
 
         messageRepository.save(message);
 
+        MessageBox messageBox = new MessageBox();
+        messageBox.setMessage(message);
+        messageBox.setMessageDirection((short)0);
+        messageBox.setCreatedAt(request.getCreatedAt());
+        messageBox.setMember(senderId);
+        messageBoxRepository.save(messageBox);
+
         // 단체 메시지일 경우 (사용자 생성 그룹 x)
         if (request.getReceiverType() == 1) {
             // 그룹 생성
@@ -491,19 +502,29 @@ public class MessageService {
             for (Long receiverId : receiverIds) {
                 GroupMember groupMember = new GroupMember();
                 groupMember.setGroup(memberGroup);
-                groupMember.setMember(memberRepository.findMemberById(receiverId));
+                Member receiver = memberRepository.findMemberById(receiverId);
+                groupMember.setMember(receiver);
                 groupMemberRepository.save(groupMember);
             }
         }
         // 그룹 전송일 경우 (사용자 생성 그룹 o)
         else if (request.getReceiverType() == 2) {
             message.setGroup(memberGroupRepository.findMemberGroupById(request.getGroupId()));
-            receiverIds = groupMemberRepository.findMemberIdsByGroupId(request.getGroupId());
+            receiverIds = groupMemberRepository.findMemberIdsByGroupId(request.getGroupId(), userId);
         }
 
         for(Long receiverId : receiverIds) {
             notificationService.receiveCommonMessage(userId, receiverId, message.getId());
+
+            Member receiver = memberRepository.findMemberById(receiverId);
+            messageBox = new MessageBox();
+            messageBox.setMessage(message);
+            messageBox.setMessageDirection((short)1);
+            messageBox.setCreatedAt(request.getCreatedAt());
+            messageBox.setMember(receiver);
+            messageBoxRepository.save(messageBox);
         }
+
     }
 
     /*
