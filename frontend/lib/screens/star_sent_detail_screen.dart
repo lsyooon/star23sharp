@@ -24,7 +24,13 @@ class StarSentDetailScreen extends StatelessWidget {
           } else if (!snapshot.hasData) {
             return const Center(child: Text('별을 조회할 수 없습니다.'));
           } else {
-            final item = snapshot.data!;
+            var item = snapshot.data!;
+            final List<String> sortedReceiverNames = [
+              if (item.recipient != null && item.receiverNames.contains(item.recipient))
+                item.recipient!,
+              ...item.receiverNames.where((name) => name != item.recipient),
+            ];
+
             return Container(
               width: UIhelper.deviceWidth(context) * 0.85,
               height: UIhelper.deviceHeight(context) * 0.67,
@@ -34,14 +40,13 @@ class StarSentDetailScreen extends StatelessWidget {
                 children: [
                   Container(
                     color: const Color(0xFFA292EC),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
                     child: Container(
                       width: UIhelper.deviceWidth(context) * 0.85,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        item.recipient ?? (item.receiverNames.length == 1 ? item.receiverNames.first : '${item.receiverNames.first} 외 ${item.receiverNames.length-1}명'),
-                        style: const TextStyle(
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "보낸 별 보기",
+                        style: TextStyle(
                           fontSize: 20.0,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -80,12 +85,12 @@ class StarSentDetailScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // item.image가 null이 아닌 경우에만 네트워크 이미지를 렌더링
-                                  if (item.image != null) 
+                                  if (item.image != null)
                                     Image.network(
                                       item.image!,
                                       fit: BoxFit.contain,
                                       width: UIhelper.deviceWidth(context) * 0.8,
+                                      height: UIhelper.deviceHeight(context) * 0.3, // 이미지 높이 제한
                                     ),
                                   const SizedBox(height: 10),
                                   Text(
@@ -110,8 +115,36 @@ class StarSentDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('👥 ${item.receiverNames.join(', ')}', style: const TextStyle(fontSize: FontSizes.small),),
-                        Text('📅 ${formatDate(item.createdAt)}', style: const TextStyle(fontSize: FontSizes.small)),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              const TextSpan(
+                                text: '👥 ',
+                                style: TextStyle(fontSize: FontSizes.small),
+                              ),
+                              if (item.recipient != null && sortedReceiverNames.isNotEmpty)
+                                TextSpan(
+                                  text: sortedReceiverNames.first,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    // decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              if (item.recipient == null || sortedReceiverNames.length > 1)
+                                TextSpan(
+                                  text: item.recipient == null
+                                      ? sortedReceiverNames.join(', ')
+                                      : ', ${sortedReceiverNames.skip(1).join(', ')}',
+                                  style: const TextStyle(fontWeight: FontWeight.normal),
+                                ),
+                            ],
+                          ),
+                          style: const TextStyle(fontSize: FontSizes.small),
+                        ),
+                        Text(
+                          '📅 ${formatDate(item.createdAt)}',
+                          style: const TextStyle(fontSize: FontSizes.small),
+                        ),
                       ],
                     ),
                   ),

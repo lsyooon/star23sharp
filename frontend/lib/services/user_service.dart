@@ -120,7 +120,6 @@ class UserService {
   // 토큰 갱신
   static Future<Map<String, String>?> refreshToken(String refresh) async {
     try {
-      logger.d(refresh);
       final response = await DioService.dio.post(
         '/refresh',
         options: Options(

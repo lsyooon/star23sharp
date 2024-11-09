@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:star23sharp/constant/font_size.dart';
-import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
 
 class ListItem extends StatelessWidget {
