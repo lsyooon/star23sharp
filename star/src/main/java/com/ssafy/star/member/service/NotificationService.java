@@ -73,12 +73,12 @@ public class NotificationService {
     }
 
     // 로그아웃 시 푸시 알림 off 설정
-    public void offNotification(Long userId) {
-        String userName = memberRepository.findMemberNameById(userId);
-        DeviceToken deviceToken = deviceTokenRepository.findById(userName)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.DEVICE_TOKEN_NOT_FOUND));
-        deviceToken.setActive(false);
-        deviceTokenRepository.save(deviceToken);
+    public void offNotification(String memberName, Long userId) {
+        DeviceToken deviceToken = deviceTokenRepository.findById(memberName).orElse(null);
+        if (deviceToken != null) {
+            deviceToken.setActive(false);
+            deviceTokenRepository.save(deviceToken);
+        }
         memberRepository.updatePushNotificationEnabledById(userId, false);
     }
 

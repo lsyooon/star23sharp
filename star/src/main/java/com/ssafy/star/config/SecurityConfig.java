@@ -1,5 +1,6 @@
 package com.ssafy.star.config;
 
+import com.ssafy.star.member.service.NotificationService;
 import com.ssafy.star.security.jwt.CustomLogoutFilter;
 import com.ssafy.star.security.jwt.JWTFilter;
 import com.ssafy.star.security.jwt.JWTUtil;
@@ -45,9 +46,11 @@ public class SecurityConfig {
 
     private final Validator validator;
 
+    private final NotificationService notificationService;
+
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, TokenService tokenService,
                           @Value("${jwt.access-token.expiration}") Long accessTokenExpiration,
-                          @Value("${jwt.refresh-token.expiration}") Long refreshTokenExpiration, TokenRepository tokenRepository, Validator validator) {
+                          @Value("${jwt.refresh-token.expiration}") Long refreshTokenExpiration, TokenRepository tokenRepository, Validator validator, NotificationService notificationService) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
@@ -56,6 +59,7 @@ public class SecurityConfig {
         this.refreshTokenExpiration = refreshTokenExpiration;
         this.tokenRepository = tokenRepository;
         this.validator = validator;
+        this.notificationService = notificationService;
     }
 
     //AuthenticationManager Bean 등록
@@ -120,7 +124,7 @@ public class SecurityConfig {
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
         http
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil, tokenRepository), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, tokenRepository,notificationService), LogoutFilter.class);
         // session 을 stateless 로 설정
         http.sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
