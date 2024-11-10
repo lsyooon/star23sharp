@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/map_service.dart';
-import 'package:star23sharp/utilities/app_global.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class HideStarScreen extends StatefulWidget {
@@ -110,7 +109,6 @@ class _HideStarScreenState extends State<HideStarScreen> {
             dotHintImage: dotHintImageFile,
             lat: lat!,
             lng: lng!,
-            hint: "",
           );
           return true;
         } else {
