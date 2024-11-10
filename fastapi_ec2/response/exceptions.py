@@ -8,9 +8,14 @@ class AppException(Exception):
     code: str
 
     def to_response_model(self, message=None, data=None):
+        msg = None
+        if len(self.args) > 0:
+            msg = str(self.args[0])
+        else:
+            msg = message if message is not None else self.code
         return ResponseModel(
             code=self.code,
-            message=str(self.args[0]) if len(self.args) > 0 else message,
+            message=msg,
             data=data,
         )
 

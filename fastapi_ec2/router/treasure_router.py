@@ -532,7 +532,9 @@ async def inspect_treasures(
             if not treasure.is_found:  # 아무도 못 찾은 public 메세지면 접근 가능
                 result_dtos.append(TreasureDTO_Undiscovered.get_dto(treasure))
 
-    return ResponseTreasureDTO_Any(code="200", data={"treasures": result_dtos})
+    return ResponseTreasureDTO_Any(
+        code="200", message="조회 완료.", data={"treasures": result_dtos}
+    )
 
 
 @treasure_router.get(
@@ -625,7 +627,9 @@ async def find_near_treasures(
         TreasureDTO_Undiscovered.get_dto(treasure) for treasure in query_result
     ]
 
-    return ResponseTreasureDTO_Undiscovered(code="200", data={"treasures": result_dtos})
+    return ResponseTreasureDTO_Undiscovered(
+        code="200", message="조회 완료.", data={"treasures": result_dtos}
+    )
 
 
 @treasure_router.post(
