@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
 import 'package:star23sharp/services/index.dart';
@@ -14,7 +15,7 @@ class NotificationService {
       // 응답 데이터 파싱
       final result = ResponseModel.fromJson(response.data);
       if (result.code == '200') {
-        if (result.data.length > 0) {
+        if (result.data != null) {
           final List<dynamic> notifications = result.data;
           return notifications
               .map((json) => NotificationModel.fromJson(json))
@@ -49,6 +50,25 @@ class NotificationService {
     } on DioException catch (e) {
       ErrorHandler.handle(e);
       return null;
+    }
+  }
+
+  static Future<void> updateDeviceToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      final response =
+          await DioService.authDio.post('/notification/device', data: {
+        'token': token,
+      });
+
+      var result = ResponseModel.fromJson(response.data);
+      if (result.code == '200') {
+      } else {
+        throw Exception(result.message);
+      }
+    } on DioException catch (e) {
+      logger.d('Failed to create post: $e');
+      ErrorHandler.handle(e);
     }
   }
 }

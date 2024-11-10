@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:star23sharp/widgets/index.dart';
 
 class Logo extends StatefulWidget {
   const Logo({super.key});
@@ -14,21 +15,28 @@ class _LogoState extends State<Logo> with SingleTickerProviderStateMixin {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Transform.translate(
-          offset: const Offset(50, -15),
+          offset: Offset(
+            UIhelper.deviceWidth(context) * 0.1, // 디바이스 너비의 10% 만큼 오른쪽으로 이동
+            -UIhelper.deviceHeight(context) * 0.02, // 디바이스 높이의 2% 만큼 위로 이동
+          ),
           child: Transform.rotate(
             angle: -0.7,
             child: Image.asset(
               "assets/img/logo/star_logo.GIF",
-              width: 160,
-              height: 190,
+              // width: UIhelper.deviceWidth(context) * 0.4, // 별 로고 너비
+              height: UIhelper.deviceHeight(context) * 0.3, // 별 로고 높이
             ),
           ),
         ),
+        // 텍스트 로고
         Transform.translate(
-          offset: const Offset(-80, 0),
+          offset: Offset(
+            -UIhelper.deviceWidth(context) * 0.15, // 디바이스 너비의 15% 만큼 왼쪽으로 이동
+            0,
+          ),
           child: Image.asset(
             'assets/img/logo/text_logo.png', // 텍스트 로고 이미지 경로
-            height: 150, // 필요에 따라 크기 조정
+            height: UIhelper.deviceHeight(context) * 0.15, // 텍스트 로고 높이
           ),
         ),
       ],
