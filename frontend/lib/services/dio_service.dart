@@ -171,7 +171,6 @@ class DioService {
 
   // Authorization 토큰을 업데이트하는 메서드
   static void updateAuthorizationHeader(String token) {
-    logger.d(token);
     authDio.options.headers['Authorization'] = 'Bearer $token';
     fastAuthDio.options.headers['Authorization'] = 'Bearer $token';
   }

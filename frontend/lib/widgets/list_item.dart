@@ -31,9 +31,9 @@ class ListItem extends StatelessWidget {
                 child: Row(
                   children: [
                     Image.asset(
-                      item.receiverType == 0
-                          ? 'assets/icon/yellow_star.png'
-                          : 'assets/icon/white_star.png',
+                      item.kind == true
+                          ? 'assets/icon/yellow_star${item.receiverType != 0 ? '_grp' : ''}.png' // 보물
+                          : 'assets/icon/white_star${item.receiverType != 0 ? '_grp' : ''}.png', // 일반
                       width: 20.0,
                       height: 20.0,
                     ),
