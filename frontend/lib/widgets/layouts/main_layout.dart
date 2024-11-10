@@ -1,7 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import 'package:star23sharp/providers/index.dart';
 
 class MainLayout extends StatelessWidget {
@@ -48,39 +49,104 @@ class MainLayout extends StatelessWidget {
           // BottomNavigationBar
           SizedBox(
             height: bottomNavHeight,
-            child: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent, // 배경을 투명하게 설정
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.notifications),
-                  label: '알림함',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: '홈',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.business),
-                  label: '지도',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.school),
-                  label: '프로필',
-                ),
-              ],
-              onTap: (index) {
-                // 페eee이지 전환 논리 구현
-                if (index == 0) {
-                  Navigator.pushReplacementNamed(context, '/notification');
-                } else if (index == 1) {
-                  Navigator.pushReplacementNamed(context, '/home');
-                } else if (index == 2) {
-                  Navigator.pushReplacementNamed(context, '/map');
-                } else if (index == 3) {
-                  Navigator.pushReplacementNamed(context, '/profile');
-                }
-              },
+            child: BottomAppBar(
+              color: Colors.transparent,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 왼쪽 Column의 배경 이미지 추가
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // 배경 이미지
+                      Padding(
+                        padding: const EdgeInsets.all(0),
+                        child: Positioned.fill(
+                          child: Image.asset(
+                            'assets/img/blackTheme/black_button_circle.png', // 왼쪽 Column 배경 이미지 경로
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                      // Column 내용
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            iconSize: 28.0,
+                            icon: const Icon(Icons.notifications_outlined),
+                            color: const Color(0xFF868686),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/notification');
+                            },
+                          ),
+                          IconButton(
+                            iconSize: 28.0,
+                            icon: const Icon(Icons.mail_outline),
+                            color: const Color(0xFF868686),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/starstorage');
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  // 가운데 버튼
+                  IconButton(
+                    iconSize: 50.0,
+                    icon: Image.asset('assets/img/blackTheme/black_center_button.png'),
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/map');
+                    },
+                  ),
+                  // 오른쪽 Column의 배경 이미지 추가
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                        child: Positioned.fill(
+                          child: Image.asset(
+                            'assets/img/blackTheme/black_button_circle.png', // 오른쪽 Column 배경 이미지 경로
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                      // Column 내용
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            iconSize: 28.0,
+                            icon: const Icon(Icons.account_circle_outlined),
+                            color: const Color(0xFF868686),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/profile');
+                            },
+                          ),
+                          IconButton(
+                            iconSize: 28.0,
+                            icon: Transform.rotate(
+                              angle: pi / 2, // 90도 회전 (오른쪽으로)
+                              child: const Icon(Icons.u_turn_left),
+                            ),
+                            color: const Color(0xFF868686),
+                            onPressed: () {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context); // 화면이 있다면 뒤로가기
+                              } else {
+                                SystemNavigator.pop();  // 뒤로 갈 화면이 없다면 앱 종료
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
