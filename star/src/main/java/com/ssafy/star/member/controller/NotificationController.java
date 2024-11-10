@@ -1,6 +1,8 @@
 package com.ssafy.star.member.controller;
 
 import com.ssafy.star.member.dto.request.DeviceTokenRequest;
+import com.ssafy.star.member.dto.request.ReceiverPushRequest;
+import com.ssafy.star.member.dto.request.SenderPushRequest;
 import com.ssafy.star.member.dto.response.NotificationListResponse;
 import com.ssafy.star.member.dto.response.NotificationResponse;
 import com.ssafy.star.member.service.NotificationService;
@@ -53,15 +55,15 @@ public class NotificationController {
 
     @PostMapping("/sender-push")
     public ResponseEntity<ApiResponse<?>> senderPush(@AuthenticationPrincipal CustomUserDetails user,
-                                                     @RequestBody Long messageId) {
-        notificationService.readReceiver(messageId, user.getId());
+                                                     @RequestBody SenderPushRequest request) {
+        notificationService.readReceiver(request.getMessageId(), user.getId());
         return ResponseEntity.ok().body(new ApiResponse<>("200", "알림 전송 완료"));
     }
 
     @PostMapping("/receiver-push")
     public ResponseEntity<ApiResponse<?>> receiverPush(@AuthenticationPrincipal CustomUserDetails user,
-                                                       @RequestBody Map<String, Long> request) {
-        notificationService.receiveMessage(user.getId(), request.get("receiverId"), request.get("messageId"));
+                                                       @RequestBody ReceiverPushRequest request) {
+        notificationService.receiveMessage(user.getId(), request.getReceiverId(), request.getMessageId());
         return ResponseEntity.ok().body(new ApiResponse<>("200", "알림 전송 완료"));
     }
 

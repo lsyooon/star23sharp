@@ -6,6 +6,7 @@ import com.ssafy.star.member.dto.request.DeviceTokenRequest;
 import com.ssafy.star.member.dto.response.NotificationListResponse;
 import com.ssafy.star.member.dto.response.NotificationResponse;
 import com.ssafy.star.member.entity.DeviceToken;
+import com.ssafy.star.member.entity.Member;
 import com.ssafy.star.member.repository.DeviceTokenRepository;
 import com.ssafy.star.member.repository.MemberRepository;
 import com.ssafy.star.member.entity.Notification;
@@ -82,31 +83,64 @@ public class NotificationService {
         memberRepository.updatePushNotificationEnabledById(userId, false);
     }
 
-    // 수신인이 읽었을 경우 발신인한테 알림 전송
+    // 수신자가 읽었을 경우 발신자한테 알림 전송
     public void readReceiver(Long messageId, Long receiverId) {
-        Long senderId = messageRepository.findSenderIdByMessageId(messageId);
-        String senderNickname = memberRepository.findNicknameById(senderId);
+        Message message = messageRepository.findById(messageId).orElse(null);
+        if (message == null) {
+            throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
+        }
+
+        Long senderId = message.getSender().getId();
+        String senderName = message.getSender().getMemberName();
+        DeviceToken senderToken = deviceTokenRepository.findById(senderName).orElse(null);
+        if (senderToken == null || !senderToken.isActive()) {    // 토큰 없거나 알림 비활성 상태면 바로 나옴
+            return;
+        }
+
+        String senderNickname = message.getSender().getNickname();
         String receiverNickname = memberRepository.findNicknameById(receiverId);
+
+        // receiverNickname이 null일 경우 예외 처리
+        if (receiverNickname == null) {
+            throw new CustomException(CustomErrorCode.MEMBER_INFO_NOT_MATCH);
+        }
+
         Notification notification = new Notification();
-        notification.setTitle("\uD83D\uDC8C " + receiverNickname+ "님이 " + senderNickname + "님의 쪽지를 확인했어요! \uD83C\uDF89");
+        notification.setTitle("\uD83D\uDC8C " + receiverNickname + "님이 " + senderNickname + "님의 쪽지를 확인했어요! \uD83C\uDF89");
         notification.setContent(senderNickname + "님이 숨겨둔 쪽지를 누군가 발견하고 확인했어요! \uD83D\uDE0A 또 다른 장소에 쪽지를 남겨 더 많은 사람들에게 기쁨을 전해보는 건 어떨까요? \uD83C\uDF3C");
-        notification.setMessage(messageRepository.findMessageById(messageId));
+        notification.setMessage(message);
         notification.setMember(memberRepository.findMemberById(senderId));
         notificationRepository.save(notification);
 
-        String senderName = memberRepository.findMemberNameById(senderId);
-        // 레디스에서 토큰 조회 -> 푸시알림 전송
-        DeviceToken senderToken = deviceTokenRepository.findById(senderName).orElse(null);
-        if (senderToken != null && senderToken.isActive()) {
+        // 푸시 알림 전송
+        try {
+            System.out.println("들어옴");
             pushNotificationService.sendPushNotification(senderToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
+        } catch (Exception e) {
+            System.out.println("푸시 알림 전송 실패: " + e.getMessage());
         }
     }
 
-    // 수신인에게 보물 쪽지가 왔을 경우
+    // 보물쪽지 수신자에게 알림 전송
     public void receiveMessage(Long senderId, Long receiverId, Long messageId) {
-        String receiverNickname = memberRepository.findNicknameById(receiverId);
-        String senderNickname = memberRepository.findNicknameById(senderId);
+        Member member = memberRepository.findMemberById(receiverId);
+        String receiverName = member.getMemberName();
+
+        DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
+        if (receiverToken == null || !receiverToken.isActive()) { // 토큰 없거나 알림 비활성 상태면 바로 나옴
+            return;
+        }
+
         Message message = messageRepository.findMessageById(messageId);
+        if (message == null) {
+            throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
+        }
+
+        String receiverNickname = member.getNickname();
+        String senderNickname = message.getSender().getNickname();
+        if (senderNickname == null) {
+            throw new CustomException(CustomErrorCode.MEMBER_INFO_NOT_MATCH);
+        }
 
         // 위경도 주소로 변환
         double latitude = (double) message.getLat();
@@ -117,36 +151,53 @@ public class NotificationService {
         notification.setTitle("새로운 쪽지가 도착했어요! \uD83D\uDCEC");
         String content = senderNickname + "님이 " + receiverNickname + "님에게 살짝 보물 쪽지를 남겼어요! \uD83D\uDC8C 힌트를 보고 쪽지를 찾아보세요\uD83D\uDE04\n위치 : " + address;
         notification.setContent(content);
-        notification.setMember(memberRepository.findMemberById(receiverId));
-        notification.setMessage(messageRepository.findMessageById(messageId));
+        notification.setMember(member);
+        notification.setMessage(message);
         notification.setImage(message.getDotHintImage());
         notification.setHint("힌트 : " + message.getHint());
         notificationRepository.save(notification);
 
-        String receiverName = memberRepository.findMemberNameById(receiverId);
-        System.out.println(notification.getId());
-        // 레디스에서 토큰 조회 -> 푸시알림 전송
-        DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
-        if (receiverToken != null && receiverToken.isActive()) {
+        // 푸시 알림 전송
+        try {
+            System.out.println("들어옴");
             pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), notification.getTitle(), notification.getContent(), "" + notification.getId(), notification.getHint(), message.getDotHintImage());
+        } catch (Exception e) {
+            System.out.println("푸시 알림 전송 실패: " + e.getMessage());
         }
     }
 
-    // 수신인에게 일반 쪽지가 왔을 경우
-    public void receiveCommonMessage(Long senderId, Long receiverId, Long messageId) {
-        String senderNickname = memberRepository.findNicknameById(senderId);
+    // 일반 메시지 수신자에게 알림 전송
+    public void receiveCommonMessage(Long receiverId, Long messageId) {
+        Member member = memberRepository.findMemberById(receiverId);
+        if (member == null) {
+            throw new CustomException(CustomErrorCode.MEMBER_INFO_NOT_MATCH);
+        }
+
+        Message message = messageRepository.findMessageById(messageId);
+        if (message == null) {
+            throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
+        }
+
+        String receiverName = member.getMemberName();
+        // 레디스에서 토큰 조회
+        DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
+        if (receiverToken == null || !receiverToken.isActive()) {   // 토큰 없거나 알림 비활성 상태면 바로 나옴
+            return;
+        }
+
+        String senderNickname = message.getSender().getNickname();
         Notification notification = new Notification();
         notification.setTitle("새로운 쪽지가 도착했어요! \uD83D\uDCEC");
         notification.setContent(senderNickname + "님에게서 쪽지가 도착했어요 \uD83D\uDE0A 답장을 보내주세요 \uD83C\uDF3C");
-        notification.setMessage(messageRepository.findMessageById(messageId));
-        notification.setMember(memberRepository.findMemberById(senderId));
+        notification.setMessage(message);
+        notification.setMember(member);
         notificationRepository.save(notification);
 
-        String receiverName = memberRepository.findMemberNameById(receiverId);
-        // 레디스에서 토큰 조회 -> 푸시알림 전송
-        DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
-        if (receiverToken != null && receiverToken.isActive()) {
+        try {
+            System.out.println("들어옴");
             pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
+        } catch (Exception e) {
+            System.out.println("푸시 알림 전송 실패: " + e.getMessage());
         }
     }
 

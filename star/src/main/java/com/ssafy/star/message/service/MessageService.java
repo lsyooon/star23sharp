@@ -516,7 +516,7 @@ public class MessageService {
         }
 
         for(Long receiverId : receiverIds) {
-            notificationService.receiveCommonMessage(userId, receiverId, message.getId());
+            notificationService.receiveCommonMessage(receiverId, message.getId());
 
             Member receiver = memberRepository.findMemberById(receiverId);
             messageBox = new MessageBox();
