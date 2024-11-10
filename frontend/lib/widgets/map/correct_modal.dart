@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class CorrectModal extends StatelessWidget {
@@ -39,7 +40,6 @@ class CorrectModal extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  // 오른쪽 상단 닫기 버튼
                   Align(
                     alignment: Alignment.topRight,
                     child: Padding(
@@ -61,80 +61,111 @@ class CorrectModal extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 28),
                         Center(
                           child: Text(
-                            markerData['title'] ?? "정답 확인",
+                            markerData['title'],
                             style: const TextStyle(
                               color: Colors.white70,
-                              fontSize: 24,
+                              fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "사진!",
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 18,
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: Text(
+                                DateFormat('yy.MM.d').format(
+                                    DateTime.parse(markerData['created_at'])),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Center(
+                          child: Container(
+                            width: deviceWidth * 0.65,
+                            height: deviceHeight * 0.25,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 20.0,
+                                right: 20.0,
+                              ),
+                              child: Expanded(
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "내용 : ${markerData['content']}",
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        "사진 :",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 24,
+                                        ),
+                                      ),
+                                      Center(
+                                        child: SizedBox(
+                                          width: deviceWidth * 0.5,
+                                          height: deviceWidth * 0.5,
+                                          child: markerData["image"] != null
+                                              ? Image.network(
+                                                  markerData["image"],
+                                                )
+                                              : const SizedBox(),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 16),
-                                Center(
-                                  child: SizedBox(
-                                    width: 320,
-                                    height: 200,
-                                    child: markerData["image"] != null
-                                        ? Image.network(
-                                            markerData["image"],
-                                          )
-                                        : const SizedBox(),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  "내용",
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  markerData['content'] ?? "축하합니다, 정답을 맞추셨습니다!",
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        // 확인 버튼
-                        Container(
-                          padding: const EdgeInsets.only(
-                            bottom: 8,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text("확인"),
-                              ),
-                            ],
-                          ),
+                        const SizedBox(
+                          height: 16,
                         ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: Text(
+                                "${markerData['sender_nickname']}",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                       ],
                     ),
                   ),

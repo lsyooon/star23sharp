@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/map_service.dart';
 import 'package:star23sharp/widgets/index.dart';
@@ -70,44 +71,55 @@ class _HideStarScreenState extends State<HideStarScreen> {
     }
   }
 
-  Future<void> _pixelizeImages() async {
+  Future<bool> _pixelizeImages() async {
     if (images[0] != null) {
-      final Uint8List? pixelizedResult = await MapService.pixelizeImage(
-        file: File(images[0]!.path),
-        kernelSize: 7,
-        pixelSize: 48,
-      );
-
-      if (pixelizedResult != null) {
-        setState(() {
-          _pixelizedImageData = pixelizedResult;
-        });
-
-        final File dotHintImageFile =
-            await uint8ListToFile(_pixelizedImageData!, 'dot_hint_image.png');
-
-        final messageProvider =
-            Provider.of<MessageFormProvider>(context, listen: false);
-
-        messageProvider.setMessageFormType(type: '/map');
-
-        final cachedLocation = await SharedPreferences.getInstance();
-        final lat = cachedLocation.getDouble('lat');
-        final lng = cachedLocation.getDouble('lng');
-
-        messageProvider.saveMessageData(
-          hintImageFirst: File(images[0]!.path),
-          hintImageSecond: File(images[1]!.path),
-          dotHintImage: File(dotHintImageFile.path),
-          lat: lat!,
-          lng: lng!,
+      try {
+        final Uint8List? pixelizedResult = await MapService.pixelizeImage(
+          file: File(images[0]!.path),
+          kernelSize: 7,
+          pixelSize: 48,
         );
-      } else {
+
+        if (pixelizedResult != null) {
+          setState(() {
+            _pixelizedImageData = pixelizedResult;
+          });
+
+          final File dotHintImageFile =
+              await uint8ListToFile(_pixelizedImageData!, 'dot_hint_image.png');
+
+          final messageProvider =
+              Provider.of<MessageFormProvider>(context, listen: false);
+
+          messageProvider.setMessageFormType(type: '/map');
+
+          final cachedLocation = await SharedPreferences.getInstance();
+          final lat = cachedLocation.getDouble('lat');
+          final lng = cachedLocation.getDouble('lng');
+
+          messageProvider.saveMessageData(
+            hintImageFirst: File(images[0]!.path),
+            hintImageSecond: File(images[1]!.path),
+            dotHintImage: File(dotHintImageFile.path),
+            lat: lat!,
+            lng: lng!,
+          );
+          return true;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("이미지 픽셀화에 실패했습니다.")),
+          );
+          return false;
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("이미지 픽셀화에 실패했습니다.")),
+          const SnackBar(content: Text("권한이 없어 작업을 수행할 수 없습니다.")),
         );
+        logger.d("픽셀화 Error : $e");
+        return false;
       }
     }
+    return false;
   }
 
   Future<File> uint8ListToFile(Uint8List data, String fileName) async {
@@ -239,10 +251,13 @@ class _HideStarScreenState extends State<HideStarScreen> {
         ElevatedButton(
           onPressed: () async {
             if (images[0] != null && images[1] != null) {
-              await _pixelizeImages();
-              setState(() {
-                isPreviewMode = true;
-              });
+              bool pixelizedSuccessfully = await _pixelizeImages();
+              if (pixelizedSuccessfully) {
+                await _pixelizeImages();
+                setState(() {
+                  isPreviewMode = true;
+                });
+              }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -269,7 +284,9 @@ class _HideStarScreenState extends State<HideStarScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(
+          height: 20,
+        ),
         Container(
           padding: const EdgeInsets.all(20),
           width: UIhelper.deviceWidth(context) * 0.7,
@@ -283,7 +300,8 @@ class _HideStarScreenState extends State<HideStarScreen> {
                 "힌트 사진\n 누르면 크게 확인할 수 있어요!",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -291,7 +309,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
               GestureDetector(
                 onTap: _showPixelizedImageModal,
                 child: Container(
-                  width: 200,
+                  width: 220,
                   height: 200,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.3),
@@ -330,47 +348,55 @@ class _HideStarScreenState extends State<HideStarScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
+                  SizedBox(
+                    width: 100,
+                    child: ElevatedButton(
+                      onPressed: () {
                         setState(() {
-                          isPreviewMode = false;
-                          images[0] = null;
-                          images[1] = null;
-                          _currentIndex = 0;
-                          _pixelizedImageData = null;
+                          setState(() {
+                            isPreviewMode = false;
+                            images[0] = null;
+                            images[1] = null;
+                            _currentIndex = 0;
+                            _pixelizedImageData = null;
+                          });
                         });
-                      });
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _pageController.jumpToPage(0);
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _pageController.jumpToPage(0);
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        "재촬영",
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      "재촬영",
-                      style: TextStyle(color: Colors.white),
-                    ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      // 다음 단계 기능 추가
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  SizedBox(
+                    width: 100,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // 다음 단계 기능 추가
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        "다음",
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      "다음",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+                  )
                 ],
               ),
             ],

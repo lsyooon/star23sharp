@@ -186,13 +186,46 @@ class _MapScreenState extends State<MapScreen>
         markerData: markerData,
       );
     } else {
-      Navigator.pop(context);
-      IncorrectMessageModal.show(
-        context,
-        onRetry: () => _takePhoto(markerData),
-        markerData: markerData,
-      );
+      _showCustomSnackbar(context, "정답이 아닙니다.\n 다시 사진을 찍어주세요!");
     }
+  }
+
+  void _showCustomSnackbar(BuildContext context, String message) {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: deviceHeight * 0.37,
+        left: deviceWidth * 0.2,
+        right: deviceWidth * 0.2,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay?.insert(overlayEntry);
+
+    // 3초 후에 자동으로 사라짐
+    Future.delayed(const Duration(seconds: 3), () {
+      overlayEntry.remove();
+    });
   }
 
   // 메뉴 항목에 따른 액션 관리 함수
@@ -256,7 +289,9 @@ class _MapScreenState extends State<MapScreen>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                        ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -271,7 +306,7 @@ class _MapScreenState extends State<MapScreen>
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
                             Expanded(
                               child: ListView.builder(
                                 physics: const ClampingScrollPhysics(),
@@ -292,6 +327,7 @@ class _MapScreenState extends State<MapScreen>
                                             "image": "",
                                             "content": "",
                                             "hint_image_first": "",
+                                            "sender_nickname": "",
                                           };
 
                                   return GestureDetector(
@@ -315,21 +351,23 @@ class _MapScreenState extends State<MapScreen>
                                             ),
                                             radius: 24,
                                           ),
-                                          const SizedBox(width: 12),
+                                          const SizedBox(width: 10),
                                           Expanded(
                                             child: Text(
                                               markerData['title'],
                                               style: const TextStyle(
                                                 color: Colors.white70,
-                                                fontSize: 18,
+                                                fontSize: 24,
                                               ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                           Text(
-                                            markerData['senderId'],
+                                            markerData['sender_nickname'],
                                             style: const TextStyle(
                                               color: Colors.white54,
-                                              fontSize: 16,
+                                              fontSize: 24,
                                             ),
                                           ),
                                         ],
@@ -370,6 +408,7 @@ class _MapScreenState extends State<MapScreen>
           "image": "",
           "content": "",
           "hint_image_first": "",
+          "sender_nickname": "",
         };
 
     final deviceWidth = UIhelper.deviceWidth(context);
@@ -397,7 +436,6 @@ class _MapScreenState extends State<MapScreen>
                   ),
                   child: Stack(
                     children: [
-                      // 오른쪽 상단 닫기 버튼
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
@@ -422,56 +460,104 @@ class _MapScreenState extends State<MapScreen>
                             const SizedBox(height: 32),
                             Center(
                               child: Text(
-                                markerData['title'] ?? "정보 없음",
+                                markerData['title'],
                                 style: const TextStyle(
                                   color: Colors.white70,
-                                  fontSize: 24,
+                                  fontSize: 32,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             const SizedBox(height: 16),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "힌트사진!",
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 18,
-                                      ),
+                            Center(
+                              child: Container(
+                                width: deviceWidth * 0.65,
+                                height: deviceHeight * 0.25,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 20.0, right: 20.0),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                        const Text(
+                                          "힌트사진 :",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 24,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 4,
+                                        ),
+                                        Center(
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                            child: SizedBox(
+                                              width: deviceWidth * 0.55,
+                                              height: deviceWidth * 0.55,
+                                              child: markerData[
+                                                          "dot_hint_image"] !=
+                                                      null
+                                                  ? GestureDetector(
+                                                      onTap: () {
+                                                        _showImageModal(markerData[
+                                                            "dot_hint_image"]);
+                                                      },
+                                                      child: Image.network(
+                                                        markerData[
+                                                            "dot_hint_image"],
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    )
+                                                  : const SizedBox(),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 4,
+                                        ),
+                                        const Center(
+                                          child: Text(
+                                            "사진을 누르면 크게 볼 수 있어요!",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          "힌트 :",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 24,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          markerData['hint'],
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 24,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 4,
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 16),
-                                    Center(
-                                      child: SizedBox(
-                                        width: 320,
-                                        height: 200,
-                                        child: markerData["dot_hint_image"] !=
-                                                null
-                                            ? Image.network(
-                                                markerData["dot_hint_image"])
-                                            : const SizedBox(),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      "힌트",
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      markerData['hint'] ?? "추가 정보 없음",
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -480,25 +566,21 @@ class _MapScreenState extends State<MapScreen>
                               padding: const EdgeInsets.only(
                                 bottom: 10,
                               ),
-                              // 버튼 영역
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ),
                                     onPressed: () => _takePhoto(markerData),
-                                    child: const Text("사진 찍기"),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      _showMarkerList(context);
-                                    },
                                     child: const Text(
-                                      '뒤로 가기',
+                                      "사진 찍기",
                                       style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 20,
+                                        fontSize: 24,
                                       ),
                                     ),
                                   ),
@@ -514,6 +596,52 @@ class _MapScreenState extends State<MapScreen>
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showImageModal(String imageUrl) {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Container(
+          color: Colors.black.withOpacity(0.8),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SizedBox(
+                    width: deviceWidth * 0.8,
+                    height: deviceHeight * 0.35,
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "확인",
+                    style: TextStyle(
+                      fontSize: 24,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -540,6 +668,7 @@ class _MapScreenState extends State<MapScreen>
             "image": treasure.image,
             "content": treasure.content,
             "hint_image_first": treasure.hintImageFirst,
+            "sender_nickname": treasure.senderNickname,
           };
         });
       });
@@ -577,6 +706,7 @@ class _MapScreenState extends State<MapScreen>
             "image": treasure.image,
             "content": treasure.content,
             "hint_image_first": treasure.hintImageFirst,
+            "sender_nickname": treasure.senderNickname,
           };
 
           return Marker(

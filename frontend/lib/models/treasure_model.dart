@@ -13,6 +13,7 @@ class TreasureModel {
   final String? image;
   final String? content;
   final String? hintImageFirst;
+  final String? senderNickname;
 
   TreasureModel({
     required this.id,
@@ -29,6 +30,7 @@ class TreasureModel {
     this.image,
     this.content,
     this.hintImageFirst,
+    this.senderNickname,
   });
 
   // JSON 데이터를 모델 객체로 변환하는 팩토리 생성자
@@ -49,7 +51,8 @@ class TreasureModel {
             : DateTime.now(),
         image: json['image'],
         content: json['content'],
-        hintImageFirst: json['hint_image_first']);
+        hintImageFirst: json['hint_image_first'],
+        senderNickname: json['sender_nickname']);
   }
 
   // JSON 변환 메서드
@@ -69,6 +72,7 @@ class TreasureModel {
       'image': image,
       'content': content,
       'hintImageFirst': hintImageFirst,
+      'senderNickname': senderNickname,
     };
   }
 }
