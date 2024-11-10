@@ -474,7 +474,7 @@ public class MessageService {
             }
 
             // 파일 크기 검사
-            long maxFileSize = 5 * 1024 * 1024;
+            long maxFileSize = 50 * 1024 * 1024;
             if (image.getSize() > maxFileSize) {
                 throw new CustomException(CustomErrorCode.MAX_UPLOAD_SIZE_EXCEEDED);
             }
