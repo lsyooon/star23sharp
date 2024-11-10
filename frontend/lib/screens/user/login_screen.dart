@@ -15,7 +15,10 @@ class LoginScreen extends StatelessWidget {
     // TextEditingController를 생성하여 아이디와 비밀번호 필드의 입력 값을 관리
     final TextEditingController memberIdController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
-
+    final userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     return Stack(
       children: [
         // 배경 이미지
@@ -137,15 +140,17 @@ class LoginScreen extends StatelessWidget {
                                 Map<String, dynamic> user =
                                     await UserService.getMemberInfo();
                                 logger.d(user);
-                                Provider.of<UserProvider>(
-                                        AppGlobal.navigatorKey.currentContext!,
-                                        listen: false)
-                                    .setUserDetails(
-                                        id: user['memberId'],
-                                        name: user['nickname'],
-                                        isPushEnabled:
-                                            user['pushNotificationEnabled']);
-                                await NotificationService.updateDeviceToken();
+                                userProvider.setUserDetails(
+                                    id: user['memberId'],
+                                    name: user['nickname'],
+                                    isPushEnabled:
+                                        user['pushNotificationEnabled']);
+                                if (userProvider.getPushNotificationEnabled !=
+                                        null &&
+                                    userProvider.getPushNotificationEnabled ==
+                                        true) {
+                                  await NotificationService.updateDeviceToken();
+                                }
 
                                 Navigator.pushNamedAndRemoveUntil(
                                   context,

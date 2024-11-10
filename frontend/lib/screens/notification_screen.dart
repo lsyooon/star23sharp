@@ -136,17 +136,32 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
                 color: const Color(0xFFA292EC),
                 padding: const EdgeInsets.symmetric(
                     vertical: 16.0, horizontal: 20.0),
-                child: Container(
-                  width: UIhelper.deviceWidth(context) * 0.85,
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '알림함',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                child: Stack(
+                  children: [
+                    // 제목을 가운데 배치
+                    const Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        '알림함',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    // 아이콘을 오른쪽 끝에 배치
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.settings, color: Colors.white),
+                        onPressed: () {
+                          // 환경설정 페이지로 이동
+                          Navigator.pushNamed(context, '/notification_setting');
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 10.0),

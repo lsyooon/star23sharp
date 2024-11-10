@@ -79,7 +79,8 @@ class DioService {
               return handler.resolve(cloneReq); // 재요청 결과 반환
             } else {
               // 로그인 화면으로 이동
-              Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/signin'); 
+              Navigator.pushNamed(
+                  AppGlobal.navigatorKey.currentContext!, '/signin');
             }
           } else {
             try {
@@ -151,7 +152,8 @@ class DioService {
               final cloneReq = await fastAuthDio.fetch(e.requestOptions);
               return handler.resolve(cloneReq);
             } else {
-              Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/signin');
+              Navigator.pushNamed(
+                  AppGlobal.navigatorKey.currentContext!, '/signin');
             }
           } else {
             try {

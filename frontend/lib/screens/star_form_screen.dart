@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
 
 import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/utilities/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/services/index.dart';
 
@@ -64,7 +65,11 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
   void _addRecipient(String nickname) async {
     if (nickname.isNotEmpty) {
-      if (!_recipients.contains(nickname)) {
+      final userNickname = Provider.of<UserProvider>(
+              AppGlobal.navigatorKey.currentContext!,
+              listen: false)
+          .getNickname;
+      if (!_recipients.contains(nickname) || userNickname != nickname) {
         if (_validateNickname(nickname)) {
           // 닉네임 중복 검사
           bool isDuplicate = await UserService.checkDuplicateId(
@@ -104,7 +109,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('이미 추가된 닉네임입니다.')),
+            const SnackBar(content: Text('추가할 수 없는 닉네임입니다.')),
           );
         }
       }
@@ -135,8 +140,8 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
   void _saveMessage() {
     //FIXME - test code
-    // Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar =
-    //     true;
+    Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar =
+        true;
     if (_formKey.currentState!.validate()) {
       logger.d(_recipients);
       int receiverType = 0;
@@ -156,9 +161,9 @@ class _StarFormScreenState extends State<StarFormScreen> {
         contentImage: _selectedImage,
         receiverType: receiverType,
         //FIXME - test code
-        // hintImageFirst: _selectedImage,
-        // hintImageSecond: _selectedImage,
-        // dotHintImage: _selectedImage,
+        hintImageFirst: _selectedImage,
+        hintImageSecond: _selectedImage,
+        dotHintImage: _selectedImage,
         lat: 36.3067823,
         lng: 127.3422503,
       );

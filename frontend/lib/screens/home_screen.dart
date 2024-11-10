@@ -42,7 +42,9 @@ class _HomeScreenState extends State<HomeScreen> {
               isPushEnabled: user['pushNotificationEnabled']);
     }
     isunRead = await StarService.getIsUnreadMessage();
-    setState(() {}); // isunRead 상태 업데이트 후 UI 갱신
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
