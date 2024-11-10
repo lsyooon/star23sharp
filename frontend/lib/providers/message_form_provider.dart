@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:star23sharp/models/index.dart';
 
 class MessageFormProvider with ChangeNotifier {
-  bool _isTeasureStar = false;
+  bool _isTeasureStar = true;
 
   bool get isTeasureStar => _isTeasureStar;
 
@@ -37,11 +37,9 @@ class MessageFormProvider with ChangeNotifier {
   List<String>? get recipients =>
       _isTeasureStar ? _treasureMessage?.receivers : _generalMessage?.receivers;
 
-  // Add any other specific getters as needed
-
   // 전체 메시지 데이터를 반환하는 getter
-  Map<String, dynamic>? get messageData =>
-      _isTeasureStar ? _treasureMessage?.toJson() : _generalMessage?.toJson();
+  dynamic get messageData =>
+      _isTeasureStar ? _treasureMessage : _generalMessage;
 
 // 모델 저장 메서드
   void saveMessageData({
@@ -78,6 +76,7 @@ class MessageFormProvider with ChangeNotifier {
         // kernelSize: kernelSize,
         // pixelSize: pixelSize,
         createdAt: DateTime.now(),
+        receiverType: receiverType,
         lat: lat!,
         lng: lng!,
       );

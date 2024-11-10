@@ -78,20 +78,17 @@ class StarService {
     }
   }
 
-  //별 전송
   static Future<void> sendMessage({
     required bool isTreasureStar,
-    required dynamic data, // TreasureMessageModel 또는 GeneralMessageModel
+    required dynamic data,
   }) async {
     try {
-      // URL 설정
       final url =
           isTreasureStar ? '/fastapi_ec2/treasure/insert' : '/message/common';
 
-      // 데이터 변환 (multipart/form-data)
       final formData = FormData.fromMap(data.toJson());
+      logger.d("data.toJson() 호출 후: ${data.toJson()}");
 
-      // 이미지가 있는 경우 추가
       if (data.contentImage != null && data.contentImage is File) {
         formData.files.add(MapEntry(
           'contentImage',
@@ -100,9 +97,10 @@ class StarService {
             filename: data.contentImage.path.split('/').last,
           ),
         ));
+      } else {
+        logger.d("Content image is null or not a File.");
       }
 
-      // 추가적인 이미지가 있는 경우 처리
       if (isTreasureStar) {
         if (data.hintImageFirst != null && data.hintImageFirst is File) {
           formData.files.add(MapEntry(
@@ -113,7 +111,6 @@ class StarService {
             ),
           ));
         }
-
         if (data.hintImageSecond != null && data.hintImageSecond is File) {
           formData.files.add(MapEntry(
             'hintImageSecond',
@@ -123,9 +120,18 @@ class StarService {
             ),
           ));
         }
+        if (data.dotHintImage != null && data.dotHintImage is File) {
+          formData.files.add(MapEntry(
+            'dotHintImage',
+            await MultipartFile.fromFile(
+              data.dotHintImage.path,
+              filename: data.dotHintImage.path.split('/').last,
+            ),
+          ));
+        }
       }
 
-      // API 호출
+      logger.d("API 호출 시작");
       final response = await DioService.authDio.post(
         url,
         data: formData,
@@ -135,18 +141,20 @@ class StarService {
           },
         ),
       );
+      logger.d("API 호출 완료");
+      var result = ResponseModel.fromJson(response.data);
 
-      // 성공 여부 확인
-      if (response.statusCode == 200) {
-        // 성공 처리
-        logger.d("Message sent successfully: ${response.data}");
+      logger.d(response);
+      if (result.code == '200') {
+        logger.d("Message sent successfully: ${result.data}");
       } else {
-        // 실패 처리
-        throw Exception("Failed to send message. Code: ${response.statusCode}");
+        throw Exception("Failed to send message. Code: ${result.message}");
       }
-    } catch (error) {
-      // ErrorHandler를 사용하여 에러 처리 및 사용자에게 Snackbar 표시
-      ErrorHandler.handle(error);
+    } on DioException catch (e) {
+      logger.e('Failed to create post: $e');
+      ErrorHandler.handle(e); // 에러 처리 및 Snackbar 표시
+    } catch (error, stackTrace) {
+      logger.e("ErrorHandler 처리 중 문제 발생: $error, $stackTrace");
     }
   }
 

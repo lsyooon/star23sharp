@@ -104,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'img': 'assets/img/planet/planet3.png',
       },
     ];
+
     return Stack(
       children: [
         // 배경 이미지
@@ -140,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   final selectedUrl =
                                       await showModalBottomSheet<String>(
                                     context: context,
+                                    isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
                                     builder: (BuildContext context) {
                                       return const StarWriteTypeModal();

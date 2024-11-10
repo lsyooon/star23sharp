@@ -81,7 +81,6 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
       // `isTeasureStar`에 따라 데이터 가져오기
       final isTreasureStar = messageProvider.isTeasureStar;
       final data = messageProvider.messageData;
-
       // 데이터가 없는 경우 처리
       if (data == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -90,6 +89,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         return;
       }
 
+      logger.d(data);
       // API 호출
       await StarService.sendMessage(
         isTreasureStar: isTreasureStar,
