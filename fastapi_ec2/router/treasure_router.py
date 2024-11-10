@@ -267,11 +267,11 @@ async def insert_new_treasure(
             raise MemberNotFoundException()
 
         # 입력값 검증
-        if len(title.encode("utf-8")) > VarcharLimit.TITLE.value:
+        if len(title) > VarcharLimit.TITLE.value:
             raise TitleLengthExceededException()
-        if content and len(content.encode("utf-8")) > VarcharLimit.CONTENT.value:
+        if content and len(content) > VarcharLimit.CONTENT.value:
             raise ContentLengthExceededException()
-        if hint and len(hint.encode("utf-8")) > VarcharLimit.HINT.value:
+        if hint and len(hint) > VarcharLimit.HINT.value:
             raise HintLengthExceededException()
         if not is_lat_lng_valid(lat, lng):
             raise InvalidCoordinatesException()
