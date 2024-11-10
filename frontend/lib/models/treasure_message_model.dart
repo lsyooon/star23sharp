@@ -53,7 +53,7 @@ class TreasureMessageModel {
     DateTime? createdAt,
     double? lat,
     double? lng,
-    File? image,
+    int? receiverType,
   }) {
     return TreasureMessageModel(
       title: title ?? this.title,
@@ -71,7 +71,7 @@ class TreasureMessageModel {
       createdAt: createdAt ?? this.createdAt,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
-      image: image ?? this.image,
+      receiverType: receiverType ?? this.receiverType,
     );
   }
 
