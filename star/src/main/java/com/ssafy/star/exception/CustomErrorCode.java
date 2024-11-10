@@ -33,6 +33,7 @@ public enum CustomErrorCode {
     TITLE_TOO_LONG("L0019", "쪽지 제목이 너무 깁니다.", HttpStatus.BAD_REQUEST),
     CONTENT_TOO_LONG("L0020", "쪽지 내용이 너무 깁니다.", HttpStatus.BAD_REQUEST),
     INVALID_IMAGE_FORMAT("L0025", "잘못된 이미지 형식입니다. png, jpg, jpeg 파일만 허용됩니다.", HttpStatus.BAD_REQUEST),
+    INCLUDE_MYSELF("L0022", "쪽지 수신자 중에 자기 자신이 존재합니다.", HttpStatus.BAD_REQUEST),
     ;
     private final String code;
     private final String message;
