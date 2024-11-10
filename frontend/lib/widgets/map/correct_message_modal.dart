@@ -25,6 +25,50 @@ class CorrectMessageModal extends StatelessWidget {
     );
   }
 
+  void _showImageModal(BuildContext context, String imageUrl) {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Container(
+          color: Colors.black.withOpacity(0.8),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SizedBox(
+                    width: deviceWidth * 0.8,
+                    height: deviceHeight * 0.35,
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "확인",
+                    style: TextStyle(
+                      fontSize: 24,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final deviceWidth = UIhelper.deviceWidth(context);
@@ -74,7 +118,7 @@ class CorrectMessageModal extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(
-                          height: 32,
+                          height: 24,
                         ),
                         Expanded(
                           child: Center(
@@ -89,55 +133,123 @@ class CorrectMessageModal extends StatelessWidget {
                                     "정답입니다!",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 24,
+                                      fontSize: 32,
                                     ),
                                   ),
                                   const SizedBox(
                                     height: 8,
                                   ),
-                                  if (markerData['hint_image_first'] != null)
-                                    Center(
-                                      child: SizedBox(
-                                        width: 320,
-                                        height: 200,
-                                        child: markerData["hint_image_first"] !=
-                                                null
-                                            ? Image.network(
-                                                markerData[
-                                                    "hint_image_first"], // hint_image_first URL을 네트워크 이미지로 표시
-                                                fit: BoxFit
-                                                    .cover, // 이미지가 컨테이너에 맞게 조정되도록 설정
-                                              )
-                                            : const Icon(
-                                                Icons
-                                                    .image, // 이미지를 표시할 수 없을 때 대체 아이콘
-                                                color: Colors.grey,
-                                                size: 50,
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (markerData['hint_image_first'] !=
+                                          null) {
+                                        _showImageModal(
+                                          context,
+                                          markerData['hint_image_first'],
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      width: deviceWidth * 0.65,
+                                      height: deviceHeight * 0.28,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 20.0, right: 20.0),
+                                        child: SingleChildScrollView(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const SizedBox(
+                                                height: 8,
                                               ),
+                                              const Text(
+                                                "정답 사진 :",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 20,
+                                                ),
+                                              ),
+                                              if (markerData[
+                                                      'hint_image_first'] !=
+                                                  null)
+                                                Center(
+                                                  child: ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                    child: SizedBox(
+                                                      width: deviceWidth * 0.5,
+                                                      height:
+                                                          deviceWidth * 0.35,
+                                                      child: markerData[
+                                                                  "hint_image_first"] !=
+                                                              null
+                                                          ? Image.network(
+                                                              markerData[
+                                                                  "hint_image_first"],
+                                                              fit: BoxFit.cover,
+                                                            )
+                                                          : const Icon(
+                                                              Icons.image,
+                                                              color:
+                                                                  Colors.grey,
+                                                              size: 50,
+                                                            ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              const SizedBox(
+                                                height: 4,
+                                              ),
+                                              const Center(
+                                                child: Text(
+                                                  "사진을 누르면 크게 볼 수 있어요!",
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 8,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                         ),
-                        // 쪽지 확인하러 가기 버튼
                         Container(
                           padding: const EdgeInsets.only(
                             bottom: 16,
                           ),
                           alignment: Alignment.center,
-                          child: TextButton(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
                             onPressed: () {
                               Navigator.popUntil(
                                   context, (route) => route.isFirst);
                               onNoteButtonPressed();
                             },
                             child: const Text(
-                              "쪽지 확인하러 가기",
+                              "쪽지 확인",
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
+                                fontSize: 24,
                               ),
                             ),
                           ),
