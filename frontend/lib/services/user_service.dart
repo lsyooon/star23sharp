@@ -146,42 +146,43 @@ class UserService {
   }
 
   // JWT 토큰에서 exp (만료 시간) 추출하는 함수
-static int? getExpirationTime(String token) {
-  // JWT를 '.' 기준으로 분리
-  List<String> parts = token.split('.');
-  if (parts.length != 3) {
-    return null; // 잘못된 토큰 형식
+  static int? getExpirationTime(String token) {
+    // JWT를 '.' 기준으로 분리
+    List<String> parts = token.split('.');
+    if (parts.length != 3) {
+      return null; // 잘못된 토큰 형식
+    }
+
+    // JWT의 두 번째 부분(payload)을 디코딩
+    String payload = parts[1];
+    String decodedPayload =
+        utf8.decode(base64Url.decode(base64Url.normalize(payload)));
+
+    // payload를 JSON으로 변환하여 'exp' 필드 추출
+    Map<String, dynamic> payloadMap = jsonDecode(decodedPayload);
+    return payloadMap['exp']; // Unix timestamp로 반환
   }
-
-  // JWT의 두 번째 부분(payload)을 디코딩
-  String payload = parts[1];
-  String decodedPayload = utf8.decode(base64Url.decode(base64Url.normalize(payload)));
-
-  // payload를 JSON으로 변환하여 'exp' 필드 추출
-  Map<String, dynamic> payloadMap = jsonDecode(decodedPayload);
-  return payloadMap['exp']; // Unix timestamp로 반환
-}
 
 // 남은 시간을 계산하는 함수
-static String getTimeRemaining(String token) {
-  int? exp = getExpirationTime(token);
-  if (exp == null) {
-    return 'Invalid token';
+  static String getTimeRemaining(String token) {
+    int? exp = getExpirationTime(token);
+    if (exp == null) {
+      return 'Invalid token';
+    }
+
+    int currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    int remainingTime = exp - currentTime;
+
+    if (remainingTime <= 0) {
+      return 'Token has expired';
+    }
+
+    int hours = remainingTime ~/ 3600;
+    int minutes = (remainingTime % 3600) ~/ 60;
+    int seconds = remainingTime % 60;
+
+    return '$hours hours, $minutes minutes, $seconds seconds remaining';
   }
-
-  int currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-  int remainingTime = exp - currentTime;
-
-  if (remainingTime <= 0) {
-    return 'Token has expired';
-  }
-
-  int hours = remainingTime ~/ 3600;
-  int minutes = (remainingTime % 3600) ~/ 60;
-  int seconds = remainingTime % 60;
-
-  return '$hours hours, $minutes minutes, $seconds seconds remaining';
-}
 
   // 회원 정보 조회
   static Future<dynamic> getMemberInfo() async {

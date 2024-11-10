@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
-
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/widgets/modals/star_write_type_modal.dart';
 import 'package:star23sharp/providers/index.dart';
@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-//TODO - 쪽지 다 확인했는지 api 연결..
+  bool isunRead = false;
 
   // 비동기 초기화 작업을 위한 별도 메서드
   Future<void> _initialize() async {
@@ -34,17 +34,23 @@ class _HomeScreenState extends State<HomeScreen> {
       // 회원정보
       Map<String, dynamic> user = await UserService.getMemberInfo();
       logger.d(user);
-      Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!, listen: false)
-        .setUserDetails(id: user['memberId'], name: user['nickname'], isPushEnabled: user['pushNotificationEnabled']);
+      Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,
+              listen: false)
+          .setUserDetails(
+              id: user['memberId'],
+              name: user['nickname'],
+              isPushEnabled: user['pushNotificationEnabled']);
     }
+    isunRead = await StarService.getIsUnreadMessage();
+    setState(() {}); // isunRead 상태 업데이트 후 UI 갱신
   }
 
   @override
   void initState() {
     super.initState();
-      _initialize();
+    _initialize();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -73,19 +79,28 @@ class _HomeScreenState extends State<HomeScreen> {
       {
         'text': '별 보관함',
         'goto': '/starstorage',
-        'position': const Offset(250, 0),
+        'position': Offset(
+          UIhelper.deviceWidth(context) * 0.65,
+          UIhelper.deviceHeight(context) * -0.1,
+        ),
         'img': 'assets/img/planet/planet1.png',
       },
       {
         'text': '별 숨기기',
         'goto': '/starform',
-        'position': const Offset(70, 80),
+        'position': Offset(
+          UIhelper.deviceWidth(context) * 0.15,
+          UIhelper.deviceHeight(context) * 0.0,
+        ),
         'img': 'assets/img/planet/planet2.png',
       },
       {
         'text': '내 정보',
         'goto': '/profile',
-        'position': const Offset(230, 170),
+        'position': Offset(
+          UIhelper.deviceWidth(context) * 0.6, // 너비의 60%
+          UIhelper.deviceHeight(context) * 0.1, // 높이의 50%
+        ),
         'img': 'assets/img/planet/planet3.png',
       },
     ];
@@ -95,8 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
         // 배경 이미지
         Center(
           child: SizedBox(
-            width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            width: UIhelper.deviceWidth(context) * 0.9,
+            height: UIhelper.deviceHeight(context) * 0.7,
             child: Image.asset(
               'assets/img/home_bg.png',
               fit: BoxFit.cover,
@@ -112,8 +127,9 @@ class _HomeScreenState extends State<HomeScreen> {
             authProvider.isLoggedIn
                 ? Expanded(
                     child: Stack(
+                      clipBehavior: Clip.none, // Overflow를 허용
+
                       children: [
-                        // menuList 표시
                         ...menuList.map((menu) {
                           return Positioned(
                             left: menu['position'].dx,
@@ -125,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   final selectedUrl =
                                       await showModalBottomSheet<String>(
                                     context: context,
+                                    isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
                                     builder: (BuildContext context) {
                                       return const StarWriteTypeModal();
@@ -147,11 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Image.asset(
                                     menu['img'],
-                                    // width: 70,
                                   ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
+                                  const SizedBox(height: 5),
                                   Container(
                                     decoration: _commonContainerDecoration(),
                                     padding: const EdgeInsets.symmetric(
@@ -178,19 +192,41 @@ class _HomeScreenState extends State<HomeScreen> {
                               Container(
                                 decoration: _commonContainerDecoration(),
                                 padding: const EdgeInsets.all(8),
-                                child: const Column(children: [
-                                  Text(
-                                    "모든 쪽지를 확인했어요",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 16),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "새로운 쪽지를 전달해 보는건 어떨까요?",
-                                    style: TextStyle(
-                                        color: Colors.yellow, fontSize: 13),
-                                  ),
-                                ]),
+                                child: isunRead
+                                    ? const Column(
+                                        children: [
+                                          Text(
+                                            "별 보관함을 확인해 보세요!",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16),
+                                          ),
+                                          SizedBox(height: 5),
+                                          Text(
+                                            "새로운 쪽지가 기다리고 있어요.",
+                                            style: TextStyle(
+                                                color: Colors.yellow,
+                                                fontSize: 13),
+                                          ),
+                                        ],
+                                      )
+                                    : const Column(
+                                        children: [
+                                          Text(
+                                            "모든 쪽지를 확인했어요",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16),
+                                          ),
+                                          SizedBox(height: 5),
+                                          Text(
+                                            "쪽지를 전달해 보는건 어떨까요?",
+                                            style: TextStyle(
+                                                color: Colors.yellow,
+                                                fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
                               ),
                             ],
                           ),
