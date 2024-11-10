@@ -139,9 +139,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
   }
 
   void _saveMessage() {
-    // //FIXME - test code
-    // Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar =
-    //     true;
     if (_formKey.currentState!.validate()) {
       logger.d(_recipients);
       int receiverType = 0;
@@ -160,12 +157,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
         receivers: _recipients,
         contentImage: _selectedImage,
         receiverType: receiverType,
-        // //FIXME - test code
-        // hintImageFirst: _selectedImage,
-        // hintImageSecond: _selectedImage,
-        // dotHintImage: _selectedImage,
-        // lat: 36.3067823,
-        // lng: 127.3422503,
       );
 
       Navigator.pushNamed(context, '/message_style_editor'); // 문체 변경 페이지로 이동
@@ -242,7 +233,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                   ),
                   const SizedBox(height: 16),
                   // "모든 사용자에게 보내기" 체크박스
-                  if (!isTreasureStar)
+                  if (isTreasureStar)
                     Row(
                       children: [
                         Checkbox(
@@ -301,6 +292,10 @@ class _StarFormScreenState extends State<StarFormScreen> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '제목을 입력해주세요.';
+                      }
+
+                      if (value.length > 15) {
+                        return '제목은 15자 이하로 입력해주세요.';
                       }
                       return null;
                     },

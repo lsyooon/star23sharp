@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as path;
+
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
 import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/utilities/index.dart';
 
 class StarService {
   // 별 리스트 조회
@@ -78,7 +83,7 @@ class StarService {
     }
   }
 
-  static Future<void> sendMessage({
+  static Future<bool> sendMessage({
     required bool isTreasureStar,
     required dynamic data,
   }) async {
@@ -86,53 +91,68 @@ class StarService {
       final url =
           isTreasureStar ? '/fastapi_ec2/treasure/insert' : '/message/common';
 
-      final formData = FormData.fromMap(data.toJson());
-      logger.d("data.toJson() 호출 후: ${data.toJson()}");
+      final Map<String, dynamic> rawData = data.toJson();
+      // 빈 문자열을 null로 변환
+      final Map<String, dynamic> processedData = {};
+      rawData.forEach((key, value) {
+        if (value != null &&
+            !((value is String && value.isEmpty) ||
+                (value is List && value.isEmpty) ||
+                (value is File))) {
+          processedData[key] = value;
+        }
+      });
+      processedData['createdAt'] = DateTime.now().toIso8601String();
 
-      if (data.contentImage != null && data.contentImage is File) {
-        formData.files.add(MapEntry(
-          'contentImage',
-          await MultipartFile.fromFile(
-            data.contentImage.path,
-            filename: data.contentImage.path.split('/').last,
-          ),
-        ));
-      } else {
-        logger.d("Content image is null or not a File.");
-      }
-
+      var formData = FormData();
+      var dio = Dio();
       if (isTreasureStar) {
-        if (data.hintImageFirst != null && data.hintImageFirst is File) {
+        dio = DioService.fastAuthDio;
+        formData = FormData.fromMap(processedData);
+      } else {
+        dio = DioService.authDio;
+        logger.d("일바편지@");
+        formData = FormData.fromMap({
+          'request': MultipartFile.fromString(
+            jsonEncode(processedData),
+            contentType: MediaType.parse('application/json'),
+          )
+        });
+      }
+
+      logger.d("data : ${data.toJson()}");
+      logger.d("폼데이터 초기: ${formData.fields}");
+
+      // 파일 처리
+      Future<void> addCompressedImage(String fieldName, File? file) async {
+        if (file != null) {
+          final compressedFile = await compressImage(file);
           formData.files.add(MapEntry(
-            'hintImageFirst',
+            fieldName,
             await MultipartFile.fromFile(
-              data.hintImageFirst.path,
-              filename: data.hintImageFirst.path.split('/').last,
+              compressedFile.path,
+              filename: path.basename(compressedFile.path),
+              contentType: MediaType.parse(
+                  'multipart/form-data'), // Content-Type: multipart/form-data
             ),
           ));
-        }
-        if (data.hintImageSecond != null && data.hintImageSecond is File) {
-          formData.files.add(MapEntry(
-            'hintImageSecond',
-            await MultipartFile.fromFile(
-              data.hintImageSecond.path,
-              filename: data.hintImageSecond.path.split('/').last,
-            ),
-          ));
-        }
-        if (data.dotHintImage != null && data.dotHintImage is File) {
-          formData.files.add(MapEntry(
-            'dotHintImage',
-            await MultipartFile.fromFile(
-              data.dotHintImage.path,
-              filename: data.dotHintImage.path.split('/').last,
-            ),
-          ));
+          logger.d("$fieldName 이미지 압축 및 추가 완료");
         }
       }
 
-      logger.d("API 호출 시작");
-      final response = await DioService.authDio.post(
+      // contentImage 처리
+      if (data.contentImage != null && data.contentImage is File) {
+        await addCompressedImage('contentImage', data.contentImage);
+      }
+      if (isTreasureStar) {
+        logger.d("Treasure 이미지 추가 전 FormData: ${formData.fields}");
+        await addCompressedImage('hint_image_first', data.hintImageFirst);
+        await addCompressedImage('hint_image_second', data.hintImageSecond);
+        await addCompressedImage('dot_hint_image', data.dotHintImage);
+      }
+      logger.d("API 호출 직전 FormData: ${formData.fields} / ${formData.files}");
+
+      final response = await dio.post(
         url,
         data: formData,
         options: Options(
@@ -141,20 +161,23 @@ class StarService {
           },
         ),
       );
-      logger.d("API 호출 완료");
+      logger.d("API 호출 완료: $response");
       var result = ResponseModel.fromJson(response.data);
-
-      logger.d(response);
+      logger.d(result);
       if (result.code == '200') {
         logger.d("Message sent successfully: ${result.data}");
+        return true;
       } else {
         throw Exception("Failed to send message. Code: ${result.message}");
       }
+      // return true;
     } on DioException catch (e) {
-      logger.e('Failed to create post: $e');
-      ErrorHandler.handle(e); // 에러 처리 및 Snackbar 표시
+      logger.e('요청 실패: ${e.response?.data ?? e.message}');
+      ErrorHandler.handle(e);
+      return false;
     } catch (error, stackTrace) {
       logger.e("ErrorHandler 처리 중 문제 발생: $error, $stackTrace");
+      return false;
     }
   }
 
