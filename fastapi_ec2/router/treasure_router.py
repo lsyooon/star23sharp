@@ -256,7 +256,7 @@ async def insert_new_treasure(
     result_message_id = None
     try:
         # Form parameter translation
-        receiver_type=receiverType
+        receiver_type = receiverType
         group_id = groupId
         created_at = createdAt
         content_image = contentImage
@@ -484,7 +484,9 @@ async def insert_new_treasure(
                 receivers=result_receivers_int,
                 token=current_member_info[1],
             )
-        return ResponseTreasureDTO_Own(code="200", data=result_model)
+        return ResponseTreasureDTO_Own(
+            code="200", message="작성 완료.", data=result_model
+        )
     except Exception:
         db.rollback()
         if hint_image_first_name_gen is not None:
