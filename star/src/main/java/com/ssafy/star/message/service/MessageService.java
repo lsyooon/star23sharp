@@ -449,6 +449,9 @@ public class MessageService {
             List<String> receiverNames = request.getReceivers();
             for (String receiverName : receiverNames) {
                 Long receiverId = memberRepository.findIdByNickname(receiverName);
+                if (receiverId == userId) {
+                    throw new CustomException(CustomErrorCode.INCLUDE_MYSELF);
+                }
                 if (receiverId != null) {
                     receiverIds.add(receiverId);
                 } else {
