@@ -139,9 +139,9 @@ class _StarFormScreenState extends State<StarFormScreen> {
   }
 
   void _saveMessage() {
-    //FIXME - test code
-    Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar =
-        true;
+    // //FIXME - test code
+    // Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar =
+    //     true;
     if (_formKey.currentState!.validate()) {
       logger.d(_recipients);
       int receiverType = 0;
@@ -160,12 +160,12 @@ class _StarFormScreenState extends State<StarFormScreen> {
         receivers: _recipients,
         contentImage: _selectedImage,
         receiverType: receiverType,
-        //FIXME - test code
-        hintImageFirst: _selectedImage,
-        hintImageSecond: _selectedImage,
-        dotHintImage: _selectedImage,
-        lat: 36.3067823,
-        lng: 127.3422503,
+        // //FIXME - test code
+        // hintImageFirst: _selectedImage,
+        // hintImageSecond: _selectedImage,
+        // dotHintImage: _selectedImage,
+        // lat: 36.3067823,
+        // lng: 127.3422503,
       );
 
       Navigator.pushNamed(context, '/message_style_editor'); // 문체 변경 페이지로 이동

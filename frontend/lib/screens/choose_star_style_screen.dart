@@ -189,7 +189,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                 child: SingleChildScrollView(
                   child: Text(
                     currentStyle == WritingStyle.basic
-                        ? (content ?? '') // null일 경우 기본값 설정
+                        ? (content ?? '')
                         : (changedMessages[currentStyle] ?? '변환 중입니다...'),
                     style: const TextStyle(
                       fontSize: 16.0,
@@ -201,7 +201,6 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               ),
             ),
 
-            const Spacer(),
             // 하단 버튼
             Padding(
               padding: const EdgeInsets.all(16.0),
