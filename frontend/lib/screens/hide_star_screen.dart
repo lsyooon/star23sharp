@@ -20,50 +20,56 @@ class HideStarScreen extends StatefulWidget {
 class _HideStarScreenState extends State<HideStarScreen> {
   bool isPreviewMode = false;
   final ImagePicker _picker = ImagePicker();
-  List<XFile?> images = [null, null];
+  List<File?> images = [null, null];
   int _currentIndex = 0;
   Uint8List? _pixelizedImageData;
+  String hintText = '';
   final PageController _pageController = PageController();
 
   Future<void> _takePhoto(int index) async {
     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
     if (photo != null) {
       setState(() {
-        images[index] = photo;
+        images[index] = File(photo.path);
       });
     }
   }
 
-// 픽셀화된 이미지 전체 보기 모달
+  // 픽셀화된 이미지 전체 보기 모달
   void _showPixelizedImageModal() {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
     if (_pixelizedImageData != null) {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.7,
-                    child: Image.memory(
-                      _pixelizedImageData!,
-                      fit: BoxFit.contain,
+          return Container(
+            color: Colors.black.withOpacity(0.8),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: SizedBox(
+                      width: deviceWidth * 0.8,
+                      height: deviceHeight * 0.5,
+                      child: Image.memory(
+                        _pixelizedImageData!,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text("확인"),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("확인"),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -72,10 +78,13 @@ class _HideStarScreenState extends State<HideStarScreen> {
   }
 
   Future<bool> _pixelizeImages() async {
-    if (images[0] != null) {
+    final messageProvider =
+        Provider.of<MessageFormProvider>(context, listen: false);
+    logger.d('images[0]: ${images[0]}, images[1]: ${images[1]}');
+    if (images[0] != null && images[1] != null) {
       try {
         final Uint8List? pixelizedResult = await MapService.pixelizeImage(
-          file: File(images[0]!.path),
+          file: images[0]!,
           kernelSize: 7,
           pixelSize: 48,
         );
@@ -88,9 +97,6 @@ class _HideStarScreenState extends State<HideStarScreen> {
           final File dotHintImageFile =
               await uint8ListToFile(_pixelizedImageData!, 'dot_hint_image.png');
 
-          final messageProvider =
-              Provider.of<MessageFormProvider>(context, listen: false);
-
           messageProvider.setMessageFormType(type: '/map');
 
           final cachedLocation = await SharedPreferences.getInstance();
@@ -100,7 +106,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
           messageProvider.saveMessageData(
             hintImageFirst: File(images[0]!.path),
             hintImageSecond: File(images[1]!.path),
-            dotHintImage: File(dotHintImageFile.path),
+            dotHintImage: dotHintImageFile,
             lat: lat!,
             lng: lng!,
           );
@@ -273,6 +279,11 @@ class _HideStarScreenState extends State<HideStarScreen> {
   }
 
   Widget _buildPreviewMode() {
+    final deviceWidth = UIhelper.deviceWidth(context);
+    final deviceHeight = UIhelper.deviceHeight(context);
+    final messageProvider =
+        Provider.of<MessageFormProvider>(context, listen: false);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -289,118 +300,179 @@ class _HideStarScreenState extends State<HideStarScreen> {
         ),
         Container(
           padding: const EdgeInsets.all(20),
-          width: UIhelper.deviceWidth(context) * 0.7,
+          width: deviceWidth * 0.7,
+          height: deviceHeight * 0.4,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Column(
-            children: [
-              const Text(
-                "힌트 사진\n 누르면 크게 확인할 수 있어요!",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: _showPixelizedImageModal,
-                child: Container(
-                  width: 220,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(10),
+          child: Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const Text(
+                    "하단에 글로 힌트를 추가해봐요!",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  child: _pixelizedImageData != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: SizedBox(
-                            height: 150,
-                            child: Image.memory(
-                              _pixelizedImageData!,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        )
-                      : (images[0] != null
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _showPixelizedImageModal,
+                    child: Container(
+                      width: deviceWidth * 0.5,
+                      height: deviceWidth * 0.5,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: _pixelizedImageData != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: SizedBox(
                                 height: 150,
-                                child: Image.file(
-                                  File(images[0]!.path),
+                                child: Image.memory(
+                                  _pixelizedImageData!,
                                   fit: BoxFit.cover,
                                 ),
                               ),
                             )
-                          : const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                              size: 50,
-                            )),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  SizedBox(
-                    width: 100,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          setState(() {
-                            isPreviewMode = false;
-                            images[0] = null;
-                            images[1] = null;
-                            _currentIndex = 0;
-                            _pixelizedImageData = null;
-                          });
-                        });
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _pageController.jumpToPage(0);
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        "재촬영",
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
+                          : (images[0] != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: SizedBox(
+                                    height: 150,
+                                    child: Image.file(
+                                      File(images[0]!.path),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 50,
+                                )),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  const Center(
+                    child: Text(
+                      "사진을 누르면 크게 볼 수 있어요!",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: 100,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // 다음 단계 기능 추가
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        "다음",
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  const Text(
+                    "힌트를 입력해주세요.",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                  )
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: deviceWidth * 0.5,
+                    child: TextField(
+                      maxLength: 20,
+                      decoration: InputDecoration(
+                        hintText: "힌트 입력 (최대 20자)",
+                        hintStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      style: const TextStyle(
+                        color: Colors.black,
+                      ),
+                      onChanged: (text) {
+                        setState(() {
+                          hintText = text;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
-            ],
+            ),
           ),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 100,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    setState(() {
+                      isPreviewMode = false;
+                      images[0] = null;
+                      images[1] = null;
+                      _currentIndex = 0;
+                      _pixelizedImageData = null;
+                    });
+                  });
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _pageController.jumpToPage(0);
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  "재촬영",
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            SizedBox(
+              width: 100,
+              child: ElevatedButton(
+                onPressed: () {
+                  messageProvider.updateHint(hintText);
+                  logger.d("${messageProvider.messageData}");
+                  Navigator.pushReplacementNamed(context, '/starwriteform');
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  "다음",
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
       ],
     );

@@ -37,6 +37,44 @@ class TreasureMessageModel {
     this.receiverType,
   });
 
+  TreasureMessageModel copyWith({
+    String? title,
+    String? content,
+    File? contentImage,
+    List<String>? receivers,
+    int? groupId,
+    String? hint,
+    File? hintImageFirst,
+    File? hintImageSecond,
+    File? dotHintImage,
+    int? dotTarget,
+    int? kernelSize,
+    int? pixelSize,
+    DateTime? createdAt,
+    double? lat,
+    double? lng,
+    File? image,
+  }) {
+    return TreasureMessageModel(
+      title: title ?? this.title,
+      content: content ?? this.content,
+      contentImage: contentImage ?? this.contentImage,
+      receivers: receivers ?? this.receivers,
+      groupId: groupId ?? this.groupId,
+      hint: hint ?? this.hint,
+      hintImageFirst: hintImageFirst ?? this.hintImageFirst,
+      hintImageSecond: hintImageSecond ?? this.hintImageSecond,
+      dotHintImage: dotHintImage ?? this.dotHintImage,
+      dotTarget: dotTarget ?? this.dotTarget,
+      kernelSize: kernelSize ?? this.kernelSize,
+      pixelSize: pixelSize ?? this.pixelSize,
+      createdAt: createdAt ?? this.createdAt,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      image: image ?? this.image,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
         'receiverType': receiverType,
         'title': title,

@@ -171,6 +171,9 @@ class _StarFormScreenState extends State<StarFormScreen> {
   Widget build(BuildContext context) {
     final isTreasureStar =
         Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
+    final messageProvider =
+        Provider.of<MessageFormProvider>(context, listen: false);
+    logger.d("${messageProvider.messageData}");
 
     return Center(
       child: Container(
