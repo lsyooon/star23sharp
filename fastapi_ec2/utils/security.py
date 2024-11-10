@@ -7,7 +7,7 @@ from dto.member_dto import MemberDTO
 from dto.token_dto import TokenDTO
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jwt import PyJWTError
+from jwt import InvalidSignatureError, PyJWTError
 from pydantic import ValidationError
 from response.exceptions import (
     ExpiredTokenException,
@@ -43,9 +43,11 @@ async def get_current_member(
             raise InvalidTokenException()
     except jwt.ExpiredSignatureError:
         raise ExpiredTokenException()
+    except InvalidSignatureError:
+        raise InvalidTokenException("InvalidSignatureError. JWT SECRET이 잘못된 것으로 추정됩니다.")
     except PyJWTError:
         logging.exception("get_current_user: JWT error.")
-        raise UnhandledException()
+        raise UnhandledException("get_current_user: JWT error.")
 
     member = find_member_by_id(token_obj.memberId, Session)
     if member is None:

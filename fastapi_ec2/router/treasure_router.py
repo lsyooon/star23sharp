@@ -121,7 +121,7 @@ INSERT_DESCRIPTION = """
 - kernel_size (int, Optional): 픽셀화 시 사용할 커널 크기. 미제공 시 기본값 사용.
 - pixel_size (int, Optional): 픽셀화 시 사용할 픽셀 크기. 미제공 시 기본값 사용.
 - title (str): 메시지 제목
-- content (str, Optional): 메시지 내용
+- content (str): 메시지 내용
 - contentImage (UploadFile, Optional): 메시지 첨부 이미지
 - hint (str, Optional): 텍스트 힌트
 - groupId (int, Optional): 그룹 ID
@@ -227,7 +227,7 @@ async def insert_new_treasure(
         description=f"dot_hint_image를 제공하지 않을 때 파라미터. 미제공 시 기본값({PIXELIZE_DEFAULT_PIXEL_SIZE}) 사용. 상세 내용은 도트화 API 참고.",
     ),
     title: str = Form(..., description="메시지 제목"),
-    content: Optional[str] = Form(None, description="메시지 내용"),
+    content: str = Form(..., description="메시지 내용"),
     contentImage: Optional[UploadFile] = File(None, description="메시지 첨부 이미지"),
     hint: Optional[str] = Form(None, description="텍스트 힌트"),
     receiverType: Optional[int] = Form(
