@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:star23sharp/models/index.dart';
 
 class MessageFormProvider with ChangeNotifier {
-  bool _isTeasureStar = false;
+  bool _isTeasureStar = true;
 
   bool get isTeasureStar => _isTeasureStar;
 
@@ -37,11 +37,9 @@ class MessageFormProvider with ChangeNotifier {
   List<String>? get recipients =>
       _isTeasureStar ? _treasureMessage?.receivers : _generalMessage?.receivers;
 
-  // Add any other specific getters as needed
-
   // 전체 메시지 데이터를 반환하는 getter
-  Map<String, dynamic>? get messageData =>
-      _isTeasureStar ? _treasureMessage?.toJson() : _generalMessage?.toJson();
+  dynamic get messageData =>
+      _isTeasureStar ? _treasureMessage : _generalMessage;
 
 // 모델 저장 메서드
   void saveMessageData({
@@ -74,27 +72,23 @@ class MessageFormProvider with ChangeNotifier {
         hintImageFirst: hintImageFirst!,
         hintImageSecond: hintImageSecond!,
         dotHintImage: dotHintImage,
-        dotTarget: dotTarget,
-        kernelSize: kernelSize,
-        pixelSize: pixelSize,
+        // dotTarget: dotTarget,
+        // kernelSize: kernelSize,
+        // pixelSize: pixelSize,
         createdAt: DateTime.now(),
+        receiverType: receiverType,
         lat: lat!,
         lng: lng!,
-        image: image,
       );
     } else {
       // GeneralMessageModel 생성 및 저장
-      int type = 0;
-      if (receivers != null && receivers.length > 1) {
-        type = 1;
-      }
       _generalMessage = GeneralMessageModel(
-        receiverType: type,
+        receiverType: receiverType,
         title: title,
         content: content,
-        receivers: receivers ?? [], // null일 경우 빈 리스트로 설정
+        receivers: receivers ?? [],
         createdAt: DateTime.now(),
-        image: image,
+        contentImage: contentImage,
         groupId: groupId,
       );
     }

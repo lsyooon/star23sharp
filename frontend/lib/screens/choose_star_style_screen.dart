@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
+import 'package:star23sharp/screens/index.dart';
 
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/providers/index.dart';
@@ -72,8 +73,48 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
     }
   }
 
-  void _onSendButtonPressed() {
-    //TODO - 쪽지 전송 api
+  void _onSendButtonPressed(BuildContext context) async {
+    final messageProvider =
+        Provider.of<MessageFormProvider>(context, listen: false);
+
+    try {
+      // `isTeasureStar`에 따라 데이터 가져오기
+      final isTreasureStar = messageProvider.isTeasureStar;
+      final data = messageProvider.messageData;
+      // 데이터가 없는 경우 처리
+      if (data == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('메시지 데이터를 입력해주세요.')),
+        );
+        return;
+      }
+
+      logger.d(data);
+      // API 호출
+      await StarService.sendMessage(
+        isTreasureStar: isTreasureStar,
+        data: data,
+      );
+
+      // 성공 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('메시지가 성공적으로 전송되었습니다.')),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => isTreasureStar
+              ? const MainLayout(child: MapScreen()) // 보물: MapScreen으로 이동
+              : MainLayout(child: StarStoragebox()), // 일반: StarStoragebox로 이동
+        ),
+        (route) => false, // 모든 이전 라우트를 제거
+      );
+    } catch (e) {
+      // 에러 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('메시지 전송 실패: $e')),
+      );
+    }
   }
 
   @override
@@ -137,7 +178,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               child: Container(
                 constraints: BoxConstraints(
                   minWidth: UIhelper.deviceWidth(context) * 0.8,
-                  minHeight: UIhelper.deviceHeight(context) * 0.33,
+                  minHeight: UIhelper.deviceHeight(context) * 0.3,
                 ),
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
@@ -167,7 +208,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _onSendButtonPressed,
+                  onPressed: () => _onSendButtonPressed(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFA292EC),
                     padding: const EdgeInsets.symmetric(vertical: 16.0),

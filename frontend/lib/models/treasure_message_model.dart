@@ -1,6 +1,7 @@
 import 'dart:io';
 
 class TreasureMessageModel {
+  final int? receiverType;
   final String? title;
   final String? content;
   final File? contentImage;
@@ -16,7 +17,6 @@ class TreasureMessageModel {
   final DateTime? createdAt;
   final double? lat;
   final double? lng;
-  final File? image;
 
   TreasureMessageModel({
     this.title,
@@ -34,25 +34,25 @@ class TreasureMessageModel {
     this.createdAt,
     this.lat,
     this.lng,
-    this.image,
+    this.receiverType,
   });
 
   Map<String, dynamic> toJson() => {
+        'receiverType': receiverType,
         'title': title,
         'content': content,
-        'content_image': contentImage,
         'receivers': receivers,
-        'group_id': groupId,
+        'createdAt': createdAt.toString(),
+        'contentImage': contentImage,
+        'groupId': groupId,
         'hint': hint,
         'hint_image_first': hintImageFirst,
         'hint_image_second': hintImageSecond,
         'dot_hint_image': dotHintImage,
-        'dot_target': dotTarget,
-        'kernel_size': kernelSize,
-        'pixel_size': pixelSize,
-        'created_at': createdAt?.toString(),
+        // 'dot_target': dotTarget,
+        // 'kernel_size': kernelSize,
+        // 'pixel_size': pixelSize,
         'lat': lat,
         'lng': lng,
-        'image': image,
       };
 }

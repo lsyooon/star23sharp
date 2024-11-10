@@ -66,7 +66,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     TextField(
-                      controller: memberIdController, 
+                      controller: memberIdController,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFA292EC).withOpacity(0.4),
@@ -92,7 +92,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     TextField(
-                      controller: passwordController, 
+                      controller: passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
@@ -124,22 +124,34 @@ class LoginScreen extends StatelessWidget {
                             if (memberId.isEmpty || password.isEmpty) {
                               ErrorSnackbar.show("아이디 및 비밀번호를 입력해주세요.");
                             } else {
-                              logger.d("id: $memberId, pwd: $password");   
-                              Map<String, String>? loginResponse = await UserService.login(memberId, password);
+                              logger.d("id: $memberId, pwd: $password");
+                              Map<String, String>? loginResponse =
+                                  await UserService.login(memberId, password);
                               if (loginResponse != null) {
-                                await Provider.of<AuthProvider>(context, listen: false)
-                                    .setToken(loginResponse['access']!, loginResponse['refresh']!);
+                                await Provider.of<AuthProvider>(context,
+                                        listen: false)
+                                    .setToken(loginResponse['access']!,
+                                        loginResponse['refresh']!);
 
                                 // 내 정보 provider에 저장
-                                Map<String, dynamic> user = await UserService.getMemberInfo();
+                                Map<String, dynamic> user =
+                                    await UserService.getMemberInfo();
                                 logger.d(user);
-                                Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!, listen: false)
-                                  .setUserDetails(id: user['memberId'], name: user['nickname'], isPushEnabled: user['pushNotificationEnabled']);
-                                  
+                                Provider.of<UserProvider>(
+                                        AppGlobal.navigatorKey.currentContext!,
+                                        listen: false)
+                                    .setUserDetails(
+                                        id: user['memberId'],
+                                        name: user['nickname'],
+                                        isPushEnabled:
+                                            user['pushNotificationEnabled']);
+                                await NotificationService.updateDeviceToken();
+
                                 Navigator.pushNamedAndRemoveUntil(
                                   context,
                                   '/home', // 네임드 라우트 사용
-                                  (Route<dynamic> route) => false, // 모든 이전 화면 제거
+                                  (Route<dynamic> route) =>
+                                      false, // 모든 이전 화면 제거
                                 );
                               } else {
                                 // 로그인 실패 UI 처리
@@ -151,7 +163,8 @@ class LoginScreen extends StatelessWidget {
                           ),
                           child: const Text(
                             '로그인',
-                            style: TextStyle(fontSize: FontSizes.label, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: FontSizes.label, color: Colors.white),
                           ),
                         ),
                       ),

@@ -39,7 +39,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
     return nicknameRegExp.hasMatch(nickname);
   }
 
-  //FIXME - 리시버 타입 설정하기!
   bool _sendToAll = false; // "모든 사용자에게 보내기" 체크박스 상태
   @override
   void initState() {
@@ -64,19 +63,27 @@ class _StarFormScreenState extends State<StarFormScreen> {
   }
 
   void _addRecipient(String nickname) async {
-    if (nickname.isNotEmpty && !_recipients.contains(nickname)) {
-      if (_validateNickname(nickname)) {
-        // 닉네임 중복 검사
-        bool isDuplicate = await UserService.checkDuplicateId(
-            1, _nicknameController.text.trim());
+    if (nickname.isNotEmpty) {
+      if (!_recipients.contains(nickname)) {
+        if (_validateNickname(nickname)) {
+          // 닉네임 중복 검사
+          bool isDuplicate = await UserService.checkDuplicateId(
+              1, _nicknameController.text.trim());
 
-        // 최대 인원수 제한 확인 후 추가
-        if (_recipients.length < maxRecipients) {
-          if (!isDuplicate) {
-            setState(() {
-              _recipients.add(nickname);
-            });
-            _nicknameController.clear();
+          // 최대 인원수 제한 확인 후 추가
+          if (_recipients.length < maxRecipients) {
+            if (isDuplicate) {
+              setState(() {
+                _recipients.add(nickname);
+              });
+              _nicknameController.clear();
+            } else {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('존재하지 않는 닉네임입니다. 닉네임을 확인해주세요.')),
+                );
+              }
+            }
           } else {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -88,16 +95,16 @@ class _StarFormScreenState extends State<StarFormScreen> {
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('존재하지 않는 닉네임입니다. 닉네임을 확인해주세요.')),
+              const SnackBar(
+                  content: Text(
+                      '닉네임은 2자 이상 16자 이하, 영어/숫자/한글만 가능합니다. 한글 초성 및 모음은 허용되지 않습니다.')),
             );
           }
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text(
-                    '닉네임은 2자 이상 16자 이하, 영어/숫자/한글만 가능합니다. 한글 초성 및 모음은 허용되지 않습니다.')),
+            const SnackBar(content: Text('이미 추가된 닉네임입니다.')),
           );
         }
       }
@@ -127,13 +134,35 @@ class _StarFormScreenState extends State<StarFormScreen> {
   }
 
   void _saveMessage() {
+    //FIXME - test code
+    // Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar =
+    //     true;
     if (_formKey.currentState!.validate()) {
       logger.d(_recipients);
+      int receiverType = 0;
+      if (_sendToAll) {
+        receiverType = 3;
+      } else if (_recipients.length > 1) {
+        receiverType = 1;
+      } else {
+        receiverType = 0;
+      }
+
+      //TODO - group 지정
       Provider.of<MessageFormProvider>(context, listen: false).saveMessageData(
         title: _titleController.text,
         content: _messageController.text,
         receivers: _recipients,
+        contentImage: _selectedImage,
+        receiverType: receiverType,
+        //FIXME - test code
+        // hintImageFirst: _selectedImage,
+        // hintImageSecond: _selectedImage,
+        // dotHintImage: _selectedImage,
+        lat: 36.3067823,
+        lng: 127.3422503,
       );
+
       Navigator.pushNamed(context, '/message_style_editor'); // 문체 변경 페이지로 이동
     }
   }
@@ -239,15 +268,8 @@ class _StarFormScreenState extends State<StarFormScreen> {
                       ),
                     ),
                     validator: (value) {
-                      // if (value == null || value.isEmpty) {
-                      //   return '받는 사람의 닉네임을 입력해주세요.';
-                      // }
-                      if (!(value == null || value.isEmpty) &&
-                          !_validateNickname(value)) {
-                        return '닉네임은 2자 이상 16자 이하, 영어/숫자/한글만 가능합니다.';
-                      }
-                      if (_recipients.contains(value)) {
-                        return '이미 추가된 닉네임입니다.';
+                      if (_recipients.isEmpty && !_sendToAll) {
+                        return '받는 사람은 한명 이상이어야합니다';
                       }
                       return null;
                     },
