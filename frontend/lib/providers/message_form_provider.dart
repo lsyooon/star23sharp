@@ -25,6 +25,13 @@ class MessageFormProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void updateHint(String newHint) {
+    if (_isTeasureStar && _treasureMessage != null) {
+      _treasureMessage = _treasureMessage!.copyWith(hint: newHint);
+      notifyListeners();
+    }
+  }
+
   // Getter to retrieve content of the current message based on the type
   String? get content =>
       _isTeasureStar ? _treasureMessage?.content : _generalMessage?.content;
@@ -71,15 +78,15 @@ class MessageFormProvider with ChangeNotifier {
         receivers: receivers,
         groupId: groupId,
         hint: hint,
-        hintImageFirst: hintImageFirst!,
-        hintImageSecond: hintImageSecond!,
+        hintImageFirst: hintImageFirst,
+        hintImageSecond: hintImageSecond,
         dotHintImage: dotHintImage,
         dotTarget: dotTarget,
         kernelSize: kernelSize,
         pixelSize: pixelSize,
         createdAt: DateTime.now(),
-        lat: lat!,
-        lng: lng!,
+        lat: lat,
+        lng: lng,
         image: image,
       );
     } else {
