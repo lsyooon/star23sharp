@@ -27,15 +27,11 @@ class MainLayout extends StatelessWidget {
           ),
           IgnorePointer(
             ignoring: true,
-            child: Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(themeProvider.backgroundImage),
-                    fit: BoxFit.fill,
-                  ),
-                ),
-              ),
+            child: Image.asset(
+              themeProvider.backgroundImage,
+              fit: BoxFit.fill,
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
             ),
           ),
         ],
@@ -62,112 +58,121 @@ class MainLayout extends StatelessWidget {
                   Stack(
                     alignment: Alignment.center,
                     children: [
-                      // 배경 이미지
-                      Padding(
-                        padding: const EdgeInsets.all(0),
-                        child: Positioned.fill(
-                          child: Image.asset(
-                            'assets/img/blackTheme/black_button_circle.png', // 왼쪽 Column 배경 이미지 경로
-                            fit: BoxFit.fill,
-                          ),
-                        ),
+                      //         // 배경 이미지
+                      //         Padding(
+                      //           padding: const EdgeInsets.all(0),
+                      //           child: Positioned.fill(
+                      //             child: Image.asset(
+                      //               'assets/img/blackTheme/black_button_circle.png', // 왼쪽 Column 배경 이미지 경로
+                      //               fit: BoxFit.fill,
+                      //             ),
+                      //           ),
+                      //         ),
+                      //         // Column 내용
+                      //         Column(
+                      //           mainAxisAlignment: MainAxisAlignment.center,
+                      //           children: [
+                      //             IconButton(
+                      //               iconSize: 28.0,
+                      //               icon: const Icon(Icons.notifications_outlined),
+                      //               color: const Color(0xFF868686),
+                      //               onPressed: () {
+                      //                 if (!isLoggedIn) {
+                      //                   ErrorSnackbar.show("로그인 해주세요!");
+                      //                   return;
+                      //                 }
+                      //                 Navigator.pushNamed(context, '/notification')
+                      //                     .then((_) {
+                      //                   Navigator.pushNamedAndRemoveUntil(context,
+                      //                       '/home', (Route<dynamic> route) => false);
+                      //                 });
+                      //               },
+                      //             ),
+                      //             IconButton(
+                      //               iconSize: 28.0,
+                      //               icon: const Icon(Icons.mail_outline),
+                      //               color: const Color(0xFF868686),
+                      //               onPressed: () {
+                      //                 if (!isLoggedIn) {
+                      //                   ErrorSnackbar.show("로그인 해주세요!");
+                      //                   return;
+                      //                 }
+                      //                 Navigator.pushNamed(context, '/starstorage')
+                      //                     .then((_) {
+                      //                   Navigator.pushNamedAndRemoveUntil(context,
+                      //                       '/home', (Route<dynamic> route) => false);
+                      //                 });
+                      //               },
+                      //             ),
+                      //           ],
+                      //         ),
+                      //       ],
+                      //     ),
+                      // 가운데 버튼
+                      IconButton(
+                        iconSize: 50.0,
+                        icon: Image.asset(
+                            'assets/img/blackTheme/black_center_button.png'),
+                        onPressed: () {
+                          //FIXME - test용
+                          // if (!isLoggedIn) {
+                          //   ErrorSnackbar.show("로그인 하신 후 사용하실 수 있습니다!");
+                          //   return;
+                          // }
+                          Navigator.pushNamed(context, '/map').then((_) {
+                            Navigator.pushNamedAndRemoveUntil(context, '/home',
+                                (Route<dynamic> route) => false);
+                          });
+                        },
                       ),
-                      // Column 내용
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      //     // 오른쪽 Column의 배경 이미지 추가
+                      const Stack(
+                        alignment: Alignment.center,
                         children: [
-                          IconButton(
-                            iconSize: 28.0,
-                            icon: const Icon(Icons.notifications_outlined),
-                            color: const Color(0xFF868686),
-                            onPressed: () {
-                              if(!isLoggedIn){
-                                ErrorSnackbar.show("로그인 해주세요!");
-                                return;
-                              }
-                              Navigator.pushNamed(context, '/notification').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
-                              });
-                            },
-                          ),
-                          IconButton(
-                            iconSize: 28.0,
-                            icon: const Icon(Icons.mail_outline),
-                            color: const Color(0xFF868686),
-                            onPressed: () {
-                              if(!isLoggedIn){
-                                ErrorSnackbar.show("로그인 해주세요!");
-                                return;
-                              }
-                              Navigator.pushNamed(context, '/starstorage').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  // 가운데 버튼
-                  IconButton(
-                    iconSize: 50.0,
-                    icon: Image.asset('assets/img/blackTheme/black_center_button.png'),
-                    onPressed: () {
-                      if(!isLoggedIn){
-                        ErrorSnackbar.show("로그인 하신 후 사용하실 수 있습니다!");
-                        return;
-                      }
-                      Navigator.pushNamed(context, '/map').then((_) {
-                        Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
-                      });
-                    },
-                  ),
-                  // 오른쪽 Column의 배경 이미지 추가
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 0.0),
-                        child: Positioned.fill(
-                          child: Image.asset(
-                            'assets/img/blackTheme/black_button_circle.png', // 오른쪽 Column 배경 이미지 경로
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                      ),
-                      // Column 내용
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            iconSize: 28.0,
-                            icon: const Icon(Icons.account_circle_outlined),
-                            color: const Color(0xFF868686),
-                            onPressed: () {
-                              if(!isLoggedIn){
-                                ErrorSnackbar.show("로그인 해주세요!");
-                                return;
-                              }
-                              Navigator.pushNamed(context, '/profile').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
-                              });
-                            },
-                          ),
-                          IconButton(
-                            iconSize: 28.0,
-                            icon: Transform.rotate(
-                              angle: pi / 2, // 90도 회전 (오른쪽으로)
-                              child: const Icon(Icons.u_turn_left),
-                            ),
-                            color: const Color(0xFF868686),
-                            onPressed: () {
-                              if (Navigator.canPop(context)) {
-                                Navigator.pop(context); // 화면이 있다면 뒤로가기
-                              } else {
-                                SystemNavigator.pop();  // 뒤로 갈 화면이 없다면 앱 종료
-                              }
-                            },
-                          ),
+                          //         Padding(
+                          //           padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                          //           child: Positioned.fill(
+                          //             child: Image.asset(
+                          //               'assets/img/blackTheme/black_button_circle.png', // 오른쪽 Column 배경 이미지 경로
+                          //               fit: BoxFit.fill,
+                          //             ),
+                          //           ),
+                          //         ),
+                          //         // Column 내용
+                          //         Column(
+                          //           mainAxisAlignment: MainAxisAlignment.center,
+                          //           children: [
+                          //             IconButton(
+                          //               iconSize: 28.0,
+                          //               icon: const Icon(Icons.account_circle_outlined),
+                          //               color: const Color(0xFF868686),
+                          //               onPressed: () {
+                          //                 if (!isLoggedIn) {
+                          //                   ErrorSnackbar.show("로그인 해주세요!");
+                          //                   return;
+                          //                 }
+                          //                 Navigator.pushNamed(context, '/profile')
+                          //                     .then((_) {
+                          //                   Navigator.pushNamedAndRemoveUntil(context,
+                          //                       '/home', (Route<dynamic> route) => false);
+                          //                 });
+                          //               },
+                          //             ),
+                          //             IconButton(
+                          //               iconSize: 28.0,
+                          //               icon: Transform.rotate(
+                          //                 angle: pi / 2, // 90도 회전 (오른쪽으로)
+                          //                 child: const Icon(Icons.u_turn_left),
+                          //               ),
+                          //               color: const Color(0xFF868686),
+                          //               onPressed: () {
+                          //                 if (Navigator.canPop(context)) {
+                          //                   Navigator.pop(context); // 화면이 있다면 뒤로가기
+                          //                 } else {
+                          //                   SystemNavigator.pop(); // 뒤로 갈 화면이 없다면 앱 종료
+                          //                 }
+                          //               },
+                          //             ),
                         ],
                       ),
                     ],

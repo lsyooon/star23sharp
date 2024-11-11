@@ -69,7 +69,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
               AppGlobal.navigatorKey.currentContext!,
               listen: false)
           .getNickname;
-      if (!_recipients.contains(nickname) || userNickname != nickname) {
+      if (!_recipients.contains(nickname) && userNickname != nickname) {
         if (_validateNickname(nickname)) {
           // 닉네임 중복 검사
           bool isDuplicate = await UserService.checkDuplicateId(
