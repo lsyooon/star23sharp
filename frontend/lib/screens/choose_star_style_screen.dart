@@ -16,6 +16,8 @@ class ChooseStarStyleScreen extends StatefulWidget {
 }
 
 class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
+  bool isLoading = false; // 로딩 상태
+
   WritingStyle currentStyle = WritingStyle.basic;
   final Map<WritingStyle, String?> changedMessages = {
     WritingStyle.basic: null,
@@ -78,6 +80,9 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         Provider.of<MessageFormProvider>(context, listen: false);
 
     try {
+      setState(() {
+        isLoading = true; // 로딩 시작
+      });
       // `isTeasureStar`에 따라 데이터 가져오기
       final isTreasureStar = messageProvider.isTeasureStar;
       final data = messageProvider.messageData;
@@ -114,6 +119,10 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('메시지 전송 실패: $e')),
       );
+    } finally {
+      setState(() {
+        isLoading = false; // 로딩 종료
+      });
     }
   }
 
@@ -222,6 +231,16 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                 ),
               ),
             ),
+            if (isLoading) // 로딩 중일 때 오버레이 띄우기
+              Container(
+                color: Colors.black.withOpacity(0.5), // 반투명 배경
+                child: Center(
+                  child: Image.asset(
+                    "assets/img/logo/loading_logo.gif",
+                    height: UIhelper.deviceHeight(context) * 0.3,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

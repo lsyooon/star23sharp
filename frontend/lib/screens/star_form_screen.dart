@@ -69,7 +69,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
               AppGlobal.navigatorKey.currentContext!,
               listen: false)
           .getNickname;
-      if (!_recipients.contains(nickname) || userNickname != nickname) {
+      if (!_recipients.contains(nickname) && userNickname != nickname) {
         if (_validateNickname(nickname)) {
           // 닉네임 중복 검사
           bool isDuplicate = await UserService.checkDuplicateId(
@@ -348,10 +348,16 @@ class _StarFormScreenState extends State<StarFormScreen> {
                       child: ElevatedButton(
                         onPressed: _saveMessage,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromRGBO(162, 146, 236, 40),
+                          backgroundColor: const Color(0xFFA292EC),
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
                         ),
-                        child: const Text('다음'),
+                        child: const Text(
+                          '다음',
+                          style: TextStyle(fontSize: 16.0, color: Colors.white),
+                        ),
                       ),
                     ),
                   ),

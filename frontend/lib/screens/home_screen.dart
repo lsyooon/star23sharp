@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? const Column(
                                           children: [
                                             Text(
-                                              "별 보관함을 확인해 보세요!",
+                                              "알림함을 확인해 보세요!",
                                               style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 16),
