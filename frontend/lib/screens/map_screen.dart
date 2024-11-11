@@ -85,10 +85,6 @@ class _MapScreenState extends State<MapScreen>
 
   // 캐시된 위치 불러오기
   Future<void> _goToCachedOrCurrentLocation() async {
-    if (mapController == null) {
-      await Future.delayed(const Duration(milliseconds: 200));
-      return _goToCachedOrCurrentLocation();
-    }
     final cachedLocation = await SharedPreferences.getInstance();
     final lat = cachedLocation.getDouble('lat');
     final lng = cachedLocation.getDouble('lng');
@@ -247,7 +243,7 @@ class _MapScreenState extends State<MapScreen>
       ),
     );
 
-    overlay?.insert(overlayEntry);
+    overlay.insert(overlayEntry);
 
     // 3초 후에 자동으로 사라짐
     Future.delayed(const Duration(seconds: 3), () {
@@ -264,20 +260,18 @@ class _MapScreenState extends State<MapScreen>
 
     switch (option) {
       case MenuItem.hideMyStar:
-        Navigator.pushReplacementNamed(context, '/hidestar');
+        Navigator.pushNamed(context, '/hidestar');
         break;
       case MenuItem.viewHiddenStars:
-        if (currentBounds != null) {
-          _fetchTreasuresInBounds(
-            currentBounds,
-            false,
-            false,
-            false,
-            false,
-            false,
-          );
-        }
-        break;
+        _fetchTreasuresInBounds(
+          currentBounds,
+          false,
+          false,
+          false,
+          false,
+          false,
+        );
+              break;
       case MenuItem.viewStarsForEveryone:
         _fetchTreasuresInBounds(
           currentBounds,
@@ -457,7 +451,7 @@ class _MapScreenState extends State<MapScreen>
       return;
     }
 
-    if (markerData?['isFound'] == true) {
+    if (markerData['isFound'] == true) {
       _showCustomSnackbar(context, "이미 찾은 쪽지입니다.");
       _fetchTreasuresInBounds(
         currentBounds,
@@ -519,7 +513,7 @@ class _MapScreenState extends State<MapScreen>
                             const SizedBox(height: 32),
                             Center(
                               child: Text(
-                                markerData?['title'],
+                                markerData['title'],
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 32,
@@ -564,20 +558,20 @@ class _MapScreenState extends State<MapScreen>
                                             child: SizedBox(
                                               width: deviceWidth * 0.55,
                                               height: deviceWidth * 0.55,
-                                              child: markerData?[
+                                              child: markerData[
                                                               "dot_hint_image"] !=
                                                           null &&
-                                                      markerData?[
+                                                      markerData[
                                                               "dot_hint_image"]
                                                           .isNotEmpty
                                                   ? GestureDetector(
                                                       onTap: () {
                                                         _showImageModal(
-                                                            markerData?[
+                                                            markerData[
                                                                 "dot_hint_image"]);
                                                       },
                                                       child: Image.network(
-                                                        markerData?[
+                                                        markerData[
                                                             "dot_hint_image"],
                                                         fit: BoxFit.cover,
                                                       ),
@@ -609,7 +603,7 @@ class _MapScreenState extends State<MapScreen>
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          markerData?['hint'],
+                                          markerData['hint'],
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontSize: 24,
@@ -639,7 +633,7 @@ class _MapScreenState extends State<MapScreen>
                                         borderRadius: BorderRadius.circular(30),
                                       ),
                                     ),
-                                    onPressed: () => _takePhoto(markerData!),
+                                    onPressed: () => _takePhoto(markerData),
                                     child: const Text(
                                       "사진 찍기",
                                       style: TextStyle(
