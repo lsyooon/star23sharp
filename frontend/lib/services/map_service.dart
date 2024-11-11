@@ -50,7 +50,7 @@ class MapService {
   }
 
   // 마커 상세 정보 가져오기
-  static Future<List<dynamic>?> getTreasureDetail(double id) async {
+  static Future<List<dynamic>?> getTreasureDetail(int id) async {
     try {
       final response = await DioService.fastAuthDio.get(
         '/fastapi_ec2/treasure/inspect',
@@ -139,10 +139,7 @@ class MapService {
 
       final responseData = jsonDecode(response.toString());
       logger.d(responseData);
-      if (responseData['code'] == "200") {
-        return responseData['data'];
-      }
-      return null;
+      return responseData;
     } on DioException catch (e) {
       logger.d("API 호출 실패: $e");
       ErrorHandler.handle(e);
