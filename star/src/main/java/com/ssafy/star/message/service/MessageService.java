@@ -429,12 +429,12 @@ public class MessageService {
         Member senderId = memberRepository.findMemberById(userId);
         message.setSender(senderId);
         message.setReceiverType(request.getReceiverType());
-        if (request.getTitle().length() > 15) {
+        if (request.getTitle().length() > 16) {
             throw new CustomException(CustomErrorCode.TITLE_TOO_LONG);
         } else {
             message.setTitle(request.getTitle());
         }
-        if (request.getContent().length() > 70) {
+        if (request.getContent().length() > 101) {
             throw new CustomException(CustomErrorCode.CONTENT_TOO_LONG);
         } else {
             message.setContent(request.getContent());
