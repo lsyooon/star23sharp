@@ -9,8 +9,10 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
+import 'package:provider/provider.dart';
 
 import 'package:star23sharp/main.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/utilities/index.dart';
 import 'package:star23sharp/services/index.dart';
 
@@ -49,21 +51,36 @@ class FCMService {
   static String? _token;
   //권한 요청
   static Future init() async {
-    await _firebaseMessaging.requestPermission(
+    NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
-      announcement: true,
+      announcement: false,
       badge: true,
       carPlay: false,
       criticalAlert: false,
       provisional: false,
       sound: true,
     );
+    if (settings.authorizationStatus == AuthorizationStatus.denied) {
+      // 권한이 거부된 경우 처리
+      logger.w("푸시 알림 권한이 거부되었습니다.");
 
-    try {
-      _token = await FirebaseMessaging.instance.getToken();
-      logger.d("내 디바이스 토큰: $_token");
-    } catch (e) {
-      logger.e("Error getting token: $e");
+      Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,
+              listen: false)
+          .setPushNotificationEnabled(false);
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.notDetermined) {
+      // 권한 상태가 결정되지 않은 경우
+      logger.w("푸시 알림 권한 상태가 결정되지 않았습니다.");
+    } else {
+      // 권한이 허용된 경우
+      logger.d("푸시 알림 권한이 허용되었습니다.");
+
+      try {
+        _token = await FirebaseMessaging.instance.getToken();
+        logger.d("내 디바이스 토큰: $_token");
+      } catch (e) {
+        logger.e("Error getting token: $e");
+      }
     }
   }
 

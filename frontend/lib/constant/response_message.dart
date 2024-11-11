@@ -11,6 +11,7 @@ class ResponseMessage {
   static const String unsupportedFileType = "지원하지 않는 파일 형식입니다.";
   static const String gpuProxyConnectionError = "GPU 프록시 서버 연결 오류";
   static const String searchRangeTooWide = "검색 범위가 너무 넓습니다.";
+  static const String invalidImageSize = "업로드 가능한 파일 크기를 초과했습니다.";
   static const String imageFileSaveError = "이미지 파일 저장 중 오류가 발생했습니다.";
   static const String recipientNotFound = "수신자가 존재하지 않습니다.";
   static const String invalidLatLong = "위도와 경도 값이 유효하지 않습니다.";

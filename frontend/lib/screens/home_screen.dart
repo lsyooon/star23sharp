@@ -42,7 +42,9 @@ class _HomeScreenState extends State<HomeScreen> {
               isPushEnabled: user['pushNotificationEnabled']);
     }
     isunRead = await StarService.getIsUnreadMessage();
-    setState(() {}); // isunRead 상태 업데이트 후 UI 갱신
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -81,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'goto': '/starstorage',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.65,
-          UIhelper.deviceHeight(context) * -0.1,
+          UIhelper.deviceHeight(context) * -0.09,
         ),
         'img': 'assets/img/planet/planet1.png',
       },
@@ -126,112 +128,115 @@ class _HomeScreenState extends State<HomeScreen> {
             // 로그인 여부에 따른 UI 변경
             authProvider.isLoggedIn
                 ? Expanded(
-                    child: Stack(
-                      clipBehavior: Clip.none, // Overflow를 허용
+                    child: IgnorePointer(
+                      ignoring: false,
+                      child: Stack(
+                        clipBehavior: Clip.none, // Overflow를 허용
 
-                      children: [
-                        ...menuList.map((menu) {
-                          return Positioned(
-                            left: menu['position'].dx,
-                            top: menu['position'].dy,
-                            child: GestureDetector(
-                              onTap: () async {
-                                String url = menu['goto'];
-                                if (menu['text'] == "별 숨기기") {
-                                  final selectedUrl =
-                                      await showModalBottomSheet<String>(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (BuildContext context) {
-                                      return const StarWriteTypeModal();
-                                    },
-                                  );
+                        children: [
+                          ...menuList.map((menu) {
+                            return Positioned(
+                              left: menu['position'].dx,
+                              top: menu['position'].dy,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  String url = menu['goto'];
+                                  if (menu['text'] == "별 숨기기") {
+                                    final selectedUrl =
+                                        await showModalBottomSheet<String>(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (BuildContext context) {
+                                        return const StarWriteTypeModal();
+                                      },
+                                    );
 
-                                  // 선택된 URL이 null이 아닌 경우 페이지 이동
-                                  if (selectedUrl != null) {
-                                    url = selectedUrl;
-                                    Provider.of<MessageFormProvider>(context,
-                                            listen: false)
-                                        .setMessageFormType(type: url);
+                                    // 선택된 URL이 null이 아닌 경우 페이지 이동
+                                    if (selectedUrl != null) {
+                                      url = selectedUrl;
+                                      Provider.of<MessageFormProvider>(context,
+                                              listen: false)
+                                          .setMessageFormType(type: url);
+                                      Navigator.pushNamed(context, url);
+                                    }
+                                  } else {
                                     Navigator.pushNamed(context, url);
                                   }
-                                } else {
-                                  Navigator.pushNamed(context, url);
-                                }
-                              },
-                              child: Column(
-                                children: [
-                                  Image.asset(
-                                    menu['img'],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Container(
-                                    decoration: _commonContainerDecoration(),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    child: Text(
-                                      menu['text'],
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: FontSizes.label),
+                                },
+                                child: Column(
+                                  children: [
+                                    Image.asset(
+                                      menu['img'],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                        // 하단 메시지
-                        Positioned(
-                          bottom: 50,
-                          left: 20,
-                          right: 20,
-                          child: Column(
-                            children: [
-                              Container(
-                                decoration: _commonContainerDecoration(),
-                                padding: const EdgeInsets.all(8),
-                                child: isunRead
-                                    ? const Column(
-                                        children: [
-                                          Text(
-                                            "별 보관함을 확인해 보세요!",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16),
-                                          ),
-                                          SizedBox(height: 5),
-                                          Text(
-                                            "새로운 쪽지가 기다리고 있어요.",
-                                            style: TextStyle(
-                                                color: Colors.yellow,
-                                                fontSize: 13),
-                                          ),
-                                        ],
-                                      )
-                                    : const Column(
-                                        children: [
-                                          Text(
-                                            "모든 쪽지를 확인했어요",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16),
-                                          ),
-                                          SizedBox(height: 5),
-                                          Text(
-                                            "쪽지를 전달해 보는건 어떨까요?",
-                                            style: TextStyle(
-                                                color: Colors.yellow,
-                                                fontSize: 13),
-                                          ),
-                                        ],
+                                    const SizedBox(height: 5),
+                                    Container(
+                                      decoration: _commonContainerDecoration(),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      child: Text(
+                                        menu['text'],
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: FontSizes.label),
                                       ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
+                            );
+                          }),
+                          // 하단 메시지
+                          Positioned(
+                            bottom: 50,
+                            left: 20,
+                            right: 20,
+                            child: Column(
+                              children: [
+                                Container(
+                                  decoration: _commonContainerDecoration(),
+                                  padding: const EdgeInsets.all(8),
+                                  child: isunRead
+                                      ? const Column(
+                                          children: [
+                                            Text(
+                                              "별 보관함을 확인해 보세요!",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              "새로운 쪽지가 기다리고 있어요.",
+                                              style: TextStyle(
+                                                  color: Colors.yellow,
+                                                  fontSize: 13),
+                                            ),
+                                          ],
+                                        )
+                                      : const Column(
+                                          children: [
+                                            Text(
+                                              "모든 쪽지를 확인했어요",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              "쪽지를 전달해 보는건 어떨까요?",
+                                              style: TextStyle(
+                                                  color: Colors.yellow,
+                                                  fontSize: 13),
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   )
                 : Column(

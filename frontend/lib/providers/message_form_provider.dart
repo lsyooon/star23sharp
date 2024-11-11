@@ -68,35 +68,32 @@ class MessageFormProvider with ChangeNotifier {
     int? receiverType,
   }) {
     if (_isTeasureStar) {
-      // TreasureMessageModel 생성 및 저장
+      // TreasureMessageModel이 null이 아니면 기존 값을 유지
       _treasureMessage = TreasureMessageModel(
-        title: title,
-        content: content,
-        contentImage: contentImage,
-        receivers: receivers,
-        groupId: groupId,
-        hint: hint,
-        hintImageFirst: hintImageFirst,
-        hintImageSecond: hintImageSecond,
-        dotHintImage: dotHintImage,
-        // dotTarget: dotTarget,
-        // kernelSize: kernelSize,
-        // pixelSize: pixelSize,
-        createdAt: DateTime.now(),
-        lat: lat,
-        lng: lng,
-        receiverType: receiverType,
+        title: title?.trim() ?? _treasureMessage?.title,
+        content: content?.trim() ?? _treasureMessage?.content,
+        contentImage: contentImage ?? _treasureMessage?.contentImage,
+        receivers: receivers ?? _treasureMessage?.receivers,
+        groupId: groupId ?? _treasureMessage?.groupId,
+        hint: hint?.trim() ?? _treasureMessage?.hint,
+        hintImageFirst: hintImageFirst ?? _treasureMessage?.hintImageFirst,
+        hintImageSecond: hintImageSecond ?? _treasureMessage?.hintImageSecond,
+        dotHintImage: dotHintImage ?? _treasureMessage?.dotHintImage,
+        createdAt: DateTime.now(), // 항상 새로 생성
+        receiverType: receiverType ?? _treasureMessage?.receiverType,
+        lat: lat ?? _treasureMessage?.lat,
+        lng: lng ?? _treasureMessage?.lng,
       );
     } else {
-      // GeneralMessageModel 생성 및 저장
+      // GeneralMessageModel이 null이 아니면 기존 값을 유지
       _generalMessage = GeneralMessageModel(
-        receiverType: receiverType,
-        title: title,
-        content: content,
-        receivers: receivers ?? [],
-        createdAt: DateTime.now(),
-        contentImage: contentImage,
-        groupId: groupId,
+        title: title?.trim() ?? _generalMessage?.title,
+        content: content?.trim() ?? _generalMessage?.content,
+        receivers: receivers ?? _generalMessage?.receivers,
+        groupId: groupId ?? _generalMessage?.groupId,
+        createdAt: DateTime.now(), // 항상 새로 생성
+        receiverType: receiverType ?? _generalMessage?.receiverType,
+        contentImage: contentImage ?? _generalMessage?.contentImage,
       );
     }
     notifyListeners();
