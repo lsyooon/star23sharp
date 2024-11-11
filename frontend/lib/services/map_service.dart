@@ -35,6 +35,7 @@ class MapService {
       }
     } on DioException catch (e) {
       logger.d('Failed to fetch markers: $e');
+      ErrorHandler.handle(e);
       return null;
     }
   }
@@ -57,6 +58,7 @@ class MapService {
       }
     } on DioException catch (e) {
       logger.d('Failed to fetch markers: $e');
+      ErrorHandler.handle(e);
       return null;
     }
   }

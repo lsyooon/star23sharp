@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/widgets/modals/error_snackbar.dart';
 
 class MainLayout extends StatelessWidget {
   final Widget child;
@@ -13,6 +14,8 @@ class MainLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isLoggedIn = Provider.of<AuthProvider>(context).isLoggedIn;
+
     final double bottomNavHeight = MediaQuery.of(context).size.height * 0.2;
 
     return Scaffold(
@@ -78,7 +81,13 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.notifications_outlined),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/notification');
+                              if(!isLoggedIn){
+                                ErrorSnackbar.show("로그인 해주세요!");
+                                return;
+                              }
+                              Navigator.pushNamed(context, '/notification').then((_) {
+                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                              });
                             },
                           ),
                           IconButton(
@@ -86,7 +95,13 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.mail_outline),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/starstorage');
+                              if(!isLoggedIn){
+                                ErrorSnackbar.show("로그인 해주세요!");
+                                return;
+                              }
+                              Navigator.pushNamed(context, '/starstorage').then((_) {
+                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                              });
                             },
                           ),
                         ],
@@ -98,7 +113,13 @@ class MainLayout extends StatelessWidget {
                     iconSize: 50.0,
                     icon: Image.asset('assets/img/blackTheme/black_center_button.png'),
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/map');
+                      if(!isLoggedIn){
+                        ErrorSnackbar.show("로그인 하신 후 사용하실 수 있습니다!");
+                        return;
+                      }
+                      Navigator.pushNamed(context, '/map').then((_) {
+                        Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                      });
                     },
                   ),
                   // 오른쪽 Column의 배경 이미지 추가
@@ -123,7 +144,13 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.account_circle_outlined),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/profile');
+                              if(!isLoggedIn){
+                                ErrorSnackbar.show("로그인 해주세요!");
+                                return;
+                              }
+                              Navigator.pushNamed(context, '/profile').then((_) {
+                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                              });
                             },
                           ),
                           IconButton(
