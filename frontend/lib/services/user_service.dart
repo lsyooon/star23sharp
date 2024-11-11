@@ -19,6 +19,7 @@ class UserService {
       );
 
       var result = ResponseModel.fromJson(response.data);
+      logger.d(result.data);
       if (result.code == '200') {
         return result.data;
       } else {

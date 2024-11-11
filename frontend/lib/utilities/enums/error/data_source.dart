@@ -195,7 +195,7 @@ extension DataSourceExtension on String {
       case ResponseCode.expiredToken:
         return ResponseModel(
           code: ResponseCode.expiredToken,
-          message: "만료된 토큰입니다.",
+          message: "세션이 만료되어 다시 로그인 해주세요.", // 만료된 토큰입니다
         );
       case ResponseCode.duplicateUserId:
         return ResponseModel(
@@ -262,7 +262,7 @@ extension DataSourceExtension on String {
       case ResponseCode.expiredPushDeviceToken:
         return ResponseModel(
           code: ResponseCode.expiredPushDeviceToken,
-          message: "만료된 디바이스 토큰입니다.",
+          message: "세션이 만료되어 다시 로그인 해주세요.", // 만료된 디바이스 토큰입니다ㅁㅁ
         );
       case ResponseCode.pushAuthError:
         return ResponseModel(

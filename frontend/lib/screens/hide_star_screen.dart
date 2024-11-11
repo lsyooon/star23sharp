@@ -18,13 +18,15 @@ class HideStarScreen extends StatefulWidget {
 }
 
 class _HideStarScreenState extends State<HideStarScreen> {
-  bool isPreviewMode = false;
-  final ImagePicker _picker = ImagePicker();
-  List<File?> images = [null, null];
-  int _currentIndex = 0;
-  Uint8List? _pixelizedImageData;
-  String hintText = '';
   final PageController _pageController = PageController();
+  final ImagePicker _picker = ImagePicker();
+
+  bool isPreviewMode = false, isLoading = false;
+  List<File?> images = [null, null];
+  Uint8List? _pixelizedImageData;
+  int _currentIndex = 0;
+  String hintText = '';
+  
 
   Future<void> _takePhoto(int index) async {
     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
@@ -257,13 +259,14 @@ class _HideStarScreenState extends State<HideStarScreen> {
         ElevatedButton(
           onPressed: () async {
             if (images[0] != null && images[1] != null) {
-              bool pixelizedSuccessfully = await _pixelizeImages();
-              if (pixelizedSuccessfully) {
-                await _pixelizeImages();
-                setState(() {
-                  isPreviewMode = true;
-                });
-              }
+              setState(() {
+                isPreviewMode = true;
+                isLoading = true;
+              });
+              await _pixelizeImages();
+              setState(() {
+                isLoading = false;
+              });
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -284,6 +287,9 @@ class _HideStarScreenState extends State<HideStarScreen> {
     final messageProvider =
         Provider.of<MessageFormProvider>(context, listen: false);
 
+    if(isLoading){
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
