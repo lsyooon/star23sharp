@@ -93,9 +93,6 @@ public class NotificationService {
         Long senderId = message.getSender().getId();
         String senderName = message.getSender().getMemberName();
         DeviceToken senderToken = deviceTokenRepository.findById(senderName).orElse(null);
-        if (senderToken == null || !senderToken.isActive()) {    // 토큰 없거나 알림 비활성 상태면 바로 나옴
-            return;
-        }
 
         String senderNickname = message.getSender().getNickname();
         String receiverNickname = memberRepository.findNicknameById(receiverId);
@@ -112,6 +109,9 @@ public class NotificationService {
         notification.setMember(memberRepository.findMemberById(senderId));
         notificationRepository.save(notification);
 
+        if (senderToken == null || !senderToken.isActive()) {    // 토큰 없거나 알림 비활성 상태면 바로 나옴
+            return;
+        }
         // 푸시 알림 전송
         try {
             System.out.println("들어옴");
@@ -127,9 +127,6 @@ public class NotificationService {
         String receiverName = member.getMemberName();
 
         DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
-        if (receiverToken == null || !receiverToken.isActive()) { // 토큰 없거나 알림 비활성 상태면 바로 나옴
-            return;
-        }
 
         Message message = messageRepository.findMessageById(messageId);
         if (message == null) {
@@ -157,6 +154,9 @@ public class NotificationService {
         notification.setHint("힌트 : " + message.getHint());
         notificationRepository.save(notification);
 
+        if (receiverToken == null || !receiverToken.isActive()) { // 토큰 없거나 알림 비활성 상태면 바로 나옴
+            return;
+        }
         // 푸시 알림 전송
         try {
             System.out.println("들어옴");
@@ -181,9 +181,6 @@ public class NotificationService {
         String receiverName = member.getMemberName();
         // 레디스에서 토큰 조회
         DeviceToken receiverToken = deviceTokenRepository.findById(receiverName).orElse(null);
-        if (receiverToken == null || !receiverToken.isActive()) {   // 토큰 없거나 알림 비활성 상태면 바로 나옴
-            return;
-        }
 
         String senderNickname = message.getSender().getNickname();
         Notification notification = new Notification();
@@ -193,6 +190,9 @@ public class NotificationService {
         notification.setMember(member);
         notificationRepository.save(notification);
 
+        if (receiverToken == null || !receiverToken.isActive()) {   // 토큰 없거나 알림 비활성 상태면 바로 나옴
+            return;
+        }
         try {
             System.out.println("들어옴");
             pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
