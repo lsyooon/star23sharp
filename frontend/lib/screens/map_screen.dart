@@ -29,7 +29,9 @@ class _MapScreenState extends State<MapScreen>
   late LatLngBounds currentBounds;
   MenuItem selectedOption = MenuItem.viewStarsForEveryone;
   bool _isSearchButtonVisible = false;
-
+  bool _isFound = false;
+  bool _isFar = false;
+  bool _isPictureCorrect = false;
   // 탭 간의 이동이나 스크롤을 할 때 상태가 리셋되지 않고 그대로 유지
   @override
   bool get wantKeepAlive => true;
@@ -170,10 +172,25 @@ class _MapScreenState extends State<MapScreen>
       lng: markerData['lng'],
     );
 
-    if (data != null) {
-      markerData.addAll(data);
-      return true;
+    logger.d('{$data}');
+
+    if (data?['code'] == "200") {
+      switch (data?['message']) {
+        case 'success':
+          markerData.addAll(data?['data']);
+          return true;
+        case 'member_too_far':
+          _isFar = true;
+          return false;
+        case 'image_not_similar':
+          _isPictureCorrect = true;
+          return false;
+        default:
+          _isFound = true;
+          return false;
+      }
     } else {
+      logger.d("예상치 못한 응답: $data");
       return false;
     }
   }
@@ -188,12 +205,19 @@ class _MapScreenState extends State<MapScreen>
         onNoteButtonPressed: () => CorrectModal.show(context, markerData),
         markerData: markerData,
       );
-    } else {
+    } else if (_isPictureCorrect) {
       _showCustomSnackbar(context, "정답이 아닙니다.\n 다시 사진을 찍어주세요!");
+    } else if (_isFar) {
+      _showCustomSnackbar(context, "거리가 너무 멉니다.\n 가까이 가주세요!!");
+    } else if (_isFound) {
+      _showCustomSnackbar(context, "이미 찾은 쪽지입니다.");
     }
   }
 
   void _showCustomSnackbar(BuildContext context, String message) {
+    _isFar = false;
+    _isPictureCorrect = false;
+    _isFound = false;
     final deviceWidth = UIhelper.deviceWidth(context);
     final deviceHeight = UIhelper.deviceHeight(context);
     final overlay = Overlay.of(context);
@@ -426,10 +450,10 @@ class _MapScreenState extends State<MapScreen>
   // 마커 디테일
   Future<void> _showMarkerDetail(BuildContext context, String markerId) async {
     if (!mounted) return;
-    final markerData = await fetchTreasureDetail(double.parse(markerId));
+    final markerData = await fetchTreasureDetail(int.parse(markerId));
     if (!mounted) return;
     if (markerData == null) {
-      // _showCustomSnackbar(context, "해당 마커의 정보를 가져올 수 없습니다.");
+      _showCustomSnackbar(context, "해당 마커의 정보를 가져올 수 없습니다.");
       return;
     }
 
@@ -445,7 +469,7 @@ class _MapScreenState extends State<MapScreen>
       );
       return;
     }
-
+    if (!mounted) return;
     final deviceWidth = UIhelper.deviceWidth(context);
     final deviceHeight = UIhelper.deviceHeight(context);
     if (!mounted) return;
@@ -541,8 +565,11 @@ class _MapScreenState extends State<MapScreen>
                                               width: deviceWidth * 0.55,
                                               height: deviceWidth * 0.55,
                                               child: markerData?[
-                                                          "dot_hint_image"] !=
-                                                      null
+                                                              "dot_hint_image"] !=
+                                                          null &&
+                                                      markerData?[
+                                                              "dot_hint_image"]
+                                                          .isNotEmpty
                                                   ? GestureDetector(
                                                       onTap: () {
                                                         _showImageModal(
@@ -683,7 +710,7 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
-  Future<Map<String, dynamic>?> fetchTreasureDetail(double id) async {
+  Future<Map<String, dynamic>?> fetchTreasureDetail(int id) async {
     final result = await MapService.getTreasureDetail(id);
 
     if (result != null) {

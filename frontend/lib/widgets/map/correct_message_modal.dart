@@ -242,9 +242,11 @@ class CorrectMessageModal extends StatelessWidget {
                               ),
                             ),
                             onPressed: () {
-                              Navigator.popUntil(
-                                  context, (route) => route.isFirst);
-                              onNoteButtonPressed();
+                              Navigator.pop(context);
+                              CorrectModal.show(
+                                context,
+                                markerData,
+                              );
                             },
                             child: const Text(
                               "쪽지 확인",
