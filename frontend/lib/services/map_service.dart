@@ -10,9 +10,17 @@ import 'package:star23sharp/services/index.dart';
 class MapService {
   // 마커 정보 가져오기
   static Future<List<dynamic>?> getTreasures(
-      double lat1, double lng1, double lat2, double lng2) async {
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+    bool includeOpend,
+    bool getReceived,
+    bool includedPublic,
+    bool includeGroup,
+    bool includePrivate,
+  ) async {
     try {
-
       final response = await DioService.fastAuthDio.get(
         '/fastapi_ec2/treasure/near',
         queryParameters: {
@@ -20,10 +28,11 @@ class MapService {
           'lng_1': lng1,
           'lat_2': lat2,
           'lng_2': lng2,
-          'get_received': true,
-          'include_public': true,
-          'include_group': true,
-          'include_private': true,
+          'include_opend': includeOpend,
+          'get_received': getReceived,
+          'include_public': includedPublic,
+          'include_group': includeGroup,
+          'include_private': includePrivate,
         },
       );
 
@@ -45,7 +54,7 @@ class MapService {
       final response = await DioService.fastAuthDio.get(
         '/fastapi_ec2/treasure/inspect',
         queryParameters: {
-          'ids': 6,
+          'ids': id,
         },
       );
 
@@ -130,7 +139,7 @@ class MapService {
       logger.d(responseData);
       if (responseData['code'] == "200") {
         return responseData['data'];
-      } 
+      }
       return null;
     } on DioException catch (e) {
       logger.d("API 호출 실패: $e");

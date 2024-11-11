@@ -26,6 +26,9 @@ class _MapScreenState extends State<MapScreen>
   String message = "";
   final ImagePicker _picker = ImagePicker();
   bool _isLocationLoaded = false;
+  late LatLngBounds currentBounds;
+  MenuItem selectedOption = MenuItem.viewStarsForEveryone;
+  bool _isSearchButtonVisible = false;
 
   // 탭 간의 이동이나 스크롤을 할 때 상태가 리셋되지 않고 그대로 유지
   @override
@@ -230,18 +233,46 @@ class _MapScreenState extends State<MapScreen>
 
   // 메뉴 항목에 따른 액션 관리 함수
   void _handleMenuAction(MenuItem option) {
+    setState(() {
+      selectedOption = option;
+      _isMenuTouched = false;
+    });
+
     switch (option) {
       case MenuItem.hideMyStar:
         Navigator.pushReplacementNamed(context, '/hidestar');
         break;
       case MenuItem.viewHiddenStars:
-        _goToCurrentLocation();
+        if (currentBounds != null) {
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            false,
+            false,
+            false,
+            false,
+          );
+        }
         break;
       case MenuItem.viewStarsForEveryone:
-        _goToCurrentLocation();
+        _fetchTreasuresInBounds(
+          currentBounds,
+          false,
+          true,
+          true,
+          false,
+          false,
+        );
         break;
       case MenuItem.viewStarsForMe:
-        _goToCurrentLocation();
+        _fetchTreasuresInBounds(
+          currentBounds,
+          false,
+          true,
+          false,
+          false,
+          true,
+        );
         break;
     }
   }
@@ -460,7 +491,7 @@ class _MapScreenState extends State<MapScreen>
                             const SizedBox(height: 32),
                             Center(
                               child: Text(
-                                markerData['title'],
+                                markerData?['title'],
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 32,
@@ -505,16 +536,17 @@ class _MapScreenState extends State<MapScreen>
                                             child: SizedBox(
                                               width: deviceWidth * 0.55,
                                               height: deviceWidth * 0.55,
-                                              child: markerData[
+                                              child: markerData?[
                                                           "dot_hint_image"] !=
                                                       null
                                                   ? GestureDetector(
                                                       onTap: () {
-                                                        _showImageModal(markerData[
-                                                            "dot_hint_image"]);
+                                                        _showImageModal(
+                                                            markerData?[
+                                                                "dot_hint_image"]);
                                                       },
                                                       child: Image.network(
-                                                        markerData[
+                                                        markerData?[
                                                             "dot_hint_image"],
                                                         fit: BoxFit.cover,
                                                       ),
@@ -546,7 +578,7 @@ class _MapScreenState extends State<MapScreen>
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          markerData['hint'],
+                                          markerData?['hint'],
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontSize: 24,
@@ -576,7 +608,7 @@ class _MapScreenState extends State<MapScreen>
                                         borderRadius: BorderRadius.circular(30),
                                       ),
                                     ),
-                                    onPressed: () => _takePhoto(markerData),
+                                    onPressed: () => _takePhoto(markerData!),
                                     child: const Text(
                                       "사진 찍기",
                                       style: TextStyle(
@@ -647,37 +679,58 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
-  Future<void> fetchTreasureDetail(double id) async {
+  Future<Map<String, dynamic>?> fetchTreasureDetail(double id) async {
     final result = await MapService.getTreasureDetail(id);
 
-    if (result != null && mounted) {
-      setState(() {
-        // Treasure 데이터 기반으로 markerInfo 업데이트
-        result.forEach((dynamic item) {
-          final treasure = item as TreasureModel;
-          markerInfo[treasure.id.toString()] = {
-            "id": treasure.id,
-            "title": treasure.title,
-            "hint": treasure.hint,
-            "isTreasure": treasure.isTreasure,
-            "isFound": treasure.isFound,
-            "senderId": treasure.senderId.toString(),
-            "dot_hint_image": treasure.dotHintImage,
-            "lat": treasure.lat,
-            "lng": treasure.lng,
-            "image": treasure.image,
-            "content": treasure.content,
-            "hint_image_first": treasure.hintImageFirst,
-            "sender_nickname": treasure.senderNickname,
-          };
-        });
-      });
+    if (result != null) {
+      final treasure = result.first as TreasureModel;
+      return {
+        "id": treasure.id,
+        "title": treasure.title,
+        "hint": treasure.hint,
+        "isTreasure": treasure.isTreasure,
+        "isFound": treasure.isFound,
+        "senderId": treasure.senderId.toString(),
+        "dot_hint_image": treasure.dotHintImage,
+        "lat": treasure.lat,
+        "lng": treasure.lng,
+        "image": treasure.image,
+        "content": treasure.content,
+        "hint_image_first": treasure.hintImageFirst,
+        "sender_nickname": treasure.senderNickname,
+      };
     } else {
       logger.d("서버에서 Treasure Detail 데이터를 가져오지 못했습니다.");
+      return null;
     }
   }
 
-  Future<void> _fetchTreasuresInBounds(LatLngBounds bounds) async {
+  // 현재 지도 위치에서 마커를 검색하는 함수
+  void _fetchMarkersInCurrentBounds() {
+    switch (selectedOption) {
+      case MenuItem.viewHiddenStars:
+        _fetchTreasuresInBounds(
+            currentBounds, false, false, false, false, false);
+        break;
+      case MenuItem.viewStarsForEveryone:
+        _fetchTreasuresInBounds(currentBounds, false, true, true, false, false);
+        break;
+      case MenuItem.viewStarsForMe:
+        _fetchTreasuresInBounds(currentBounds, false, true, false, false, true);
+        break;
+      default:
+        break;
+    }
+  }
+
+  Future<void> _fetchTreasuresInBounds(
+    LatLngBounds bounds,
+    bool includeOpend,
+    bool getReceived,
+    bool includedPublic,
+    bool includeGroup,
+    bool includePrivate,
+  ) async {
     final ne = bounds.getNorthEast();
     final sw = bounds.getSouthWest();
 
@@ -686,12 +739,19 @@ class _MapScreenState extends State<MapScreen>
       sw.longitude,
       ne.latitude,
       ne.longitude,
+      includeOpend,
+      getReceived,
+      includedPublic,
+      includeGroup,
+      includePrivate,
     );
 
     if (treasures != null && mounted) {
       setState(() {
         markers = treasures
             .map((dynamic item) => item as TreasureModel)
+            .where((TreasureModel treasure) =>
+                isPointInBounds(LatLng(treasure.lat, treasure.lng), bounds))
             .map((TreasureModel treasure) {
           markerInfo[treasure.id.toString()] = {
             "id": treasure.id,
@@ -722,6 +782,13 @@ class _MapScreenState extends State<MapScreen>
     }
   }
 
+  bool isPointInBounds(LatLng point, LatLngBounds bounds) {
+    return (point.latitude >= bounds.getSouthWest().latitude &&
+            point.latitude <= bounds.getNorthEast().latitude) &&
+        (point.longitude >= bounds.getSouthWest().longitude &&
+            point.longitude <= bounds.getNorthEast().longitude);
+  }
+
   @override
   Widget build(BuildContext context) {
     final deviceWidth = UIhelper.deviceWidth(context);
@@ -740,6 +807,17 @@ class _MapScreenState extends State<MapScreen>
                     onMapCreated: (controller) async {
                       mapController = controller;
                       await _goToCachedOrCurrentLocation();
+
+                      currentBounds = await mapController.getBounds();
+
+                      _fetchTreasuresInBounds(
+                        currentBounds,
+                        false,
+                        true,
+                        true,
+                        false,
+                        false,
+                      );
                     },
                     onMarkerTap: (markerId, latLng, zoomLevel) {
                       setState(() {
@@ -749,7 +827,12 @@ class _MapScreenState extends State<MapScreen>
                     markers: markers.toList(),
                     currentLevel: 3,
                     onBoundsChangeCallback: ((latLngBounds) {
-                      _fetchTreasuresInBounds(latLngBounds);
+                      if (currentBounds != latLngBounds) {
+                        setState(() {
+                          currentBounds = latLngBounds;
+                          _isSearchButtonVisible = true;
+                        });
+                      }
                     }),
                   ),
                 ),
@@ -775,6 +858,20 @@ class _MapScreenState extends State<MapScreen>
                   isMenuTouched: _isMenuTouched,
                 ),
               ),
+              if (_isSearchButtonVisible)
+                Positioned(
+                  top: deviceHeight * 0.1,
+                  right: deviceWidth * 0.32,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _fetchMarkersInCurrentBounds();
+                      setState(() {
+                        _isSearchButtonVisible = false;
+                      });
+                    },
+                    child: const Text("현재 위치에서 검색"),
+                  ),
+                ),
             ],
           );
   }
