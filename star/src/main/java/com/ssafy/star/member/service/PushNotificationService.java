@@ -1,13 +1,12 @@
 package com.ssafy.star.member.service;
 
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PushNotificationService {
@@ -33,18 +32,7 @@ public class PushNotificationService {
                 .build();
 
         try {
-            firebaseMessaging.send(message);
-        } catch (FirebaseMessagingException e) {
-            // Firebase 관련 예외 처리
-            if (e.getMessage().contains("Invalid registration token")) {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_INVALID_TOKEN);
-            } else if (e.getMessage().contains("Registration token is not valid")) {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_EXPIRED_TOKEN);
-            } else if (e.getMessage().contains("Message payload is too large")) {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_MESSAGE_TOO_LARGE);
-            } else {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_AUTH_ERROR);
-            }
+            firebaseMessaging.sendAsync(message).get();
         } catch (Exception e) {
             // 기타 예외 처리
             throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_FAILED);
@@ -67,18 +55,7 @@ public class PushNotificationService {
                 .build();
 
         try {
-            firebaseMessaging.send(message);
-        } catch (FirebaseMessagingException e) {
-            // Firebase 관련 예외 처리
-            if (e.getMessage().contains("Invalid registration token")) {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_INVALID_TOKEN);
-            } else if (e.getMessage().contains("Registration token is not valid")) {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_EXPIRED_TOKEN);
-            } else if (e.getMessage().contains("Message payload is too large")) {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_MESSAGE_TOO_LARGE);
-            } else {
-                throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_AUTH_ERROR);
-            }
+            firebaseMessaging.sendAsync(message).get();
         } catch (Exception e) {
             // 기타 예외 처리
             throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_FAILED);
