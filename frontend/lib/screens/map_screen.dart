@@ -425,26 +425,30 @@ class _MapScreenState extends State<MapScreen>
 
   // 마커 디테일
   Future<void> _showMarkerDetail(BuildContext context, String markerId) async {
-    final markerData = markerInfo[markerId] ??
-        {
-          "id": -1,
-          "title": "정보 없음",
-          "hint": "추가 정보 없음",
-          "isTreasure": true,
-          "isFound": false,
-          "senderId": "정보 없음",
-          "dot_hint_image": "정보 없음",
-          "lat": -1,
-          "lng": -1,
-          "image": "",
-          "content": "",
-          "hint_image_first": "",
-          "sender_nickname": "",
-        };
+    if (!mounted) return;
+    final markerData = await fetchTreasureDetail(double.parse(markerId));
+    if (!mounted) return;
+    if (markerData == null) {
+      // _showCustomSnackbar(context, "해당 마커의 정보를 가져올 수 없습니다.");
+      return;
+    }
+
+    if (markerData?['isFound'] == true) {
+      _showCustomSnackbar(context, "이미 찾은 쪽지입니다.");
+      _fetchTreasuresInBounds(
+        currentBounds,
+        false,
+        true,
+        true,
+        false,
+        false,
+      );
+      return;
+    }
 
     final deviceWidth = UIhelper.deviceWidth(context);
     final deviceHeight = UIhelper.deviceHeight(context);
-
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (BuildContext context) {
