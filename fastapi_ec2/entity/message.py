@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
@@ -17,7 +17,11 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+from .group import MemberGroup
 from .member import Member
+
+if TYPE_CHECKING:
+    from .message_box import MessageBox
 
 IMAGE_VECTOR_SIZE = 12288
 
@@ -83,6 +87,13 @@ class Message(Base):
         "Member",
         primaryjoin="foreign(Message.sender_id) == Member.id",
         viewonly=True,
+    )
+    group: Mapped[Optional["MemberGroup"]] = relationship(
+        "MemberGroup",
+        viewonly=True,
+    )
+    message_boxes: Mapped[Optional[List["MessageBox"]]] = relationship(
+        "MessageBox", viewonly=True, uselist=True
     )
 
     def __repr__(self) -> str:

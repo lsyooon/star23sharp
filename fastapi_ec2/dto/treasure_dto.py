@@ -2,6 +2,7 @@ import datetime
 from typing import List, Literal, Optional, Union, override
 
 from entity.message import Message
+from entity.message_box import MessageDirections
 from response.response_model import ResponseModel
 
 from .base_dto import BaseDTO
@@ -13,13 +14,14 @@ class BaseTreasureDTOWithMemberInfo(BaseDTO):
     @override
     @classmethod
     def get_dto(cls, orm: Message):
-        dto = cls.model_validate(orm)
+        dto = super().get_dto(orm)
         if orm.member is not None:
             dto.sender_nickname = orm.member.nickname
         return dto
 
 
 class TreasureDTO_Own(BaseTreasureDTOWithMemberInfo):
+    access_level: str = "owned"
     id: int
     sender_id: int
     receiver_type: int
@@ -37,12 +39,33 @@ class TreasureDTO_Own(BaseTreasureDTOWithMemberInfo):
     created_at: datetime.datetime
     image: Optional[str]
 
+    # Non-ORM fields
+    receiver_names: Optional[List[str]] = None
+    receiving_group_name: Optional[str] = None
+
+    @override
+    @classmethod
+    def get_dto(cls, orm: Message):
+        dto = super().get_dto(orm)
+        if orm.message_boxes is not None:
+            dto.receiver_names = []
+            for boxrow in orm.message_boxes:
+                if boxrow.message_direction is MessageDirections.RECEIVED.value:
+                    dto.receiver_names.append(boxrow.member.nickname)
+            if len(dto.receiver_names) == 0:
+                dto.receiver_names = None
+        if orm.group is not None:
+            dto.receiving_group_name = (
+                [orm.group.group_name] if orm.group.group_name is not None else None
+            )
+        return dto
+
 
 class TreasureDTO_Opened(BaseTreasureDTOWithMemberInfo):
+    access_level: str = "opened"
     id: int
     sender_id: int
     receiver_type: int
-    receiver: Optional[List[int]]
     hint_image_first: str
     hint_image_second: str
     dot_hint_image: str
@@ -58,6 +81,7 @@ class TreasureDTO_Opened(BaseTreasureDTOWithMemberInfo):
 
 
 class TreasureDTO_Undiscovered(BaseTreasureDTOWithMemberInfo):
+    access_level: str = "undiscovered"
     id: int
     sender_id: int
     receiver_type: int

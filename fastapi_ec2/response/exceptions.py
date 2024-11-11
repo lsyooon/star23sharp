@@ -12,7 +12,11 @@ class AppException(Exception):
         if len(self.args) > 0:
             msg = str(self.args[0])
         else:
-            msg = message if message is not None else self.code
+            msg = (
+                message
+                if message is not None
+                else "에러 코드 " + self.code + " 를 참조하세요."
+            )
         return ResponseModel(
             code=self.code,
             message=msg,

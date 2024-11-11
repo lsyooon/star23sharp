@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
     BigInteger,
@@ -14,7 +14,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 from .member import Member
-from .message import Message
+
+if TYPE_CHECKING:
+    from .message import Message
 
 
 class MessageDirections(Enum):
