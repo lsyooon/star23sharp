@@ -56,7 +56,7 @@ class TreasureDTO_Own(BaseTreasureDTOWithMemberInfo):
                 dto.receiver_names = None
         if orm.group is not None:
             dto.receiving_group_name = (
-                [orm.group.group_name] if orm.group.group_name is not None else None
+                orm.group.group_name if orm.group.group_name is not None else None
             )
         return dto
 
