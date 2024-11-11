@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/widgets/modals/error_snackbar.dart';
 
 class MainLayout extends StatelessWidget {
@@ -27,15 +28,11 @@ class MainLayout extends StatelessWidget {
           ),
           IgnorePointer(
             ignoring: true,
-            child: Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(themeProvider.backgroundImage),
-                    fit: BoxFit.fill,
-                  ),
-                ),
-              ),
+            child: Image.asset(
+              themeProvider.backgroundImage,
+              fit: BoxFit.fill,
+              width: UIhelper.deviceWidth(context),
+              height: UIhelper.deviceHeight(context),
             ),
           ),
         ],
@@ -65,11 +62,9 @@ class MainLayout extends StatelessWidget {
                       // 배경 이미지
                       Padding(
                         padding: const EdgeInsets.all(0),
-                        child: Positioned.fill(
-                          child: Image.asset(
-                            'assets/img/blackTheme/black_button_circle.png', // 왼쪽 Column 배경 이미지 경로
-                            fit: BoxFit.fill,
-                          ),
+                        child: Image.asset(
+                          'assets/img/blackTheme/black_button_circle.png', // 왼쪽 Column 배경 이미지 경로
+                          fit: BoxFit.fill,
                         ),
                       ),
                       // Column 내용
@@ -128,46 +123,59 @@ class MainLayout extends StatelessWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 0.0),
-                        child: Positioned.fill(
-                          child: Image.asset(
-                            'assets/img/blackTheme/black_button_circle.png', // 오른쪽 Column 배경 이미지 경로
-                            fit: BoxFit.fill,
-                          ),
+                        child: Image.asset(
+                          'assets/img/blackTheme/black_button_circle.png', // 오른쪽 Column 배경 이미지 경로
+                          fit: BoxFit.fill,
                         ),
                       ),
                       // Column 내용
-                      Column(
+                      const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          IconButton(
-                            iconSize: 28.0,
-                            icon: const Icon(Icons.account_circle_outlined),
-                            color: const Color(0xFF868686),
-                            onPressed: () {
-                              if(!isLoggedIn){
-                                ErrorSnackbar.show("로그인 해주세요!");
-                                return;
-                              }
-                              Navigator.pushNamed(context, '/profile').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
-                              });
-                            },
-                          ),
-                          IconButton(
-                            iconSize: 28.0,
-                            icon: Transform.rotate(
-                              angle: pi / 2, // 90도 회전 (오른쪽으로)
-                              child: const Icon(Icons.u_turn_left),
-                            ),
-                            color: const Color(0xFF868686),
-                            onPressed: () {
-                              if (Navigator.canPop(context)) {
-                                Navigator.pop(context); // 화면이 있다면 뒤로가기
-                              } else {
-                                SystemNavigator.pop();  // 뒤로 갈 화면이 없다면 앱 종료
-                              }
-                            },
-                          ),
+                          //         Padding(
+                          //           padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                          //           child: Positioned.fill(
+                          //             child: Image.asset(
+                          //               'assets/img/blackTheme/black_button_circle.png', // 오른쪽 Column 배경 이미지 경로
+                          //               fit: BoxFit.fill,
+                          //             ),
+                          //           ),
+                          //         ),
+                          //         // Column 내용
+                          //         Column(
+                          //           mainAxisAlignment: MainAxisAlignment.center,
+                          //           children: [
+                          //             IconButton(
+                          //               iconSize: 28.0,
+                          //               icon: const Icon(Icons.account_circle_outlined),
+                          //               color: const Color(0xFF868686),
+                          //               onPressed: () {
+                          //                 if (!isLoggedIn) {
+                          //                   ErrorSnackbar.show("로그인 해주세요!");
+                          //                   return;
+                          //                 }
+                          //                 Navigator.pushNamed(context, '/profile')
+                          //                     .then((_) {
+                          //                   Navigator.pushNamedAndRemoveUntil(context,
+                          //                       '/home', (Route<dynamic> route) => false);
+                          //                 });
+                          //               },
+                          //             ),
+                          //             IconButton(
+                          //               iconSize: 28.0,
+                          //               icon: Transform.rotate(
+                          //                 angle: pi / 2, // 90도 회전 (오른쪽으로)
+                          //                 child: const Icon(Icons.u_turn_left),
+                          //               ),
+                          //               color: const Color(0xFF868686),
+                          //               onPressed: () {
+                          //                 if (Navigator.canPop(context)) {
+                          //                   Navigator.pop(context); // 화면이 있다면 뒤로가기
+                          //                 } else {
+                          //                   SystemNavigator.pop(); // 뒤로 갈 화면이 없다면 앱 종료
+                          //                 }
+                          //               },
+                          //             ),
                         ],
                       ),
                     ],
