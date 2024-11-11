@@ -804,7 +804,7 @@ class _MapScreenState extends State<MapScreen>
             markerId: treasure.id.toString(),
             latLng: LatLng(treasure.lat, treasure.lng),
             markerImageSrc:
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s',
+                'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/star.svg',
           );
         }).toSet();
       });
