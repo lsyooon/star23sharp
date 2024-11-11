@@ -89,17 +89,17 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         return;
       }
 
-      logger.d(data);
       // API 호출
-      await StarService.sendMessage(
+      bool response = await StarService.sendMessage(
         isTreasureStar: isTreasureStar,
         data: data,
       );
-
-      // 성공 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('메시지가 성공적으로 전송되었습니다.')),
-      );
+      if (response) {
+        // 성공 메시지 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('별 전송 완료!')),
+        );
+      }
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -189,7 +189,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                 child: SingleChildScrollView(
                   child: Text(
                     currentStyle == WritingStyle.basic
-                        ? (content ?? '') // null일 경우 기본값 설정
+                        ? (content ?? '')
                         : (changedMessages[currentStyle] ?? '변환 중입니다...'),
                     style: const TextStyle(
                       fontSize: 16.0,
@@ -201,7 +201,6 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               ),
             ),
 
-            const Spacer(),
             // 하단 버튼
             Padding(
               padding: const EdgeInsets.all(16.0),

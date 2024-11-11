@@ -31,6 +31,7 @@ class ResponseCode {
   static const String treasureHintTooLong = "L0021";
   static const String selfAsRecipient = "L0022";
   static const String searchRangeTooWide = "L0023";
+  static const String invalidImageSize = "L0024";
 
   // Member Errors
   static const String expiredToken = "M0000";

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class UserProvider with ChangeNotifier {
   String? memberId;
   String? nickname;
-  bool? isPushNotificationEnabled;
+  bool? isPushNotificationEnabled = true;
 
   // memberId 조회
   String? get getMemberId => memberId;
@@ -13,6 +13,10 @@ class UserProvider with ChangeNotifier {
 
   // PushNotificationEnabled 조회
   bool? get getPushNotificationEnabled => isPushNotificationEnabled;
+
+  void setPushNotificationEnabled(bool isEnabled) {
+    isPushNotificationEnabled = isEnabled;
+  }
 
   // 여러 변수 한번에 설정
   void setUserDetails({
