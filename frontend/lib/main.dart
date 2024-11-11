@@ -194,7 +194,6 @@ class MyApp extends StatelessWidget {
         '/modify_profile': (context) =>
             const MainLayout(child: ModifyProfileScreen()),
         '/hidestar': (context) => const MainLayout(child: HideStarScreen()),
-
         // '/loading': (context) => const MainLayout(child: LoadingScreen()),
       },
     );
