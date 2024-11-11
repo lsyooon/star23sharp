@@ -32,7 +32,7 @@ public class PushNotificationService {
                 .build();
 
         try {
-            firebaseMessaging.sendAsync(message).get();
+            firebaseMessaging.sendAsync(message);
         } catch (Exception e) {
             // 기타 예외 처리
             throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_FAILED);
@@ -55,7 +55,7 @@ public class PushNotificationService {
                 .build();
 
         try {
-            firebaseMessaging.sendAsync(message).get();
+            firebaseMessaging.sendAsync(message);
         } catch (Exception e) {
             // 기타 예외 처리
             throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_FAILED);
