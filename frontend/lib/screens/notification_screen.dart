@@ -139,8 +139,9 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
               Container(
                 color: const Color(0xFFA292EC),
                 padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
+                    vertical: 10.0, horizontal: 20.0),
                 child: Stack(
+                  alignment: Alignment.center,
                   children: [
                     // 제목을 가운데 배치
                     const Align(
