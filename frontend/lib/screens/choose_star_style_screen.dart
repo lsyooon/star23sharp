@@ -119,6 +119,10 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('메시지 전송 실패: $e')),
       );
+    } finally {
+      setState(() {
+        isLoading = false; // 로딩 종료
+      });
     }
   }
 
