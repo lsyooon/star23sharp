@@ -130,120 +130,128 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessageFormProvider>(context);
     String? content = messageProvider.content;
-    return Center(
-      child: Container(
-        width: UIhelper.deviceWidth(context) * 0.85,
-        height: UIhelper.deviceHeight(context) * 0.67,
-        color: Colors.white,
-        child: Column(
-          // 커스텀 헤더
-          children: [
-            Container(
-              color: const Color(0xFFA292EC),
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
-              child: Container(
-                width: UIhelper.deviceWidth(context) * 0.85,
-                alignment: Alignment.center,
-                child: const Text(
-                  '별 문체 바꾸기',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20.0),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return Stack(
+      children: [
+        Center(
+          child: Container(
+            width: UIhelper.deviceWidth(context) * 0.85,
+            height: UIhelper.deviceHeight(context) * 0.67,
+            color: Colors.white,
+            child: Column(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () =>
-                      _handleArrowButtonPress(false, messageProvider),
-                ),
-                Text(
-                  currentStyle.name,
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                // 커스텀 헤더
+                Container(
+                  color: const Color(0xFFA292EC),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16.0, horizontal: 20.0),
+                  child: Container(
+                    width: UIhelper.deviceWidth(context) * 0.85,
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '별 문체 바꾸기',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward, color: Colors.black),
-                  onPressed: () =>
-                      _handleArrowButtonPress(true, messageProvider),
+                const SizedBox(height: 20.0),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: () =>
+                          _handleArrowButtonPress(false, messageProvider),
+                    ),
+                    Text(
+                      currentStyle.name,
+                      style: const TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon:
+                          const Icon(Icons.arrow_forward, color: Colors.black),
+                      onPressed: () =>
+                          _handleArrowButtonPress(true, messageProvider),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20.0),
+
+                // 본문 내용
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Container(
+                    constraints: BoxConstraints(
+                      minWidth: UIhelper.deviceWidth(context) * 0.8,
+                      minHeight: UIhelper.deviceHeight(context) * 0.3,
+                    ),
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        currentStyle == WritingStyle.basic
+                            ? (content ?? '')
+                            : (changedMessages[currentStyle] ?? '변환 중입니다...'),
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.black87,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 하단 버튼
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _onSendButtonPressed(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFA292EC),
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: const Text(
+                        '별 전달하기',
+                        style: TextStyle(fontSize: 16.0, color: Colors.white),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20.0),
-            // 본문 내용
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Container(
-                constraints: BoxConstraints(
-                  minWidth: UIhelper.deviceWidth(context) * 0.8,
-                  minHeight: UIhelper.deviceHeight(context) * 0.3,
-                ),
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: SingleChildScrollView(
-                  child: Text(
-                    currentStyle == WritingStyle.basic
-                        ? (content ?? '')
-                        : (changedMessages[currentStyle] ?? '변환 중입니다...'),
-                    style: const TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.black87,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // 하단 버튼
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _onSendButtonPressed(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA292EC),
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  child: const Text(
-                    '별 전달하기',
-                    style: TextStyle(fontSize: 16.0, color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
-            if (isLoading) // 로딩 중일 때 오버레이 띄우기
-              Container(
-                color: Colors.black.withOpacity(0.5), // 반투명 배경
-                child: Center(
-                  child: Image.asset(
-                    "assets/img/logo/loading_logo.gif",
-                    height: UIhelper.deviceHeight(context) * 0.3,
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
-      ),
+        if (isLoading)
+          Positioned.fill(
+            child: Container(
+              color: Colors.white.withOpacity(0.8), // 불투명 하얀 배경
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFFA292EC), // 스피너 색상
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:star23sharp/main.dart';
+import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/providers/index.dart';
@@ -38,26 +40,27 @@ class NotificationSettingsScreenState
     });
   }
 
-  void _onPushNotificationToggle(bool value) {
-    final userProvider = Provider.of<UserProvider>(
-        AppGlobal.navigatorKey.currentContext!,
-        listen: false);
+  void _onPushNotificationToggle(bool value) async {
+    try {
+      await NotificationService.updateAlarmToggle();
+      if (value) {
+        logger.d("알림 받기");
+        await NotificationService.updateDeviceToken();
+      }
+      final userProvider = Provider.of<UserProvider>(
+          AppGlobal.navigatorKey.currentContext!,
+          listen: false);
 
-    setState(() {
-      pushNotificationsEnabled = value;
-    });
+      setState(() {
+        pushNotificationsEnabled = value;
+      });
+      // Provider를 통해 상태 업데이트
+      userProvider.setPushNotificationEnabled(value);
 
-    // Provider를 통해 상태 업데이트
-    userProvider.setPushNotificationEnabled(value);
-
-    // notificationTypes 업데이트
-    _updateNotificationTypes(value);
-
-    // 추가 작업 (예: 서버와 동기화)
-    if (value) {
-      // 푸시 알림 활성화 로직
-    } else {
-      // 푸시 알림 비활성화 로직
+      // notificationTypes 업데이트
+      _updateNotificationTypes(value);
+    } catch (err) {
+      logger.e(err);
     }
   }
 
