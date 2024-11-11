@@ -76,12 +76,14 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.notifications_outlined),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              if(!isLoggedIn){
+                              if (!isLoggedIn) {
                                 ErrorSnackbar.show("로그인 해주세요!");
                                 return;
                               }
-                              Navigator.pushNamed(context, '/notification').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                              Navigator.pushNamed(context, '/notification')
+                                  .then((_) {
+                                Navigator.pushNamedAndRemoveUntil(context,
+                                    '/home', (Route<dynamic> route) => false);
                               });
                             },
                           ),
@@ -90,12 +92,14 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.mail_outline),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              if(!isLoggedIn){
+                              if (!isLoggedIn) {
                                 ErrorSnackbar.show("로그인 해주세요!");
                                 return;
                               }
-                              Navigator.pushNamed(context, '/starstorage').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                              Navigator.pushNamed(context, '/starstorage')
+                                  .then((_) {
+                                Navigator.pushNamedAndRemoveUntil(context,
+                                    '/home', (Route<dynamic> route) => false);
                               });
                             },
                           ),
@@ -106,14 +110,16 @@ class MainLayout extends StatelessWidget {
                   // 가운데 버튼
                   IconButton(
                     iconSize: 50.0,
-                    icon: Image.asset('assets/img/blackTheme/black_center_button.png'),
+                    icon: Image.asset(
+                        'assets/img/blackTheme/black_center_button.png'),
                     onPressed: () {
-                      if(!isLoggedIn){
+                      if (!isLoggedIn) {
                         ErrorSnackbar.show("로그인 하신 후 사용하실 수 있습니다!");
                         return;
                       }
                       Navigator.pushNamed(context, '/map').then((_) {
-                        Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, '/home', (Route<dynamic> route) => false);
                       });
                     },
                   ),
