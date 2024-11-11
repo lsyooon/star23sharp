@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
+import 'package:star23sharp/widgets/modals/error_snackbar.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -25,6 +26,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     // 아이디 중복 검사 로직 구현
     bool response =
         await UserService.checkDuplicateId(0, idController.text.trim());
+    if(response){
+      ErrorSnackbar.show("아이디가 중복됩니다. 다른 아이디를 입력하세요.");
+    }
     setState(() {
       isIdAvailable = !response;
     });
@@ -34,6 +38,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     // 닉네임 중복 검사 로직 구현
     bool response =
         await UserService.checkDuplicateId(1, nicknameController.text.trim());
+    if(response){
+      ErrorSnackbar.show("닉네임이 중복됩니다. 다른 닉네임을 입력하세요.");
+    }
     setState(() {
       isNicknameAvailable = !response;
     });
@@ -94,11 +101,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildTextFieldWithBtn(
-                "아이디", idController, isIdAvailable, checkIdAvailability),
-            _buildTextFieldWithBtn("닉네임", nicknameController,
+                "아이디", "영어, 숫자(3~16자)", idController, isIdAvailable, checkIdAvailability),
+            _buildTextFieldWithBtn("닉네임", "영어, 숫자, 한글 (2~16자)", nicknameController,
                 isNicknameAvailable, checkNicknameAvailability),
-            _buildTextField("비밀번호", passwordController, obscureText: true),
-            _buildTextField("비밀번호 확인", confirmPasswordController,
+            _buildTextField("비밀번호", "영어, 숫자(6~16자)", passwordController, obscureText: true),
+            _buildTextField("비밀번호 확인", "영어, 숫자(6~16자)", confirmPasswordController,
                 obscureText: true),
             const SizedBox(height: 20),
             _buildSignUpButton(context),
@@ -108,7 +115,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildTextFieldWithBtn(String label, TextEditingController controller,
+  Widget _buildTextFieldWithBtn(String label, String hintText, TextEditingController controller,
       bool isAvailable, Function onPressed) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,8 +147,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: [
             Expanded(
               child: TextField(
+                
                 controller: controller,
                 decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
                   filled: true,
                   fillColor: const Color(0xFFA292EC).withOpacity(0.4),
                   border: OutlineInputBorder(
@@ -159,14 +169,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFA292EC).withOpacity(0.4),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               child: const Text(
                 "확인",
-                style: TextStyle(color: Colors.white, fontSize: FontSizes.body),
+                style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),
           ],
@@ -175,7 +185,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
+  Widget _buildTextField(String label, String hintText, TextEditingController controller,
       {bool obscureText = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,6 +204,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           controller: controller,
           obscureText: obscureText,
           decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
             filled: true,
             fillColor: const Color(0xFFA292EC).withOpacity(0.4),
             border: OutlineInputBorder(
@@ -225,30 +237,61 @@ class _SignUpScreenState extends State<SignUpScreen> {
             String nickname = nicknameController.text.trim();
             String password = passwordController.text.trim();
             String confirmPassword = confirmPasswordController.text.trim();
+            
+            final RegExp idRegex = RegExp(r'^(?=.*[a-z0-9])[a-z0-9]{3,16}$');
+            final RegExp nicknameRegex = RegExp(r'^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$');
+            final RegExp pwdRegex = RegExp(r'^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*()._-]{6,16}$');
+            
+            bool isValidId = idRegex.hasMatch(memberId);
+            bool isValidNickname = nicknameRegex.hasMatch(nickname);
+            bool isValidPwd = pwdRegex.hasMatch(password);
+            logger.d("$memberId $nickname $password");
+            logger.d("$isValidId $isValidNickname $isValidPwd");
+            if(!isValidId){
+              ErrorSnackbar.show("아이디는 3자 이상 16자 이하, 영어(소문자) 또는 숫자로 이루어져야 합니다.");
+              setState(() {
+                isIdAvailable = false;
+              });
+            }
+            if(!isValidNickname){
+              ErrorSnackbar.show("닉네임은 2자 이상 16자 이하, 영어, 숫자 또는 한글로 이루어져야 합니다.");
+              setState(() {
+                isNicknameAvailable = false;
+              });
+            }
+            if(!isValidPwd){
+              ErrorSnackbar.show("비밀번호는 6자 이상 16자 이하, 영어와 숫자로 이루어져야 합니다.");
+            }
 
             if (memberId.isEmpty ||
                 nickname.isEmpty ||
                 password.isEmpty ||
                 confirmPassword.isEmpty) {
-              // _showErrorDialog(context, '모든 필드를 입력해야 합니다.');
+              ErrorSnackbar.show("모든 필드를 입력해야 합니다.");
               logger.d("필드입력");
               return;
             }
 
             if (!isIdAvailable) {
-              // _showErrorDialog(context, '아이디가 중복됩니다. 다른 아이디를 입력하세요.');
               logger.d("아이디 입력");
+              // ErrorSnackbar.show("아이디를 다시 확인해주세요.");
+              setState(() {
+                isIdAvailable = false;
+              });
               return;
             }
 
             if (!isNicknameAvailable) {
-              // _showErrorDialog(context, '닉네임이 중복됩니다. 다른 닉네임을 입력하세요.');
-              logger.d("니네임 입력");
+              // ErrorSnackbar.show("닉네임을 다시 확인해주세요.");
+              logger.d("닉네임 입력");
+              setState(() {
+                isNicknameAvailable = false;
+              });
               return;
             }
 
-            if (password != confirmPassword) {
-              // _showErrorDialog(context, '비밀번호가 일치하지 않습니다.');
+            if (password != confirmPassword ) {
+              ErrorSnackbar.show("비밀번호가 일치하지 않습니다.");
               logger.d("비번 입력");
               return;
             }
@@ -257,9 +300,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 await UserService.signup(memberId, password, nickname);
             if (response) {
               // 회원가입 완료
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "회원가입이 완료되었습니다!",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  backgroundColor: Colors.black54,
+                ),
+              );
               Navigator.pushNamed(context, '/home');
             } else {
               // 회원가입 실패
+              ErrorSnackbar.show("회원가입에 실패했습니다. 다시 시도해주세요.");
               logger.d("실패");
             }
           },

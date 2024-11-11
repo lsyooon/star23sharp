@@ -29,8 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initialize() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await loadAccessToken(authProvider); // Secure Storage에서 토큰 불러오기
-
-    if (authProvider.accessToken != null) {
+    if (authProvider.accessToken != null && authProvider.refreshToken != null) {
       // 회원정보
       Map<String, dynamic> user = await UserService.getMemberInfo();
       logger.d(user);
@@ -40,8 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
               id: user['memberId'],
               name: user['nickname'],
               isPushEnabled: user['pushNotificationEnabled']);
+      isunRead = await StarService.getIsUnreadMessage();
     }
-    isunRead = await StarService.getIsUnreadMessage();
     if (mounted) {
       setState(() {});
     }
