@@ -28,8 +28,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("SELECT new com.ssafy.star.message.dto.response.ReceiveMessageResponse(m.id, m.sender.nickname, m.createdAt, m.title, m.content, m.image, m.isTreasure, m.receiverType, mb.isReported) " +
             "FROM Message m " +
             "JOIN MessageBox mb ON m.id = mb.message.id " +
-            "WHERE m.id = :id AND mb.member.id = :memberId")
-    ReceiveMessageResponse findReceiveMessageById(Long id, Long memberId);
+            "WHERE m.id = :id AND mb.member.id = :memberId AND mb.messageDirection = :type")
+    ReceiveMessageResponse findReceiveMessageById(Long id, Long memberId, short type);
 
     @Query("SELECT new com.ssafy.star.message.dto.response.SendMessageResponse(m.id, m.createdAt, m.title, m.content, m.image, m.isTreasure, m.receiverType, m.isFound, m.group.id)" +
             "FROM Message m WHERE m.id = :id")

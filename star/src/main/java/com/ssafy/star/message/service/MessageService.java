@@ -316,7 +316,7 @@ public class MessageService {
     // 수신 쪽지 상세조회
     @Transactional
     public ReceiveMessageResponse getReceiveMessage(Long userId, Long messageId) {
-        ReceiveMessageResponse receiveMessage = messageRepository.findReceiveMessageById(messageId, userId);
+        ReceiveMessageResponse receiveMessage = messageRepository.findReceiveMessageById(messageId, userId, (short) 1);
 
         if (receiveMessage == null) {
             throw new CustomException(CustomErrorCode.NOT_FOUND_MESSAGE);
