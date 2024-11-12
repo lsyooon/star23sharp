@@ -406,11 +406,9 @@ class _MapScreenState extends State<MapScreen>
                                                           true
                                                       ? 'assets/img/map/star_icon.png'
                                                       : 'assets/img/map/star_icon.png',
-                                                  width:
-                                                      48,
+                                                  width: 48,
                                                   height: 48,
-                                                  fit: BoxFit
-                                                      .cover,
+                                                  fit: BoxFit.cover,
                                                 ),
                                               ),
                                               const SizedBox(width: 10),
@@ -653,15 +651,15 @@ class _MapScreenState extends State<MapScreen>
                                           ),
                                         ),
                                         onPressed: () async {
-                                          setState(() {
-                                            _isVerifyLoading = true;
-                                          });
+                                          // setState(() {
+                                          //   _isVerifyLoading = true;
+                                          // });
 
                                           await _takePhoto(markerData);
 
-                                          setState(() {
-                                            _isVerifyLoading = false;
-                                          });
+                                          // setState(() {
+                                          //   _isVerifyLoading = false;
+                                          // });
                                         },
                                         child: const Text(
                                           "사진 찍기",
@@ -681,13 +679,13 @@ class _MapScreenState extends State<MapScreen>
                     ),
                   ),
                 ),
-                if (_isVerifyLoading)
-                  Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
+                // if (_isVerifyLoading)
+                //   Container(
+                //     color: Colors.black.withOpacity(0.5),
+                //     child: const Center(
+                //       child: CircularProgressIndicator(),
+                //     ),
+                //   ),
               ],
             );
           },
@@ -865,84 +863,86 @@ class _MapScreenState extends State<MapScreen>
     final deviceHeight = UIhelper.deviceHeight(context);
     super.build(context);
 
-    return !_isLocationLoaded
-        ? const Center(child: CircularProgressIndicator())
-        : Stack(
-            children: [
-              Center(
-                child: SizedBox(
-                  width: deviceWidth * 0.85,
-                  height: deviceHeight * 0.67,
-                  child: KakaoMap(
-                    onMapCreated: (controller) async {
-                      mapController = controller;
-                      await _goToCachedOrCurrentLocation();
+    return Stack(
+      children: [
+        Center(
+          child: SizedBox(
+            width: deviceWidth * 0.85,
+            height: deviceHeight * 0.67,
+            child: KakaoMap(
+              onMapCreated: (controller) async {
+                mapController = controller;
+                await _goToCachedOrCurrentLocation();
 
-                      currentBounds = await mapController.getBounds();
+                currentBounds = await mapController.getBounds();
 
-                      _fetchTreasuresInBounds(
-                        currentBounds,
-                        false,
-                        true,
-                        true,
-                        false,
-                        false,
-                      );
-                    },
-                    onMarkerTap: (markerId, latLng, zoomLevel) {
-                      setState(() {
-                        _showMarkerList(context);
-                      });
-                    },
-                    markers: markers.toList(),
-                    currentLevel: 3,
-                    onBoundsChangeCallback: ((latLngBounds) {
-                      if (currentBounds != latLngBounds) {
-                        setState(() {
-                          currentBounds = latLngBounds;
-                          _isSearchButtonVisible = true;
-                        });
-                      }
-                    }),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: deviceHeight * 0.1,
-                left: deviceWidth * 0.12,
-                child: FloatingActionButton(
-                  onPressed: _goToCachedOrCurrentLocation,
-                  child: const Icon(Icons.my_location),
-                ),
-              ),
-              Positioned(
-                bottom: deviceHeight * 0.1,
-                right: deviceWidth * 0.12,
-                child: MenuList(
-                  onItemSelected: (MenuItem selectedOption) {
-                    _handleMenuAction(selectedOption);
-                    setState(() {
-                      _isMenuTouched = false;
-                    });
-                  },
-                  isMenuTouched: _isMenuTouched,
-                ),
-              ),
-              if (_isSearchButtonVisible)
-                Positioned(
-                  top: deviceHeight * 0.1,
-                  right: deviceWidth * 0.32,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _fetchMarkersInCurrentBounds();
-                      setState(() {
-                        _isSearchButtonVisible = false;
-                      });
-                    },
-                    child: const Text("현재 위치에서 검색"),
-                  ),
-                ),
-            ],
-          );
+                _fetchTreasuresInBounds(
+                  currentBounds,
+                  false,
+                  true,
+                  true,
+                  false,
+                  false,
+                );
+              },
+              onMarkerTap: (markerId, latLng, zoomLevel) {
+                // setState(() {
+                //   _showMarkerList(context);
+                // });
+
+                setState(() {
+                  _showMarkerDetail(context, markerId);
+                });
+              },
+              markers: markers.toList(),
+              currentLevel: 3,
+              onBoundsChangeCallback: ((latLngBounds) {
+                if (currentBounds != latLngBounds) {
+                  setState(() {
+                    currentBounds = latLngBounds;
+                    _isSearchButtonVisible = true;
+                  });
+                }
+              }),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: deviceHeight * 0.1,
+          left: deviceWidth * 0.12,
+          child: FloatingActionButton(
+            onPressed: _goToCachedOrCurrentLocation,
+            child: const Icon(Icons.my_location),
+          ),
+        ),
+        Positioned(
+          bottom: deviceHeight * 0.1,
+          right: deviceWidth * 0.12,
+          child: MenuList(
+            onItemSelected: (MenuItem selectedOption) {
+              _handleMenuAction(selectedOption);
+              setState(() {
+                _isMenuTouched = false;
+              });
+            },
+            isMenuTouched: _isMenuTouched,
+          ),
+        ),
+        if (_isSearchButtonVisible)
+          Positioned(
+            top: deviceHeight * 0.1,
+            right: deviceWidth * 0.32,
+            child: ElevatedButton(
+              onPressed: () {
+                _fetchMarkersInCurrentBounds();
+                setState(() {
+                  _isSearchButtonVisible = false;
+                });
+              },
+              child: const Text("현재 위치에서 검색"),
+            ),
+          ),
+      ],
+    );
   }
 }
