@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -100,9 +101,10 @@ class _HideStarScreenState extends State<HideStarScreen> {
 
           messageProvider.setMessageFormType(type: '/map');
 
-          final cachedLocation = await SharedPreferences.getInstance();
-          final lat = cachedLocation.getDouble('lat');
-          final lng = cachedLocation.getDouble('lng');
+          var position = await Geolocator.getCurrentPosition();
+          // final cachedLocation = await SharedPreferences.getInstance();
+          final lat = position.latitude;
+          final lng = position.longitude;
 
           messageProvider.saveMessageData(
             hintImageFirst: File(images[0]!.path),
@@ -393,7 +395,8 @@ class _HideStarScreenState extends State<HideStarScreen> {
                           maxLength: 20,
                           decoration: InputDecoration(
                             hintText: "힌트 입력 (최대 20자)",
-                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.8)),
                             filled: true,
                             fillColor: Colors.white.withOpacity(0.3),
                             border: const OutlineInputBorder(
