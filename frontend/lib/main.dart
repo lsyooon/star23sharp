@@ -44,6 +44,7 @@ void _handleMessage(RemoteMessage message) {
   logger.d("Handling message: $message");
   // 데이터에서 notificationId 추출
   final notificationId = message.data['notificationId'];
+  logger.d("백그라운드 fcm service:onNotification 아이디는:  " + notificationId);
 
   Future.delayed(const Duration(seconds: 1), () {
     if (notificationId != null) {
@@ -98,7 +99,7 @@ void main() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
     String? imageUrl = message.notification?.android?.imageUrl;
-
+    final notificationId = message.data['notificationId'];
     if (notification != null) {
       if (imageUrl != null) {
         // 이미지가 포함된 경우
@@ -107,6 +108,7 @@ void main() async {
           body: notification.body ?? '',
           imageUrl: imageUrl,
           payload: jsonEncode(message.data),
+          notificationId: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         );
       } else {
         // 일반 알림
@@ -114,6 +116,7 @@ void main() async {
           title: notification.title ?? '',
           body: notification.body ?? '',
           payload: jsonEncode(message.data),
+          notificationId: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         );
       }
       // 알림 화면을 업데이트
