@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
@@ -24,6 +25,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   bool isunRead = false;
+
+  Future<bool> checkNetworkConnectivity() async {
+    // Check network connection status
+    var connectivityResult = await Connectivity().checkConnectivity();
+    // No network connection
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 
   // 비동기 초기화 작업을 위한 별도 메서드
   Future<void> _initialize() async {
@@ -52,8 +64,52 @@ class _HomeScreenState extends State<HomeScreen> {
     _initialize();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  // 네트워크 연결 실패 화면
+  Widget buildErrorScreen(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 70,
+              child: Image.asset(
+                'assets/img/no_data.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "일시적으로 데이터를 불러올 수 없습니다.\n네트워크 환경을 확인하거나\n페이지를 새로고침해주세요.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.black87),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                bool isConnected =
+                    await checkNetworkConnectivity(); // 네트워크 상태 재확인
+                if (isConnected) {
+                  // 네트워크 연결이 복구되었을 경우 상태 업데이트
+                  setState(() {
+                    // 상태를 변경하면 FutureBuilder가 다시 빌드됨
+                  });
+                } else {
+                  // 네트워크 연결이 여전히 없는 경우 사용자에게 알림
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("네트워크 연결이 여전히 없습니다.")),
+                  );
+                }
+              },
+              child: const Text("다시 불러오기"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildHomeScreen(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
     void onLoginPressed() {
@@ -269,6 +325,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: checkNetworkConnectivity(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError || (snapshot.data == false)) {
+          return buildErrorScreen(context);
+        } else {
+          return buildHomeScreen(context);
+        }
+      },
     );
   }
 }
