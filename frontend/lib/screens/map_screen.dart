@@ -400,14 +400,18 @@ class _MapScreenState extends State<MapScreen>
                                           ),
                                           child: Row(
                                             children: [
-                                              CircleAvatar(
-                                                backgroundImage: AssetImage(
+                                              ClipOval(
+                                                child: Image.asset(
                                                   markerData['isTreasure'] ==
                                                           true
                                                       ? 'assets/img/map/star_icon.png'
                                                       : 'assets/img/map/star_icon.png',
+                                                  width:
+                                                      48,
+                                                  height: 48,
+                                                  fit: BoxFit
+                                                      .cover,
                                                 ),
-                                                radius: 24,
                                               ),
                                               const SizedBox(width: 10),
                                               Expanded(
