@@ -434,7 +434,7 @@ public class MessageService {
         } else {
             message.setTitle(request.getTitle());
         }
-        if (request.getContent().length() > 101) {
+        if (request.getContent().length() > 151) {
             throw new CustomException(CustomErrorCode.CONTENT_TOO_LONG);
         } else {
             message.setContent(request.getContent());
