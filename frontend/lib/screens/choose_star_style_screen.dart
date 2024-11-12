@@ -95,7 +95,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         return;
       }
       if (currentStyle != WritingStyle.basic) {
-        data.content = changedMessages[currentStyle];
+        messageProvider.saveMessageData(content: changedMessages[currentStyle]);
       }
       // API 호출
       bool response = await StarService.sendMessage(
