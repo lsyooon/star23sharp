@@ -6,8 +6,10 @@ import com.ssafy.star.member.entity.Member;
 import com.ssafy.star.member.repository.MemberRepository;
 import com.ssafy.star.security.dto.JoinDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +21,7 @@ public class JoinService {
 
     private final PasswordEncoder passwordEncoder;
 
-
+    @Transactional
     public void joinProcess(JoinDTO joinDTO) {
 
         //db에 이미 동일한 유저 네임을 가진 회원이 존재하는지 검증
@@ -38,7 +40,12 @@ public class JoinService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        memberRepository.save(data);
+        try {
+            memberRepository.save(data);
+        } catch (DataIntegrityViolationException e) {
+            // 중복 키 오류 처리
+            throw new CustomException(CustomErrorCode.MEMBER_ALREADY_EXISTS);
+        }
 
     }
 
