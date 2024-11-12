@@ -327,8 +327,8 @@ public class MessageService {
         }
 
         // 메세지 확인 여부가 false일 경우 true로 업데이트
-        if (!messageBoxRepository.existsByMemberIdAndMessageIdAndStateTrue(userId, messageId)) {
-            messageBoxRepository.updateStateByMessageIdAndMemberId(messageId, userId);
+        if (!messageBoxRepository.existsByMemberIdAndMessageIdAndStateTrue(userId, messageId, (short) 1)) {
+            messageBoxRepository.updateStateByMessageIdAndMemberId(messageId, userId, (short) 1);
         }
 
         return receiveMessage;
