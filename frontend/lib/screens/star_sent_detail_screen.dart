@@ -25,12 +25,7 @@ class StarSentDetailScreen extends StatelessWidget {
             return const Center(child: Text('별을 조회할 수 없습니다.'));
           } else {
             var item = snapshot.data!;
-            final List<String> sortedReceiverNames = [
-              if (item.recipient != null && item.receiverNames.contains(item.recipient))
-                item.recipient!,
-              ...item.receiverNames.where((name) => name != item.recipient),
-            ];
-
+            
             return Container(
               width: UIhelper.deviceWidth(context) * 0.85,
               height: UIhelper.deviceHeight(context) * 0.67,
@@ -74,7 +69,7 @@ class StarSentDetailScreen extends StatelessWidget {
                         child: Container(
                           constraints: BoxConstraints(
                             minWidth: UIhelper.deviceWidth(context) * 0.8,
-                            maxHeight: UIhelper.deviceHeight(context) * 0.44,
+                            maxHeight: UIhelper.deviceHeight(context) * 0.4,
                           ),
                           decoration: const BoxDecoration(
                             color: Colors.white,
@@ -90,7 +85,7 @@ class StarSentDetailScreen extends StatelessWidget {
                                       item.image!,
                                       fit: BoxFit.contain,
                                       width: UIhelper.deviceWidth(context) * 0.8,
-                                      height: UIhelper.deviceHeight(context) * 0.3, // 이미지 높이 제한
+                                      height: UIhelper.deviceHeight(context) * 0.25, // 이미지 높이 제한
                                     ),
                                   const SizedBox(height: 10),
                                   Text(
@@ -115,30 +110,13 @@ class StarSentDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              const TextSpan(
-                                text: '👥 ',
-                                style: TextStyle(fontSize: FontSizes.small),
-                              ),
-                              if (item.recipient != null && sortedReceiverNames.isNotEmpty)
-                                TextSpan(
-                                  text: sortedReceiverNames.first,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    // decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              if (item.recipient == null || sortedReceiverNames.length > 1)
-                                TextSpan(
-                                  text: item.recipient == null
-                                      ? sortedReceiverNames.join(', ')
-                                      : ', ${sortedReceiverNames.skip(1).join(', ')}',
-                                  style: const TextStyle(fontWeight: FontWeight.normal),
-                                ),
-                            ],
+                        if(item.recipient != null)
+                          Text(
+                            '🎉 ${item.recipient}',
+                            style: const TextStyle(fontSize: FontSizes.small),
                           ),
+                        Text(
+                          '👥 ${item.receiverNames.join(', ')}',
                           style: const TextStyle(fontSize: FontSizes.small),
                         ),
                         Text(
