@@ -85,7 +85,7 @@ class CorrectModal extends StatelessWidget {
                                     DateTime.parse(markerData['created_at'])),
                                 style: const TextStyle(
                                   color: Colors.white70,
-                                  fontSize: 24,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -97,7 +97,7 @@ class CorrectModal extends StatelessWidget {
                             width: deviceWidth * 0.65,
                             height: deviceHeight * 0.25,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Padding(
@@ -118,16 +118,16 @@ class CorrectModal extends StatelessWidget {
                                           Text(
                                             "내용 : ${markerData['content']}",
                                             style: const TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 24,
+                                              color: Colors.white,
+                                              fontSize: 20,
                                             ),
                                           ),
                                           const SizedBox(height: 4),
-                                          const Text(
-                                            "사진 :",
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 24,
+                                          Text(
+                                            markerData["image"] == null ? "" : "사진: ",
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20,
                                             ),
                                           ),
                                           Center(

@@ -322,7 +322,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          // fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -370,9 +370,9 @@ class _HideStarScreenState extends State<HideStarScreen> {
                         child: Text(
                           "사진을 누르면 크게 볼 수 있어요!",
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Colors.white,
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            // fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -393,7 +393,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
                           maxLength: 20,
                           decoration: InputDecoration(
                             hintText: "힌트 입력 (최대 20자)",
-                            hintStyle: const TextStyle(color: Colors.black),
+                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
                             filled: true,
                             fillColor: Colors.white.withOpacity(0.3),
                             border: const OutlineInputBorder(
