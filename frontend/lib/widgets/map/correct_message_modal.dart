@@ -133,7 +133,7 @@ class CorrectMessageModal extends StatelessWidget {
                                     "정답입니다!",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 32,
+                                      fontSize: 28,
                                     ),
                                   ),
                                   const SizedBox(
@@ -153,7 +153,7 @@ class CorrectMessageModal extends StatelessWidget {
                                       width: deviceWidth * 0.65,
                                       height: deviceHeight * 0.28,
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: Colors.white.withOpacity(0.2),
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                       child: Padding(
@@ -168,9 +168,9 @@ class CorrectMessageModal extends StatelessWidget {
                                                 height: 8,
                                               ),
                                               const Text(
-                                                "정답 사진 :",
+                                                "정답사진",
                                                 style: TextStyle(
-                                                  color: Colors.black,
+                                                  color: Colors.white,
                                                   fontSize: 20,
                                                 ),
                                               ),
@@ -210,9 +210,9 @@ class CorrectMessageModal extends StatelessWidget {
                                                 child: Text(
                                                   "사진을 누르면 크게 볼 수 있어요!",
                                                   style: TextStyle(
-                                                    color: Colors.black,
+                                                    color: Colors.white,
                                                     fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
+                                                    // fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
                                               ),
@@ -251,7 +251,7 @@ class CorrectMessageModal extends StatelessWidget {
                             child: const Text(
                               "쪽지 확인",
                               style: TextStyle(
-                                fontSize: 24,
+                                fontSize: 20,
                               ),
                             ),
                           ),

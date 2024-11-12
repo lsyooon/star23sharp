@@ -35,7 +35,7 @@ class _MapScreenState extends State<MapScreen>
   bool _isFound = false;
   bool _isFar = false;
   bool _isPictureCorrect = false;
-  bool _isVerifyLoading = false;
+  final bool _isVerifyLoading = false;
 
   // 탭 간의 이동이나 스크롤을 할 때 상태가 리셋되지 않고 그대로 유지
   @override
@@ -501,7 +501,7 @@ class _MapScreenState extends State<MapScreen>
                       width: deviceWidth,
                       height: deviceHeight * 0.5,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF9588E7).withOpacity(0.9),
+                        color: const Color(0xFF9588E7).withOpacity(0.8),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Stack(
@@ -532,7 +532,7 @@ class _MapScreenState extends State<MapScreen>
                                     markerData['title'],
                                     style: const TextStyle(
                                       color: Colors.white70,
-                                      fontSize: 32,
+                                      fontSize: 28,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -543,7 +543,7 @@ class _MapScreenState extends State<MapScreen>
                                     width: deviceWidth * 0.65,
                                     height: deviceHeight * 0.25,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Padding(
@@ -558,10 +558,10 @@ class _MapScreenState extends State<MapScreen>
                                               height: 8,
                                             ),
                                             const Text(
-                                              "힌트사진 :",
+                                              "힌트사진",
                                               style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 24,
+                                                color: Colors.white,
+                                                fontSize: 20,
                                               ),
                                             ),
                                             const SizedBox(
@@ -603,26 +603,30 @@ class _MapScreenState extends State<MapScreen>
                                               child: Text(
                                                 "사진을 누르면 크게 볼 수 있어요!",
                                                 style: TextStyle(
-                                                  color: Colors.black,
+                                                  color: Colors.white,
                                                   fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
+                                                  // fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
                                             const SizedBox(height: 8),
+                                            const Divider(
+                                              color: Colors.grey,        // 선 색상
+                                              thickness: 1,              // 오른쪽 여백
+                                            ),
                                             const Text(
                                               "힌트 :",
                                               style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 24,
+                                                color: Colors.white,
+                                                fontSize: 20,
                                               ),
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
                                               markerData['hint'],
                                               style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 24,
+                                                color: Colors.white,
+                                                fontSize: 20,
                                               ),
                                             ),
                                             const SizedBox(
@@ -664,7 +668,7 @@ class _MapScreenState extends State<MapScreen>
                                         child: const Text(
                                           "사진 찍기",
                                           style: TextStyle(
-                                            fontSize: 24,
+                                            fontSize: 20,
                                           ),
                                         ),
                                       ),
