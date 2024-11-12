@@ -12,11 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
-    @Query("SELECT mb.message.id FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.messageDirection = :type")
-    List<Long> getMessageIdByMemberId(Long memberId, short type);
+    @Query("SELECT mb.message.id FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.messageDirection = :messageDirection")
+    List<Long> getMessageIdByMemberId(Long memberId, short messageDirection);
 
-    @Query("SELECT mb.member.nickname FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :type")
-    String getRecipientNameByMessageId(Long messageId, short type);
+    @Query("SELECT mb.member.nickname FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :messageDirection")
+    String getRecipientNameByMessageId(Long messageId, short messageDirection);
 
     @Query("SELECT mb.member.nickname FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :type AND mb.state = :state")
     String getRecipientNameByMessageIdAndState(Long messageId, short type, boolean state);
@@ -24,11 +24,11 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     @Query(value = "SELECT m.nickname FROM message_box mb JOIN member m ON mb.member_id = m.id WHERE mb.message_id = :messageId AND mb.message_direction = :type LIMIT 1", nativeQuery = true)
     String findMemberNicknameByMessageId(@Param("messageId") Long messageId, @Param("type") short type);
 
-    @Query("SELECT count(*) FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :type")
-    int getMemberCountByMessageId(Long messageId, short type);
+    @Query("SELECT count(*) FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :messageDirection")
+    int getMemberCountByMessageId(Long messageId, short messageDirection);
 
-    @Query("SELECT mb.member.nickname FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :type")
-    List<String> getRecipientNamesByMessageId(Long messageId, short type);
+    @Query("SELECT mb.member.nickname FROM MessageBox mb WHERE mb.message.id = :messageId AND mb.messageDirection = :messageDirection")
+    List<String> getRecipientNamesByMessageId(Long messageId, short messageDirection);
 
     boolean existsByMemberIdAndMessageIdAndMessageDirection(Long memberId, Long messageId, short messageDirection);
 
@@ -50,13 +50,13 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
     @Query("UPDATE MessageBox mb SET mb.isReported = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
     void updateIsReportedByMessageIdAndMemberId(Long messageId, Long memberId);
 
-    @Query("SELECT mb.state FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.message.id = :messageId")
-    boolean existsByMemberIdAndMessageIdAndStateTrue(Long memberId, Long messageId);
+    @Query("SELECT mb.state FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.message.id = :messageId AND mb.messageDirection = :messageDirection")
+    boolean existsByMemberIdAndMessageIdAndStateTrue(Long memberId, Long messageId, short messageDirection);
 
     @Transactional
     @Modifying
-    @Query("UPDATE MessageBox mb SET mb.state = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId")
-    void updateStateByMessageIdAndMemberId(Long messageId, Long memberId);
+    @Query("UPDATE MessageBox mb SET mb.state = true WHERE mb.message.id = :messageId AND mb.member.id = :memberId AND mb.messageDirection = :messageDirection")
+    void updateStateByMessageIdAndMemberId(Long messageId, Long memberId, short messageDirection);
 
     @Query("SELECT count(*) FROM MessageBox mb WHERE mb.member.id = :memberId AND mb.messageDirection = :messageDirection AND mb.state = false")
     int existsByMemberIdANDMessageDirection(Long memberId, short messageDirection);
