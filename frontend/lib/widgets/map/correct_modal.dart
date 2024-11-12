@@ -105,43 +105,48 @@ class CorrectModal extends StatelessWidget {
                                 left: 20.0,
                                 right: 20.0,
                               ),
-                              child: Expanded(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        "내용 : ${markerData['content']}",
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 24,
-                                        ),
+                              child: Column(
+                                // Expanded를 감싸는 Column 추가
+                                children: [
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            "내용 : ${markerData['content']}",
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 24,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          const Text(
+                                            "사진 :",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 24,
+                                            ),
+                                          ),
+                                          Center(
+                                            child: SizedBox(
+                                              width: deviceWidth * 0.5,
+                                              height: deviceWidth * 0.5,
+                                              child: markerData["image"] != null
+                                                  ? Image.network(
+                                                      markerData["image"],
+                                                    )
+                                                  : const SizedBox(),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                        ],
                                       ),
-                                      const SizedBox(height: 4),
-                                      const Text(
-                                        "사진 :",
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 24,
-                                        ),
-                                      ),
-                                      Center(
-                                        child: SizedBox(
-                                          width: deviceWidth * 0.5,
-                                          height: deviceWidth * 0.5,
-                                          child: markerData["image"] != null
-                                              ? Image.network(
-                                                  markerData["image"],
-                                                )
-                                              : const SizedBox(),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ),
                           ),

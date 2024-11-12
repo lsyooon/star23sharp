@@ -26,12 +26,17 @@ class _MapScreenState extends State<MapScreen>
   String message = "";
   final ImagePicker _picker = ImagePicker();
   bool _isLocationLoaded = false;
-  late LatLngBounds currentBounds;
+  LatLngBounds currentBounds = LatLngBounds(
+    LatLng(-90, -180),
+    LatLng(90, 180),
+  );
   MenuItem selectedOption = MenuItem.viewStarsForEveryone;
   bool _isSearchButtonVisible = false;
   bool _isFound = false;
   bool _isFar = false;
   bool _isPictureCorrect = false;
+  bool _isVerifyLoading = false;
+
   // 탭 간의 이동이나 스크롤을 할 때 상태가 리셋되지 않고 그대로 유지
   @override
   bool get wantKeepAlive => true;
@@ -194,6 +199,7 @@ class _MapScreenState extends State<MapScreen>
   // 사진 검증 후 성공/실패 모달 분기
   void _verifyPicture(XFile image, Map<String, dynamic> markerData) async {
     bool isCorrect = await isCorrectPicture(image, markerData);
+
     if (isCorrect) {
       Navigator.pop(context);
       CorrectMessageModal.show(
@@ -271,7 +277,7 @@ class _MapScreenState extends State<MapScreen>
           false,
           false,
         );
-              break;
+        break;
       case MenuItem.viewStarsForEveryone:
         _fetchTreasuresInBounds(
           currentBounds,
@@ -297,148 +303,158 @@ class _MapScreenState extends State<MapScreen>
 
   // 모든 마커 리스트
   Future<void> _showMarkerList(BuildContext context) async {
-    final deviceWidth = UIhelper.deviceWidth(context);
-    final deviceHeight = UIhelper.deviceHeight(context);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Stack(
-          children: [
-            Positioned(
-              top: deviceHeight * 0.1,
-              left: deviceWidth * 0.01,
-              right: deviceWidth * 0.01,
-              child: Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Container(
-                  width: deviceWidth,
-                  height: deviceHeight * 0.5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9588E7).withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                        ),
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            final deviceWidth = UIhelper.deviceWidth(dialogContext);
+            final deviceHeight = UIhelper.deviceHeight(dialogContext);
+            return Stack(
+              children: [
+                Positioned(
+                  top: deviceHeight * 0.1,
+                  left: deviceWidth * 0.01,
+                  right: deviceWidth * 0.01,
+                  child: Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Container(
+                      width: deviceWidth,
+                      height: deviceHeight * 0.5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF9588E7).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(height: 32),
-                            const Center(
-                              child: Text(
-                                "별똥별",
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
+                      child: Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: IconButton(
+                                onPressed: () => _closeDialog(dialogContext),
+                                icon: const Icon(
+                                  Icons.close,
                                   color: Colors.white,
+                                  size: 24,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Expanded(
-                              child: ListView.builder(
-                                physics: const ClampingScrollPhysics(),
-                                itemCount: markers.length,
-                                itemBuilder: (context, index) {
-                                  final marker = markers.elementAt(index);
-                                  final markerData =
-                                      markerInfo[marker.markerId] ??
-                                          {
-                                            "id": -1,
-                                            "title": "정보 없음",
-                                            "hint": "추가 정보 없음",
-                                            "isTreasure": false,
-                                            "isFound": false,
-                                            "senderId": "1",
-                                            "lat": -1,
-                                            "lng": -1,
-                                            "image": "",
-                                            "content": "",
-                                            "hint_image_first": "",
-                                            "sender_nickname": "",
-                                          };
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _showMarkerDetail(
-                                          context, marker.markerId);
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0,
-                                        horizontal: 10.0,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundImage: AssetImage(
-                                              markerData['isTreasure'] == true
-                                                  ? 'assets/img/map/star_message.png'
-                                                  : 'assets/img/map/general_message.png',
-                                            ),
-                                            radius: 24,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Text(
-                                              markerData['title'],
-                                              style: const TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 24,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          Text(
-                                            markerData['sender_nickname'],
-                                            style: const TextStyle(
-                                              color: Colors.white54,
-                                              fontSize: 24,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
                             ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(height: 32),
+                                const Center(
+                                  child: Text(
+                                    "별똥별",
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Expanded(
+                                  child: ListView.builder(
+                                    physics: const ClampingScrollPhysics(),
+                                    itemCount: markers.length,
+                                    itemBuilder: (context, index) {
+                                      final marker = markers.elementAt(index);
+                                      final markerData =
+                                          markerInfo[marker.markerId] ??
+                                              {
+                                                "id": -1,
+                                                "title": "정보 없음",
+                                                "hint": "추가 정보 없음",
+                                                "isTreasure": false,
+                                                "isFound": false,
+                                                "senderId": "1",
+                                                "lat": -1,
+                                                "lng": -1,
+                                                "image": "",
+                                                "content": "",
+                                                "hint_image_first": "",
+                                                "sender_nickname": "",
+                                              };
+
+                                      return GestureDetector(
+                                        onTap: () {
+                                          if (mounted) {
+                                            Navigator.pop(context);
+                                            _showMarkerDetail(
+                                                context, marker.markerId);
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8.0,
+                                            horizontal: 10.0,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              ClipOval(
+                                                child: Image.asset(
+                                                  markerData['isTreasure'] ==
+                                                          true
+                                                      ? 'assets/img/map/star_icon.png'
+                                                      : 'assets/img/map/star_icon.png',
+                                                  width:
+                                                      48,
+                                                  height: 48,
+                                                  fit: BoxFit
+                                                      .cover,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Text(
+                                                  markerData['title'],
+                                                  style: const TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 24,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              Text(
+                                                markerData['sender_nickname'],
+                                                style: const TextStyle(
+                                                  color: Colors.white54,
+                                                  fontSize: 24,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         );
-      },
-    );
+      }
+    });
   }
 
   // 마커 디테일
@@ -463,199 +479,228 @@ class _MapScreenState extends State<MapScreen>
       );
       return;
     }
+
     if (!mounted) return;
-    final deviceWidth = UIhelper.deviceWidth(context);
-    final deviceHeight = UIhelper.deviceHeight(context);
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Stack(
-          children: [
-            Positioned(
-              top: deviceHeight * 0.1,
-              left: deviceWidth * 0.01,
-              right: deviceWidth * 0.01,
-              child: Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Container(
-                  width: deviceWidth,
-                  height: deviceHeight * 0.5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9588E7).withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 24,
+
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            final deviceWidth = UIhelper.deviceWidth(dialogContext);
+            final deviceHeight = UIhelper.deviceHeight(dialogContext);
+            return Stack(
+              children: [
+                Positioned(
+                  top: deviceHeight * 0.1,
+                  left: deviceWidth * 0.01,
+                  right: deviceWidth * 0.01,
+                  child: Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Container(
+                      width: deviceWidth,
+                      height: deviceHeight * 0.5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF9588E7).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: IconButton(
+                                onPressed: () => _closeDialog(dialogContext),
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 32),
-                            Center(
-                              child: Text(
-                                markerData['title'],
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 32),
+                                Center(
+                                  child: Text(
+                                    markerData['title'],
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Center(
-                              child: Container(
-                                width: deviceWidth * 0.65,
-                                height: deviceHeight * 0.25,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 20.0, right: 20.0),
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
-                                        const Text(
-                                          "힌트사진 :",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-                                        Center(
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(15),
-                                            child: SizedBox(
-                                              width: deviceWidth * 0.55,
-                                              height: deviceWidth * 0.55,
-                                              child: markerData[
-                                                              "dot_hint_image"] !=
-                                                          null &&
-                                                      markerData[
-                                                              "dot_hint_image"]
-                                                          .isNotEmpty
-                                                  ? GestureDetector(
-                                                      onTap: () {
-                                                        _showImageModal(
+                                const SizedBox(height: 16),
+                                Center(
+                                  child: Container(
+                                    width: deviceWidth * 0.65,
+                                    height: deviceHeight * 0.25,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 20.0, right: 20.0),
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(
+                                              height: 8,
+                                            ),
+                                            const Text(
+                                              "힌트사진 :",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 24,
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                            Center(
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                child: SizedBox(
+                                                  width: deviceWidth * 0.55,
+                                                  height: deviceWidth * 0.55,
+                                                  child: markerData[
+                                                                  "dot_hint_image"] !=
+                                                              null &&
+                                                          markerData[
+                                                                  "dot_hint_image"]
+                                                              .isNotEmpty
+                                                      ? GestureDetector(
+                                                          onTap: () {
+                                                            _showImageModal(
+                                                                markerData[
+                                                                    "dot_hint_image"]);
+                                                          },
+                                                          child: Image.network(
                                                             markerData[
-                                                                "dot_hint_image"]);
-                                                      },
-                                                      child: Image.network(
-                                                        markerData[
-                                                            "dot_hint_image"],
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    )
-                                                  : const SizedBox(),
+                                                                "dot_hint_image"],
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        )
+                                                      : const SizedBox(),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-                                        const Center(
-                                          child: Text(
-                                            "사진을 누르면 크게 볼 수 있어요!",
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
+                                            const SizedBox(
+                                              height: 4,
                                             ),
-                                          ),
+                                            const Center(
+                                              child: Text(
+                                                "사진을 누르면 크게 볼 수 있어요!",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            const Text(
+                                              "힌트 :",
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 24,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              markerData['hint'],
+                                              style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 24,
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(height: 8),
-                                        const Text(
-                                          "힌트 :",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          markerData['hint'],
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.only(
-                                bottom: 10,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                    ),
-                                    onPressed: () => _takePhoto(markerData),
-                                    child: const Text(
-                                      "사진 찍기",
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                      ),
-                                    ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                    bottom: 10,
                                   ),
-                                ],
-                              ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        onPressed: () async {
+                                          setState(() {
+                                            _isVerifyLoading = true;
+                                          });
+
+                                          await _takePhoto(markerData);
+
+                                          setState(() {
+                                            _isVerifyLoading = false;
+                                          });
+                                        },
+                                        child: const Text(
+                                          "사진 찍기",
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+                if (_isVerifyLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
-      },
-    );
+      }
+    });
+  }
+
+  // 디테일 창에서 X 버튼 누를 때 모달 닫기 기능 수정
+  void _closeDialog(BuildContext context) {
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.pop(context);
+    }
   }
 
   void _showImageModal(String imageUrl) {
@@ -798,7 +843,7 @@ class _MapScreenState extends State<MapScreen>
             markerId: treasure.id.toString(),
             latLng: LatLng(treasure.lat, treasure.lng),
             markerImageSrc:
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEHbvLu6P77nT9xFFUptQLRhrLV5POynqepA&s',
+                'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/star.svg',
           );
         }).toSet();
       });
