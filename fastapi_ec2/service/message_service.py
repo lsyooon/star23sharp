@@ -5,9 +5,9 @@ from typing import List, Optional, Tuple
 import numpy as np
 from entity.group import MemberGroup
 from entity.member import Member
-from entity.message import Message
+from entity.message import Message, ReceiverTypes
 from entity.message_box import MessageBox, MessageDirections
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm.session import Session as Session_Object
 from utils.distance_util import (
     convert_lat_lng_to_xyz,
@@ -158,26 +158,31 @@ def find_near_treasures(
     search_received: bool,
     session: Session_Object,
 ):
-    # Build the base statement
     stmt = select(Message)
+    stmt = stmt.where(Message.receiver_type.in_(receiver_types))
+
     if search_received:
-        stmt = (
-            stmt.join(MessageBox.message)
-            .where(MessageBox.member_id == valid_member.id)
-            .where(MessageBox.message_direction == MessageDirections.RECEIVED.value)
+        stmt = stmt.outerjoin(MessageBox, MessageBox.message_id == Message.id).where(
+            or_(
+                and_(
+                    MessageBox.member_id
+                    == valid_member.id,  # non_public이면 자신에게 접근 권한이 있어야 함
+                    MessageBox.message_direction == MessageDirections.RECEIVED.value,
+                ),
+                Message.receiver_type
+                == ReceiverTypes.PUBLIC.value,  # public이면 다 가능
+            )
         )
     else:
         stmt = stmt.where(Message.sender_id == valid_member.id)
-    # Apply filters
-    # 리시버 타입?
-    stmt = stmt.where(Message.receiver_type.in_(receiver_types)).where(
-        Message.is_found.is_(include_opened)
-    )
-    # Build the final statement
-    l2_distance_threashold = get_l2_distance_from_arc_distance(radius)
+
+    if not include_opened:
+        stmt = stmt.where(Message.is_found.is_(False))
+
+    l2_distance_threshold = get_l2_distance_from_arc_distance(radius)
     stmt = (
         stmt.where(Message.is_treasure.is_(True))
-        .filter(Message.coordinate.l2_distance(xyz) < l2_distance_threashold)
+        .filter(Message.coordinate.l2_distance(xyz) < l2_distance_threshold)
         .order_by(Message.coordinate.l2_distance(xyz))
     )
     return session.scalars(stmt).all()
