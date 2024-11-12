@@ -26,7 +26,6 @@ class _HideStarScreenState extends State<HideStarScreen> {
   Uint8List? _pixelizedImageData;
   int _currentIndex = 0;
   String hintText = '';
-  
 
   Future<void> _takePhoto(int index) async {
     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
@@ -287,7 +286,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
     final messageProvider =
         Provider.of<MessageFormProvider>(context, listen: false);
 
-    if(isLoading){
+    if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     return Column(
@@ -312,112 +311,113 @@ class _HideStarScreenState extends State<HideStarScreen> {
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const Text(
-                    "하단에 글로 힌트를 추가해봐요!",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: _showPixelizedImageModal,
-                    child: Container(
-                      width: deviceWidth * 0.5,
-                      height: deviceWidth * 0.5,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(10),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "하단에 글로 힌트를 추가해봐요!",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      child: _pixelizedImageData != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: SizedBox(
-                                height: 150,
-                                child: Image.memory(
-                                  _pixelizedImageData!,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            )
-                          : (images[0] != null
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: _showPixelizedImageModal,
+                        child: Container(
+                          width: deviceWidth * 0.5,
+                          height: deviceWidth * 0.5,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _pixelizedImageData != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
                                   child: SizedBox(
                                     height: 150,
-                                    child: Image.file(
-                                      File(images[0]!.path),
+                                    child: Image.memory(
+                                      _pixelizedImageData!,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
                                 )
-                              : const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 50,
-                                )),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 4,
-                  ),
-                  const Center(
-                    child: Text(
-                      "사진을 누르면 크게 볼 수 있어요!",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  const Text(
-                    "힌트를 입력해주세요.",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  SizedBox(
-                    width: deviceWidth * 0.5,
-                    child: TextField(
-                      maxLength: 20,
-                      decoration: InputDecoration(
-                        hintText: "힌트 입력 (최대 20자)",
-                        hintStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.3),
-                        border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                          borderSide: BorderSide.none,
+                              : (images[0] != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: SizedBox(
+                                        height: 150,
+                                        child: Image.file(
+                                          File(images[0]!.path),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 50,
+                                    )),
                         ),
                       ),
-                      style: const TextStyle(
-                        color: Colors.black,
+                      const SizedBox(height: 4),
+                      const Center(
+                        child: Text(
+                          "사진을 누르면 크게 볼 수 있어요!",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                      onChanged: (text) {
-                        setState(() {
-                          hintText = text;
-                        });
-                      },
-                    ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "힌트를 입력해주세요.",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      SizedBox(
+                        width: deviceWidth * 0.5,
+                        child: TextField(
+                          maxLength: 20,
+                          decoration: InputDecoration(
+                            hintText: "힌트 입력 (최대 20자)",
+                            hintStyle: const TextStyle(color: Colors.black),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.3),
+                            border: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8.0)),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black,
+                          ),
+                          onChanged: (text) {
+                            setState(() {
+                              hintText = text;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
         const SizedBox(height: 20),

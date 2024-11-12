@@ -36,23 +36,24 @@ class TreasureModel {
   // JSON 데이터를 모델 객체로 변환하는 팩토리 생성자
   factory TreasureModel.fromJson(Map<String, dynamic> json) {
     return TreasureModel(
-        id: json['id'] ?? 0,
-        senderId: json['sender_id'] ?? 0,
-        receiverType: json['receiver_type'] ?? 0,
-        dotHintImage: json['dot_hint_image'] ?? '',
-        title: json['title'] ?? 'Untitled',
-        hint: json['hint'] ?? 'No hint available',
-        lat: json['lat'] ?? 0.0,
-        lng: json['lng'] ?? 0.0,
-        isTreasure: json['is_treasure'] ?? false,
-        isFound: json['is_found'] ?? false,
-        createdAt: json['created_at'] != null
-            ? DateTime.parse(json['created_at'])
-            : DateTime.now(),
-        image: json['image'],
-        content: json['content'],
-        hintImageFirst: json['hint_image_first'],
-        senderNickname: json['sender_nickname']);
+      id: json['id'] ?? 0,
+      senderId: json['sender_id'] ?? 0,
+      receiverType: json['receiver_type'] ?? 0,
+      dotHintImage: json['dot_hint_image'] ?? '',
+      title: json['title'] ?? '제목 없음',
+      hint: json['hint'] ?? '힌트 없음',
+      lat: json['lat'] ?? 0.0,
+      lng: json['lng'] ?? 0.0,
+      isTreasure: json['is_treasure'] ?? false,
+      isFound: json['is_found'] ?? false,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
+      image: json['image'] ?? '',
+      content: json['content'] ?? '',
+      hintImageFirst: json['hint_image_first'] ?? '',
+      senderNickname: json['sender_nickname'] ?? '',
+    );
   }
 
   // JSON 변환 메서드
