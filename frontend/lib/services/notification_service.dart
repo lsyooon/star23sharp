@@ -63,6 +63,24 @@ class NotificationService {
 
       var result = ResponseModel.fromJson(response.data);
       if (result.code == '200') {
+        logger.d(response);
+      } else {
+        throw Exception(result.message);
+      }
+    } on DioException catch (e) {
+      logger.d('Failed to create post: $e');
+      ErrorHandler.handle(e);
+    }
+  }
+
+  static Future<void> updateAlarmToggle() async {
+    try {
+      final response =
+          await DioService.authDio.post('/notification/push-toggle');
+
+      var result = ResponseModel.fromJson(response.data);
+      if (result.code == '200') {
+        logger.d(response);
       } else {
         throw Exception(result.message);
       }

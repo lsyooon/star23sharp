@@ -23,6 +23,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
   bool isLoading = true;
   Map<int, bool> expansionStates = {}; // ExpansionTile 상태 관리
   Map<int, NotificationDetailModel?> notificationDetails = {}; // 상세 정보를 저장
+  int? _notificationId; // 상태 변수 추가
 
   // @override
   // BuildContext context = AppGlobal.navigatorKey.currentState!
@@ -31,31 +32,48 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
   @override
   void initState() {
     super.initState();
-    fetchNotifications();
+
+    // ModalRoute에서 arguments 가져오기
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments is int) {
+        setState(() {
+          _notificationId = arguments;
+        });
+        logger.d("Arguments로 전달된 notificationId: $_notificationId");
+      }
+
+      // fetchNotifications 호출
+      fetchNotifications();
+    });
   }
 
   Future<void> fetchNotifications() async {
     final fetchedNotifications = await NotificationService.getNotifications();
 
-    setState(() {
-      notifications = fetchedNotifications;
-      isLoading = false;
-      expansionStates = {for (var n in notifications) n.notificationId: false};
-    });
-    // 알림 ID가 주어졌으면 해당 위치로 스크롤하고 펼치기
-    if (widget.notificationId != null) {
-      logger.d(widget.notificationId);
-      logger.d(widget.notificationId is String);
-      final index = notifications
-          .indexWhere((n) => n.notificationId == widget.notificationId);
-      logger.d("index $index");
-      if (index != -1) {
-        // 데이터를 모두 설정한 뒤에 알림 확장
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNotification(widget.notificationId!);
-        });
-      } else {
-        logger.e("Invalid notificationId: ${widget.notificationId}");
+    if (mounted) {
+      setState(() {
+        notifications = fetchedNotifications;
+        isLoading = false;
+        expansionStates = {
+          for (var n in notifications) n.notificationId: false,
+        };
+      });
+      logger.d("fetchNotifications 완료");
+
+      // 알림 ID가 주어졌으면 해당 위치로 스크롤하고 펼치기
+      if (_notificationId != null) {
+        logger.d("가야할 notificationId: $_notificationId");
+        final index = notifications
+            .indexWhere((n) => n.notificationId == _notificationId);
+        if (index != -1) {
+          // 데이터를 모두 설정한 뒤에 알림 확장
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToNotification(_notificationId!);
+          });
+        } else {
+          logger.e("Invalid notificationId: $_notificationId");
+        }
       }
     }
   }
@@ -102,25 +120,11 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Map payload = {};
     final data = ModalRoute.of(context)!.settings.arguments;
-    if (data is RemoteMessage) {
-      // 백그라운드에서 푸시 알람을 탭할 때 처리
-      payload = data.data;
-    }
-    if (data is NotificationResponse) {
-      // 포그라운드에서 푸시 알람을 탭할 때 처리
-      if (data.payload != null && data.payload!.isNotEmpty) {
-        try {
-          payload = jsonDecode(data.payload!);
-        } catch (e) {
-          logger.e("JSON parsing error: $e");
-          payload = {}; // 기본값 설정
-        }
-      } else {
-        logger.e("Empty or null payload");
-        payload = {}; // 기본값 설정
-      }
+    logger.d("전달받은 arguments: $data, 타입: ${data.runtimeType}");
+// 알림 ID 할당
+    if (data is int) {
+      _notificationId = data; // 상태 변수에 할당
     }
 
     return Scaffold(
@@ -135,8 +139,9 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
               Container(
                 color: const Color(0xFFA292EC),
                 padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 20.0),
+                    vertical: 10.0, horizontal: 20.0),
                 child: Stack(
+                  alignment: Alignment.center,
                   children: [
                     // 제목을 가운데 배치
                     const Align(

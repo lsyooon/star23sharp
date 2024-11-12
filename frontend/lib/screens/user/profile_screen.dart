@@ -4,6 +4,7 @@ import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/app_global.dart';
 import 'package:star23sharp/widgets/index.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -14,8 +15,8 @@ class ProfileScreen extends StatelessWidget {
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
       {'text':'닉네임 변경', 'goto': '/modify_nickname'}, 
-      {'text':'비밀번호 변경', 'goto': '/modify_pwd'}, 
-      {'text':'테마 변경', 'goto': '/modify_theme'}
+      {'text':'테마 변경', 'goto': '/modify_pwd'}, 
+      {'text':'사용법 보러가기', 'goto': '/modify_theme'}
     ];
 
     return Stack(
@@ -65,8 +66,17 @@ class ProfileScreen extends StatelessWidget {
                       double itemHeight = (UIhelper.deviceHeight(context) * 0.3) * 0.33;
 
                       return InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/modify_profile');   // 텍스트 클릭 시 "하이" 출력
+                        onTap: () async {
+                          if(index == 2){
+                            final Uri uri = Uri.parse("https://k11b104.p.ssafy.io/manual");
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            } else {
+                              ErrorHandler.handle(Exception("페이지를 이동할 수 없습니다."));
+                            }
+                          }else{
+                            Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/modify_profile');
+                          }
                         },
                         child: Container(
                           height: itemHeight, // Container 높이의 1/3

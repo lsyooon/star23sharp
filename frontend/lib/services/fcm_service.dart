@@ -1,14 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:provider/provider.dart';
 
 import 'package:star23sharp/main.dart';
@@ -25,7 +20,7 @@ void onNotificationTap(NotificationResponse notificationResponse) {
     final Map<String, dynamic> parsedPayload =
         payload != null ? jsonDecode(payload) : {};
     final notificationId = parsedPayload['notificationId'];
-
+    logger.d(" 포그라운드 fcm service:onNotification 아이디는:  " + notificationId);
     if (notificationId != null) {
       AppGlobal.navigatorKey.currentState!.pushNamed(
         '/notification',
@@ -38,11 +33,6 @@ void onNotificationTap(NotificationResponse notificationResponse) {
     logger.e("Failed to parse notification payload: $e");
   }
 }
-// @pragma('vm:entry-point')
-// void onNotificationTap(NotificationResponse notificationResponse) {
-//   AppGlobal.navigatorKey.currentState!
-//       .pushNamed('/notification', arguments: notificationResponse);
-// }
 
 class FCMService {
   static final _firebaseMessaging = FirebaseMessaging.instance;
@@ -110,6 +100,7 @@ class FCMService {
     required String title,
     required String body,
     required String payload,
+    required int notificationId,
   }) async {
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails('pomo_timer_alarm_1', 'pomo_timer_alarm',
@@ -119,8 +110,15 @@ class FCMService {
             ticker: 'ticker');
     const NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
-    await _flutterLocalNotificationsPlugin
-        .show(0, title, body, notificationDetails, payload: payload);
+    logger.d("showSimpleNotification 찍는 로그!! $notificationId");
+
+    await _flutterLocalNotificationsPlugin.show(
+      notificationId,
+      title,
+      body,
+      notificationDetails,
+      payload: payload,
+    );
   }
 
 //포그라운드에서 푸시 알림을 전송받기 위한 패키지 푸시 알림 발송
@@ -129,6 +127,7 @@ class FCMService {
     required String body,
     required String imageUrl,
     required String payload,
+    required int notificationId,
   }) async {
     final localImagePath = await FCMService.downloadImage(imageUrl);
     logger.d('Image downloaded to: $localImagePath');
@@ -156,7 +155,7 @@ class FCMService {
         NotificationDetails(android: androidNotificationDetails);
 
     await _flutterLocalNotificationsPlugin.show(
-      0, // Notification ID
+      notificationId, // Notification ID
       title,
       body,
       platformChannelSpecifics,

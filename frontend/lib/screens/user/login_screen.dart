@@ -139,15 +139,16 @@ class LoginScreen extends StatelessWidget {
                                 Map<String, dynamic> user =
                                     await UserService.getMemberInfo();
                                 logger.d(user);
+                                bool? userPushEnabled =
+                                    userProvider.getPushNotificationEnabled;
                                 userProvider.setUserDetails(
                                     id: user['memberId'],
                                     name: user['nickname'],
                                     isPushEnabled:
                                         user['pushNotificationEnabled']);
-                                if (userProvider.getPushNotificationEnabled !=
-                                        null &&
-                                    userProvider.getPushNotificationEnabled ==
-                                        true) {
+                                logger.d("userPushEnabled $userPushEnabled");
+                                if (userPushEnabled == true) {
+                                  logger.d("deviceToken 설정가능!");
                                   await NotificationService.updateDeviceToken();
                                 }
 
