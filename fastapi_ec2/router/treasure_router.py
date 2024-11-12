@@ -98,7 +98,7 @@ THRESHOLD_LINEAR_DISTANCE = 20  # meter
 
 treasure_router = APIRouter()
 
-INSERT_DESCRIPTION = """
+INSERT_DESCRIPTION = f"""
 새로운 보물 메시지를 생성하고 저장합니다.
 
 첫 번째 힌트 이미지와 두 번째 힌트 이미지를 업로드하고, 이 두 이미지의 임베딩을 계산하여 보물 메시지를 생성합니다.
@@ -113,13 +113,13 @@ INSERT_DESCRIPTION = """
 - hint_image_second (UploadFile): 두 번째 힌트 이미지
 - dot_hint_image (UploadFile, Optional): 픽셀 힌트 이미지. 제공되지 않을 경우 dot_target에 따라 지정된 힌트 이미지를 픽셀화합니다.
 - dot_target (int, Optional): dot_hint_image를 제공하지 않을 때 픽셀화할 힌트 이미지의 번호. 1(첫 번째), 2(두 번째). 기본값은 1.
-- kernel_size (int, Optional): 픽셀화 시 사용할 커널 크기. 미제공 시 기본값 7 사용.
-- pixel_size (int, Optional): 픽셀화 시 사용할 픽셀 크기. 미제공 시 기본값 48 사용.
-- title (str): 메시지 제목
-- content (str): 메시지 내용
+- kernel_size (int, Optional): 픽셀화 시 사용할 커널 크기. 미제공 시 기본값 {PIXELIZE_DEFAULT_KERNEL} 사용.
+- pixel_size (int, Optional): 픽셀화 시 사용할 픽셀 크기. 미제공 시 기본값 {PIXELIZE_DEFAULT_PIXEL_SIZE} 사용.
+- title (str): 메시지 제목. `{VarcharLimit.TITLE.value}` 자 이내
+- content (str): 메시지 내용. `{VarcharLimit.CONTENT.value}` 자 이내
 - contentImage (UploadFile, Optional): 메시지 첨부 이미지
-- hint (str, Optional): 텍스트 힌트
-- groupId (int, Optional): 그룹 ID
+- hint (str, Optional): 텍스트 힌트. `{VarcharLimit.HINT.value}` 자 이내
+- groupId (int, Optional): 그룹 ID. 특정 그룹에게 보낼 때 사용
 - receivers (List[str], Optional): 수신자들의 멤버 닉네임 목록
 - lat (float): 위도
 - lng (float): 경도
@@ -149,12 +149,14 @@ FIND_DESCRIPTION = """
 - lng_1 (float): 첫 번째 좌표 경도.
 - lat_2 (float): 두 번째 좌표 위도.
 - lng_2 (float): 두 번째 좌표 경도.
-- include_opened: **자신이** 이미 열람한 보물 메세지도 포함할지의 여부. 기본값 false.
-- get_received (bool): **true이면 자신이 접근 가능한 보물 메세지만, false이면 자신이 등록한 보물 메세지만 가져옵니다.** 기본값 false.
+- include_opened (bool): 기본값 `false`
+    - get_received 가 `true` 일 때는(즉, 자신이 접근 가능한 보물 쪽지 조회) **자신이** 이미 열람한 보물 메세지를 포함할지의 여부
+    - get_received `false` 일 때는(즉, 자신이 작성한 보물 쪽지 조회) **누군가** 열람한 보물 메세지를 포함할 지의 여부
+- get_received (bool): **true이면 자신이 접근 가능한 보물 메세지만, false이면 자신이 등록한 보물 메세지만 가져옵니다.** 기본값 `false`.
 ### 아래 세 매개변수가 모두 false 이면 빈 결과를 제공합니다.
-- include_public: 퍼블릭 보물 메세지를 포함할지의 여부. 기본값 false
-- include_group: 그룹 또는 다수 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 false
-- include_private: 개인을 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 false
+- include_public: 퍼블릭 보물 메세지를 포함할지의 여부. 기본값 `false`
+- include_group: 그룹 또는 다수 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 `false`
+- include_private: 개인을 대상으로 등록된 보물 메세지를 포함할지의 여부. 기본값 `false`
 ## 반환값
 - ResponseTreasureDTO_Undiscovered
     - 주어진 두 좌표의 중심점에서 가까운 순서대로 정렬되어 제공됩니다.
@@ -166,21 +168,22 @@ AUTHORIZE_DESCRIPTION = f"""
 ## 인증 조건
 인증 성공을 위해 사용자는 다음과 같은 조건을 만족해야 합니다.
 1. 해당 보물 메세지에 대한 접근 권한이 있어야 합니다.
-2. 해당 보물 메세지에 대해 {THRESHOLD_LINEAR_DISTANCE} 미터 안에 있어야 합니다.
-3. 업로드한 이미지 파일의 AI 임베딩 값과 열람하고자 하는 메세지의 코사인 거리가 {THRESHOLD_COSINE_DISTANCE_HIGH} 이내여야 합니다.
+2. 해당 보물 메세지에 대해 `{THRESHOLD_LINEAR_DISTANCE}` 미터 안에 있어야 합니다.
+3. 업로드한 이미지 파일의 AI 임베딩 값과 열람하고자 하는 메세지의 코사인 거리가 `{THRESHOLD_COSINE_DISTANCE_HIGH}` 이내여야 합니다.
 
 ## 인증 성공 시
 1. 해당 보물 메세지의 발견자는 해당 사용자가 됩니다
 2. 해당 사용사의 수신함에서는 읽음 처리됩니다.
-3. 다른 모든 사용자들은 해당 메세지에 대한 열람 권한을 잃습니다.
+3. 다른 모든 사용자들은 해당 메세지에 대한 접근 권한을 잃습니다.
 
 ## 기타
-- 자기 자신이 발송한 Public이 아닌 보물 쪽지는 인증할 수 없습니다.
-- 이미 열람한 쪽지도 인증할 수 없습니다.
+- 자기 자신이 발송한 public이 아닌 보물 쪽지는 인증할 수 없습니다.
+    - **반대로 말하면, public 보물 쪽지는 자기 자신이 인증할 수 있습니다.**
+- 이미 자신이 인증한 적이 있는 보물 쪽지도 인증할 수 없습니다.
 
 ## 매개변수:
 - file (UploadFile): 테스트할 이미지 파일.
-- id (int): 보물 메시지의 ID.
+- id (int): 보물 메시지의 Id.
 - lat (float): 현재 위도.
 - lng (float): 현재 경도.
 
@@ -193,7 +196,6 @@ AUTHORIZE_DESCRIPTION = f"""
 - "image_not_similar": 업로드한 이미지가 보물 이미지와 유사하지 않은 경우.
 - "already_found" : 인증에 성공했지만, 이미 다른 유저가 먼저 인증에 성공한 경우.
 """
-
 
 @treasure_router.post(
     "/insert",
@@ -541,7 +543,7 @@ async def find_near_treasures_around_me(
     lng_2: float = Query(..., description="두 번째 좌표의 경도"),
     include_opened: bool = Query(
         False,
-        description="자신이 이미 열람했던 메세지를 가져올 지의 여부.",
+        description="설명 참조",
     ),
     get_received: bool = Query(
         False,
