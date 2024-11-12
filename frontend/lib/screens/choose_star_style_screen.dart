@@ -85,18 +85,20 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
       });
       // `isTeasureStar`에 따라 데이터 가져오기
       final isTreasureStar = messageProvider.isTeasureStar;
-      final data = messageProvider.messageData;
 
+      if (currentStyle != WritingStyle.basic) {
+        logger.d("문체 변경 $currentStyle");
+        messageProvider.saveMessageData(content: changedMessages[currentStyle]);
+      }
+      final data = messageProvider.messageData;
       // 데이터가 없는 경우 처리
       if (data == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('메시지 데이터를 입력해주세요.')),
+          const SnackBar(content: Text('메시지를 입력해주세요.')),
         );
         return;
       }
-      if (currentStyle != WritingStyle.basic) {
-        messageProvider.saveMessageData(content: changedMessages[currentStyle]);
-      }
+      logger.d(data.toString());
       // API 호출
       bool response = await StarService.sendMessage(
         isTreasureStar: isTreasureStar,
