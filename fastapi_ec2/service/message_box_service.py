@@ -4,13 +4,12 @@ from typing import List, Optional, Union
 
 from dto.member_dto import MemberDTO
 from entity.member import Member
-from entity.message import Message
+from entity.message import Message, ReceiverTypes
 from entity.message_box import MessageBox, MessageDirections
 from sqlalchemy import delete, select
 from sqlalchemy.orm.session import Session as Session_Object
 
 from .member_service import assert_member_by_id
-from .message_service import is_message_public
 
 
 def _build_check_received_message_accesible(
@@ -66,7 +65,7 @@ def insert_multiple_new_recieved_message_boxs_to_a_message(
 def get_nonpublic_treasure_messagebox_if_authorizable(
     member: Union[MemberDTO, Member], treasure_message: Message, session: Session_Object
 ) -> Optional[MessageBox]:
-    if is_message_public(treasure_message):
+    if treasure_message.receiver_type is ReceiverTypes.PUBLIC.value:
         raise ValueError(
             "get_authorizable_treasure_message: Public 보물 메세지에 대해 인증 가능한 MessageBox 개체를 얻어오려 시도하고 있음!!!"
         )
@@ -93,7 +92,6 @@ def get_treasure_message_if_accesible(
     stmt = _build_check_received_message_accesible(
         select(Message).join(MessageBox), orm_member, treasure_message
     )
-    # logging.debug(f"get_treasure_message_if_accesible: statement: {str(stmt)}")
     return session.scalar(stmt)
 
 

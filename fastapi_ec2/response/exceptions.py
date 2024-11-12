@@ -245,3 +245,12 @@ class TreasureSearchRangeTooBroadException(AppException):
 
     status_code = status.HTTP_400_BAD_REQUEST
     code = "L0023"
+
+
+class GroupIncludesOwnerException(AppException):
+    """
+    그룹 멤버 안에 그룹 소유자가 존재하는 상태로 생성하려 하고 있습니다.
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "G0003"

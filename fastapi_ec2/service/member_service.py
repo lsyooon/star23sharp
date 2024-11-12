@@ -18,13 +18,36 @@ def find_member_by_id(id: int, session: Session_Object) -> Optional[Member]:
 def find_members_by_id_no_validation(
     id: List[int], session: Session_Object
 ) -> List[Member]:
-    return find_distinct_multiple_by_attribute(Member, Member.id, id, session)
+    unique_ids = list(set(id))
+    if len(unique_ids) != id:
+        logging.warning("find_members_by_id_no_validation: 중복된 멤버 id가 존재함!!!")
+    found_members = find_distinct_multiple_by_attribute(
+        Member, Member.id, unique_ids, session
+    )
+    if len(found_members) == 0 or len(found_members) != len(unique_ids):
+        raise MemberNotFoundException(
+            "지정한 대상들 중 일부 또는 전체를 찾을 수 없습니다!"
+        )
+    return found_members
 
 
 def find_members_by_nickname_no_validation(
     nicks: List[str], session: Session_Object
 ) -> List[Member]:
-    return find_distinct_multiple_by_attribute(Member, Member.nickname, nicks, session)
+    unique_nicks = list(set(nicks))
+    if len(nicks) != unique_nicks:
+        logging.warning(
+            "find_members_by_nickname_no_validation: 중복된 닉네임이 존재함!!!"
+        )
+
+    found_members = find_distinct_multiple_by_attribute(
+        Member, Member.nickname, unique_nicks, session
+    )
+    if len(found_members) == 0 or len(found_members) != len(unique_nicks):
+        raise MemberNotFoundException(
+            "지정한 대상들 중 일부 또는 전체를 찾을 수 없습니다!"
+        )
+    return found_members
 
 
 def find_member_by_member_name(

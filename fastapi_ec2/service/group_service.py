@@ -4,10 +4,14 @@ from typing import List, Optional
 
 from entity.group import GroupMember, MemberGroup
 from entity.member import Member
-from response.exceptions import InvalidGroupMembersException
+from response.exceptions import (
+    GroupIncludesOwnerException,
+    InvalidGroupMembersException,
+    UnauthorizedGroupAccessException,
+)
 from sqlalchemy.orm.session import Session as Session_Object
 
-from .member_service import find_members_by_id_no_validation, is_member_valid
+from .member_service import is_member_valid
 from .simple_find import find_by_attribute
 
 
@@ -20,7 +24,7 @@ def insert_new_group(
     creator: Member,
     is_favorite: bool,
     is_constructed: bool,
-    member_ids: List[int],
+    members: List[Member],
     created_at: datetime.datetime,
     session: Session_Object,
 ) -> MemberGroup:
@@ -34,11 +38,6 @@ def insert_new_group(
     session.add(new_member_group)
     session.flush()
 
-    members = find_members_by_id_no_validation(member_ids, session)
-    if len(members) != len(member_ids):
-        logging.error("insert_new_group: 멤버들 중 일부가 존재하지 않음")
-        raise InvalidGroupMembersException()
-
     result = []
     for member in members:
         if not is_member_valid(member):
@@ -46,7 +45,8 @@ def insert_new_group(
                 f"insert_new_group: Member with id {member.id} is deleted or inactive"
             )
             raise InvalidGroupMembersException()
-
+        if member.id is creator.id:
+            raise GroupIncludesOwnerException()
         result.append(GroupMember(group_id=new_member_group.id, member_id=member.id))
 
     session.add_all(result)
@@ -54,3 +54,23 @@ def insert_new_group(
     session.flush()
 
     return new_member_group
+
+
+def check_group_ownership(
+    group: MemberGroup, owner: Member, session: Session_Object
+) -> bool:
+    if group.creator_id is not owner.id:
+        return False
+    else:
+        return True
+
+
+def assert_check_group_ownership(
+    group: MemberGroup,
+    owner: Member,
+    session: Session_Object,
+    exception: Exception = UnauthorizedGroupAccessException,
+    message: str = None,
+):
+    if not check_group_ownership(group, owner, session):
+        raise exception(message)

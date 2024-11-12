@@ -1,7 +1,6 @@
 import io
 import logging
 import os
-import posixpath
 import uuid
 from typing import Tuple, Union
 
@@ -31,7 +30,6 @@ def _get_s3_client():
 
 
 def construct_s3_link(s3_file: str):
-    # https://star23sharp.s3.ap-northeast-2.amazonaws.com/b0499f93-47dd-4128-b0ac-ba5cea71e843_quf.png
     return f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{s3_file}"
 
 

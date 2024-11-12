@@ -2,6 +2,7 @@ import math
 from typing import List
 
 import numpy as np
+from response.exceptions import InvalidCoordinatesException
 
 RADIUS_EARTH = 6371_000  # meters
 
@@ -91,5 +92,6 @@ def convert_lat_lng_to_xyz(lat: float, lng: float, radius=RADIUS_EARTH) -> List[
     return [x, y, z]
 
 
-def is_lat_lng_valid(lat: float, lng: float):
-    return abs(lat) <= 90 and abs(lng) <= 180
+def assert_lat_lng_validity(lat: float, lng: float):
+    if not (abs(lat) <= 90 and abs(lng) <= 180):
+        raise InvalidCoordinatesException()

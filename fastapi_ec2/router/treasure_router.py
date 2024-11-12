@@ -21,20 +21,22 @@ from response.exceptions import (
     AmbiguousTargetException,
     ContentLengthExceededException,
     GPUProxyServerException,
+    GroupIncludesOwnerException,
     GroupNotFoundException,
     HintLengthExceededException,
-    InvalidCoordinatesException,
     InvalidInputException,
     InvalidPixelTargetException,
-    RecipientNotFoundException,
     SelfRecipientException,
     TitleLengthExceededException,
     TreasureNotFoundException,
     TreasureSearchRangeTooBroadException,
-    UnauthorizedGroupAccessException,
     UnauthorizedTreasureAccessException,
 )
-from service.group_service import find_group_by_id, insert_new_group
+from service.group_service import (
+    assert_check_group_ownership,
+    find_group_by_id,
+    insert_new_group,
+)
 from service.image_service import (
     PIXELIZE_DEFAULT_KERNEL,
     PIXELIZE_DEFAULT_PIXEL_SIZE,
@@ -56,15 +58,9 @@ from service.message_box_service import (
 from service.message_service import (
     authorize_treasure_message,
     find_distinct_multiple_treasures_by_id,
-    find_received_near_group_treasures,
-    find_received_near_private_treasures,
-    find_received_near_public_treasures,
-    find_sent_near_group_treasures,
-    find_sent_near_private_treasures,
-    find_sent_near_public__treasures,
+    find_near_treasures,
     find_treasure_by_id,
     insert_new_treasure_message,
-    is_message_public,
 )
 from service.notification_service import (
     treasure_hidden_notification_to_receivers,
@@ -75,10 +71,10 @@ from sqlalchemy.orm import Session
 from utils.connection_pool import get_db
 from utils.distance_util import (
     RADIUS_EARTH,
+    assert_lat_lng_validity,
     convert_lat_lng_to_xyz,
     get_cosine_distance,
     get_distance_from_radian,
-    is_lat_lng_valid,
 )
 from utils.resource import (
     construct_s3_link,
@@ -95,7 +91,7 @@ logger = logging.getLogger(__name__)
 # THRESHOLD_COSINE_DISTANCE_LOW = (
 #     0.55  # 코사인 거리가 이 값 미만이면 지나치게 유사해서 저장 불가
 # )
-THRESHOLD_COSINE_DISTANCE_HIGH = 0.85  # 코사인 거리가 이 값 이상이면 다른 장소로 판단
+THRESHOLD_COSINE_DISTANCE_HIGH = 0.8491  # 코사인 거리가 이 값 이상이면 다른 장소로 판단
 
 # 반경 범위 임계값
 THRESHOLD_LINEAR_DISTANCE = 20  # meter
@@ -117,8 +113,8 @@ INSERT_DESCRIPTION = """
 - hint_image_second (UploadFile): 두 번째 힌트 이미지
 - dot_hint_image (UploadFile, Optional): 픽셀 힌트 이미지. 제공되지 않을 경우 dot_target에 따라 지정된 힌트 이미지를 픽셀화합니다.
 - dot_target (int, Optional): dot_hint_image를 제공하지 않을 때 픽셀화할 힌트 이미지의 번호. 1(첫 번째), 2(두 번째). 기본값은 1.
-- kernel_size (int, Optional): 픽셀화 시 사용할 커널 크기. 미제공 시 기본값 사용.
-- pixel_size (int, Optional): 픽셀화 시 사용할 픽셀 크기. 미제공 시 기본값 사용.
+- kernel_size (int, Optional): 픽셀화 시 사용할 커널 크기. 미제공 시 기본값 7 사용.
+- pixel_size (int, Optional): 픽셀화 시 사용할 픽셀 크기. 미제공 시 기본값 48 사용.
 - title (str): 메시지 제목
 - content (str): 메시지 내용
 - contentImage (UploadFile, Optional): 메시지 첨부 이미지
@@ -251,17 +247,16 @@ async def insert_new_treasure(
     hint_image_second_name_gen = None
     dot_hint_image_name_gen = None
     content_image_name_gen = None
-    result_receivers_int = None
-    result_message_id = None
     try:
-        # Form parameter translation
+        # Form parameter translation. camcelCase -> snake_case
         receiver_type = receiverType
         group_id = groupId
         created_at = createdAt
         content_image = contentImage
 
-        # 멤버 존재 검증
-        current_member = assert_member_by_id(current_member_info[0].id, db)
+        # 송신 시각 처리
+        if created_at is None:
+            created_at = datetime.datetime.now()
 
         # 입력값 검증
         if len(title) > VarcharLimit.TITLE.value:
@@ -270,22 +265,23 @@ async def insert_new_treasure(
             raise ContentLengthExceededException()
         if hint and len(hint) > VarcharLimit.HINT.value:
             raise HintLengthExceededException()
-        if not is_lat_lng_valid(lat, lng):
-            raise InvalidCoordinatesException()
+        assert_lat_lng_validity(lat, lng)
 
         # 수신 Type에 따른 Sanitize
         if receiver_type is not None:
             if receiver_type == ReceiverTypes.INDIVIDUAL.value:
                 if receivers is None or len(receivers) != 1:
-                    raise InvalidInputException("수신 대상이 유효하지 않습니다.")
+                    raise InvalidInputException("수신 대상이 없거나 한 명이 아닙니다.")
                 group_id = None
             elif receiver_type == ReceiverTypes.GROUP_UNCONSTRUCTED.value:
                 if receivers is None or len(receivers) < 2:
-                    raise InvalidInputException("수신 대상이 유효하지 않습니다.")
+                    raise InvalidInputException("수신 대상이 없거나 두 명 미만입니다.")
                 group_id = None
             elif receiver_type == ReceiverTypes.GROUP_CONSTRUCTED.value:
                 if group_id is None:
-                    raise InvalidInputException("수신 대상이 유효하지 않습니다.")
+                    raise InvalidInputException(
+                        "메세지를 받을 그룹을 지정하지 않았습니다."
+                    )
                 receivers = None
             elif receiver_type == ReceiverTypes.PUBLIC.value:
                 receivers = None
@@ -295,74 +291,58 @@ async def insert_new_treasure(
                     f"receiver_type이 들어왔지만 유효한 값이 아닙니다! 들어온 값 : {receiver_type}"
                 )
 
-        # 송신 시각 처리
-        if created_at is None:
-            created_at = datetime.datetime.now()
+        # 멤버 존재 검증
+        current_member = assert_member_by_id(current_member_info[0].id, db)
 
         # 수신 대상 파악
         if receivers is not None and group_id is not None:
             raise AmbiguousTargetException()
         elif receivers is not None:
-            _receivers_int = [
-                member.id
-                for member in find_members_by_nickname_no_validation(receivers, db)
-            ]  # TODO: Inefficient
-            if len(_receivers_int) == 0 or len(_receivers_int) != len(receivers):
-                raise RecipientNotFoundException(
-                    "수신 대상 전체 또는 일부를 찾을 수 없습니다."
-                )
-            if len(_receivers_int) == 1:
+            receiving_members = find_members_by_nickname_no_validation(receivers, db)
+            if len(receiving_members) == 1:
+                if receiving_members[0].id is current_member.id:
+                    raise SelfRecipientException()
                 result_receiver_type = ReceiverTypes.INDIVIDUAL.value
-                recieving_group = None
+                receiving_group = None
             else:
                 result_receiver_type = ReceiverTypes.GROUP_UNCONSTRUCTED.value
                 # 새로운 그룹 생성
-                recieving_group = insert_new_group(
-                    None, current_member, False, False, _receivers_int, created_at, db
-                )
+                try:
+                    receiving_group = insert_new_group(
+                        None,
+                        current_member,
+                        False,
+                        False,
+                        receiving_members,
+                        created_at,
+                        db,
+                    )
+                except GroupIncludesOwnerException:
+                    raise SelfRecipientException()
         elif group_id is not None:
             result_receiver_type = ReceiverTypes.GROUP_CONSTRUCTED.value
-            recieving_group = find_group_by_id(group_id, db)
-            if recieving_group is None:
+            receiving_group = find_group_by_id(group_id, db)
+            if receiving_group is None:
                 raise GroupNotFoundException()
         else:
             result_receiver_type = ReceiverTypes.PUBLIC.value
-            recieving_group = None
+            receiving_group = None
 
         # 수신자 목록 생성
-        result_recieving_members: List[Member] = []
-        if recieving_group:  # 이미 존재하는 그룹에게 발신
-            if (
-                recieving_group.creator_id is not current_member.id
-            ):  # 접근 권한이 없는 그룹
-                raise UnauthorizedGroupAccessException()
-            for group_member in recieving_group.members:
-                if group_member.member.id != current_member.id:
-                    result_recieving_members.append(group_member.member)
-                else:
-                    raise SelfRecipientException()
-        elif result_receiver_type != ReceiverTypes.PUBLIC.value:  # 개인에게 발신
-            _recieving_member = assert_member_by_id(
-                _receivers_int[0],
-                db,
-                message=f"수신자 id={_receivers_int[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다.",
-            )
-            if _recieving_member.id == current_member.id:
-                raise SelfRecipientException()
-            result_recieving_members.append(_recieving_member)
-        result_receivers_int = (
-            [member.id for member in result_recieving_members]
-            if len(result_recieving_members) > 0
-            else None
-        )
+        result_receiving_members: List[Member] = []
+        if receiving_group:  # 이미 존재하는 그룹에게 발신
+            assert_check_group_ownership(receiving_group, current_member)
+            result_receiving_members = receiving_group.members
+        elif result_receiver_type is ReceiverTypes.INDIVIDUAL.value:  # 개인에게 발신
+            result_receiving_members = receiving_members
 
         # 이미지 내용 읽기
-        hint_image_first = await download_file(hint_image_first)
-        hint_image_second = await download_file(hint_image_second)
+        hint_image_first_file = await download_file(hint_image_first)
+        hint_image_second_file = await download_file(hint_image_second)
 
         # 픽셀화 힌트 이미지 읽기
         if dot_hint_image:
-            dot_hint_image = await download_file(dot_hint_image)
+            dot_hint_image_file = await download_file(dot_hint_image)
         else:
             # dot_hint_image가 제공되지 않은 경우, 픽셀화
             if dot_target is None or dot_target == 1:
@@ -371,7 +351,7 @@ async def insert_new_treasure(
                 _to_dot = hint_image_second
             else:
                 raise InvalidPixelTargetException()
-            dot_hint_image = await pixelize_image_service(
+            dot_hint_image_file = await pixelize_image_service(
                 _to_dot,
                 PIXELIZE_DEFAULT_PIXEL_SIZE if kernel_size is None else kernel_size,
                 PIXELIZE_DEFAULT_PIXEL_SIZE if pixel_size is None else pixel_size,
@@ -379,18 +359,20 @@ async def insert_new_treasure(
 
         # 메시지 첨부 이미지 읽기
         if content_image:
-            content_image = await download_file(content_image)
+            content_image_file = await download_file(content_image)
 
         # 이미지 이름 생성
-        hint_image_first_name = generate_uuid_filename(hint_image_first)
-        hint_image_second_name = generate_uuid_filename(hint_image_second)
+        hint_image_first_name = generate_uuid_filename(hint_image_first_file)
+        hint_image_second_name = generate_uuid_filename(hint_image_second_file)
         dot_hint_image_name = (
-            generate_uuid_filename(dot_hint_image)
-            if dot_hint_image is not None
+            generate_uuid_filename(dot_hint_image_file)
+            if dot_hint_image_file is not None
             else None
         )
         content_image_name = (
-            generate_uuid_filename(content_image) if content_image is not None else None
+            generate_uuid_filename(content_image_file)
+            if content_image_file is not None
+            else None
         )
 
         # 이미지 URL 미리 생성
@@ -421,7 +403,7 @@ async def insert_new_treasure(
         new_message = insert_new_treasure_message(
             sender=current_member,
             receiver_type=result_receiver_type,
-            receiver=result_receivers_int,
+            receivers=result_receiving_members,
             hint_image_first=hint_image_first_url,
             hint_image_second=hint_image_second_url,
             dot_hint_image=dot_hint_image_url,
@@ -433,10 +415,9 @@ async def insert_new_treasure(
             image=content_image_url,
             created_at=created_at,
             vector=result_vector,
-            group=recieving_group,
+            group=receiving_group,
             session=db,
         )
-        result_message_id = new_message.id
 
         # 발송함에 추가
         insert_new_message_box(
@@ -449,12 +430,11 @@ async def insert_new_treasure(
 
         # 수신함에 추가
         insert_multiple_new_recieved_message_boxs_to_a_message(
-            new_message, result_recieving_members, created_at, db
+            new_message, result_receiving_members, created_at, db
         )
         result_model = TreasureDTO_Own.get_dto(new_message)
 
         # 파일 저장
-
         hint_image_first_name_gen = save_image_to_storage(
             hint_image_first, hint_image_first_name
         )
@@ -471,7 +451,18 @@ async def insert_new_treasure(
             if content_image is not None
             else None
         )
+
+        # transaction end 전에 알림용 데이터 저장
+        result_message_id = new_message.id
+        result_receivers_int = (
+            [member.id for member in result_receiving_members]
+            if len(result_receiving_members) > 0
+            else None
+        )
+
+        # 커밋!
         db.commit()
+
         # 수신자에게 알림 보내기
         if result_receivers_int is not None:
             background_tasks.add_task(
@@ -522,9 +513,11 @@ async def inspect_treasures(
                 result_dtos.append(TreasureDTO_Opened.get_dto(treasure))
             else:
                 result_dtos.append(TreasureDTO_Undiscovered.get_dto(treasure))
-        elif treasure.receiver_type is ReceiverTypes.PUBLIC.value:  # public
-            if not treasure.is_found:  # 아무도 못 찾은 public 메세지면 접근 가능
-                result_dtos.append(TreasureDTO_Undiscovered.get_dto(treasure))
+        elif (
+            treasure.receiver_type is ReceiverTypes.PUBLIC.value
+            and not treasure.is_found
+        ):  # 아무도 못 찾은 public 메세지면 접근 가능
+            result_dtos.append(TreasureDTO_Undiscovered.get_dto(treasure))
 
     return ResponseTreasureDTO_Any(
         code="200", message="조회 완료.", data={"treasures": result_dtos}
@@ -537,7 +530,7 @@ async def inspect_treasures(
     summary="주변 보물 메세지 찾기",
     description=FIND_DESCRIPTION,
 )
-async def find_near_treasures(
+async def find_near_treasures_around_me(
     lat_1: float = Query(..., description="첫 번째 좌표의 위도"),
     lng_1: float = Query(..., description="첫 번째 좌표의 경도"),
     lat_2: float = Query(..., description="두 번째 좌표의 위도"),
@@ -561,9 +554,9 @@ async def find_near_treasures(
     db: Session = Depends(get_db),
 ):
     member_orm = assert_member_by_id(current_member_info[0].id, db)
+    assert_lat_lng_validity(lat_1, lng_1)
+    assert_lat_lng_validity(lat_2, lng_2)
 
-    if not is_lat_lng_valid(lat_1, lng_1) or not is_lat_lng_valid(lat_2, lng_2):
-        raise InvalidCoordinatesException()
     xyz_1 = np.array(convert_lat_lng_to_xyz(lat_1, lng_1))
     xyz_2 = np.array(convert_lat_lng_to_xyz(lat_2, lng_2))
     center_xyz_short = (xyz_1 + xyz_2) / 2
@@ -577,45 +570,24 @@ async def find_near_treasures(
         )
     )
     query_result: List[Message] = []
+    receiver_types: List[int] = []
     if include_public:
-        if get_received:
-            query_result.extend(
-                find_received_near_public_treasures(
-                    center_xyz, radius, include_opened, db
-                )
-            )
-        else:
-            query_result.extend(
-                find_sent_near_public__treasures(
-                    member_orm, center_xyz, radius, include_opened, db
-                )
-            )
+        receiver_types.append(ReceiverTypes.PUBLIC.value)
     if include_group:
-        if get_received:
-            query_result.extend(
-                find_received_near_group_treasures(
-                    member_orm, center_xyz, radius, include_opened, db
-                )
-            )
-        else:
-            query_result.extend(
-                find_sent_near_group_treasures(
-                    member_orm, center_xyz, radius, include_opened, db
-                )
-            )
+        receiver_types.append(ReceiverTypes.GROUP_CONSTRUCTED.value)
+        receiver_types.append(ReceiverTypes.GROUP_UNCONSTRUCTED.value)
     if include_private:
-        if get_received:
-            query_result.extend(
-                find_received_near_private_treasures(
-                    member_orm, center_xyz, radius, include_opened, db
-                )
-            )
-        else:
-            query_result.extend(
-                find_sent_near_private_treasures(
-                    member_orm, center_xyz, radius, include_opened, db
-                )
-            )
+        receiver_types.append(ReceiverTypes.INDIVIDUAL.value)
+    if len(receiver_types) > 0:
+        query_result = find_near_treasures(
+            member_orm,
+            center_xyz,
+            radius,
+            include_opened,
+            receiver_types,
+            get_received,
+            db,
+        )
     result_dtos = [
         TreasureDTO_Undiscovered.get_dto(treasure) for treasure in query_result
     ]
@@ -640,22 +612,23 @@ async def authorize_treasure(
     current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
     db: Session = Depends(get_db),
 ):
-    # 시도자 검증
-    current_member = assert_member_by_id(current_member_info[0].id, db)
-
     # 인증 시도 시각
     created_at = datetime.datetime.now()
 
+    # 시도자 검증
+    current_member = assert_member_by_id(current_member_info[0].id, db)
+
     # 좌표 입력값 검증
-    if not is_lat_lng_valid(lat, lng):
-        raise InvalidCoordinatesException()
+    assert_lat_lng_validity(lat, lng)
 
     # 메세지 검증
     target_treasure = find_treasure_by_id(id, db)
     if target_treasure is None:
         raise TreasureNotFoundException()
 
-    is_public = is_message_public(target_treasure)
+    is_public = (
+        target_treasure.receiver_type is ReceiverTypes.PUBLIC.value
+    )  # public일 경우에는 자기 자신이 자기 메세지 검증 가능.
     if not is_public:
         box_row = get_nonpublic_treasure_messagebox_if_authorizable(
             current_member, target_treasure, db
@@ -687,11 +660,7 @@ async def authorize_treasure(
 
     if auth_result[0]:
         # Lock과 함께 Message 객체를 가져온다.
-        locked_treasure_stmt = (
-            select(target_treasure.__class__)
-            .where(target_treasure.__class__.id == id)
-            .with_for_update()
-        )
+        locked_treasure_stmt = select(Message).where(Message.id == id).with_for_update()
         locked_treasure = db.execute(locked_treasure_stmt).scalar_one()
 
         # Ensure `locked_treasure` is used for updates to maintain locking
