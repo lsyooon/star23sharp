@@ -40,7 +40,7 @@ def insert_new_group(
 
     result = []
     for member in members:
-        if not is_member_valid(member):
+        if not is_member_valid(member, session):
             logging.error(
                 f"insert_new_group: Member with id {member.id} is deleted or inactive"
             )
@@ -59,6 +59,7 @@ def insert_new_group(
 def check_group_ownership(
     group: MemberGroup, owner: Member, session: Session_Object
 ) -> bool:
+    # session 은 session context를 강제하기 위해 넣어놓음
     if group.creator_id is not owner.id:
         return False
     else:

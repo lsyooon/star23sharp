@@ -166,17 +166,19 @@ def find_near_treasures(
             or_(
                 and_(
                     MessageBox.member_id
-                    == valid_member.id,  # non_public이면 자신에게 접근 권한이 있어야 함
+                    == valid_member.id,  # 자신에게 접근 권한이 있어야 함. non_public한 접근가능 메세지나, public한 내가 열람한 메세지를 가져온다.
                     MessageBox.message_direction == MessageDirections.RECEIVED.value,
                 ),
-                Message.receiver_type
-                == ReceiverTypes.PUBLIC.value,  # public이면 다 가능
+                and_(  # 그게 아니면 public이면서 누군가 발견한 적이 없어야 함
+                    Message.receiver_type == ReceiverTypes.PUBLIC.value,
+                    Message.is_found.is_(False),
+                ),
             )
         )
     else:
         stmt = stmt.where(Message.sender_id == valid_member.id)
 
-    if not include_opened:
+    if not include_opened:  # 내가 찾은 보물 쪽지도 가져올지의 여부
         stmt = stmt.where(Message.is_found.is_(False))
 
     l2_distance_threshold = get_l2_distance_from_arc_distance(radius)

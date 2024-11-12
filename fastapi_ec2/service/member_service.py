@@ -10,7 +10,7 @@ from .simple_find import find_by_attribute, find_distinct_multiple_by_attribute
 
 def find_member_by_id(id: int, session: Session_Object) -> Optional[Member]:
     member = find_by_attribute(Member, Member.id, id, session=session)
-    if is_member_valid(member):
+    if is_member_valid(member, session):
         return member
     return None
 
@@ -54,12 +54,12 @@ def find_member_by_member_name(
     member_name: str, session: Session_Object
 ) -> Optional[Member]:
     member = find_by_attribute(Member, Member.member_name, member_name, session=session)
-    if is_member_valid(member):
+    if is_member_valid(member, session):
         return member
     return None
 
 
-def is_member_valid(member: Optional[Member]) -> bool:
+def is_member_valid(member: Optional[Member], session: Session_Object) -> bool:
     if member is None:
         logging.warning(f"is_member_valid: cannot find Member: {id}")
         return False

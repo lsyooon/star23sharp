@@ -149,7 +149,7 @@ FIND_DESCRIPTION = """
 - lng_1 (float): 첫 번째 좌표 경도.
 - lat_2 (float): 두 번째 좌표 위도.
 - lng_2 (float): 두 번째 좌표 경도.
-- include_opened: 누군가 이미 열람한 보물 메세지도 포함할지의 여부. 기본값 false.
+- include_opened: **자신이** 이미 열람한 보물 메세지도 포함할지의 여부. 기본값 false.
 - get_received (bool): **true이면 자신이 접근 가능한 보물 메세지만, false이면 자신이 등록한 보물 메세지만 가져옵니다.** 기본값 false.
 ### 아래 세 매개변수가 모두 false 이면 빈 결과를 제공합니다.
 - include_public: 퍼블릭 보물 메세지를 포함할지의 여부. 기본값 false
@@ -295,6 +295,7 @@ async def insert_new_treasure(
         current_member = assert_member_by_id(current_member_info[0].id, db)
 
         # 수신 대상 파악
+        receiving_members: List[Member] = []
         if receivers is not None and group_id is not None:
             raise AmbiguousTargetException()
         elif receivers is not None:
@@ -330,9 +331,11 @@ async def insert_new_treasure(
 
         # 수신자 목록 생성
         result_receiving_members: List[Member] = []
-        if receiving_group:  # 이미 존재하는 그룹에게 발신
-            assert_check_group_ownership(receiving_group, current_member)
-            result_receiving_members = receiving_group.members
+        if receiving_group:  # 여러명에게 발신
+            assert_check_group_ownership(receiving_group, current_member, db)
+            result_receiving_members = [
+                group_member.member for group_member in receiving_group.group_members
+            ]
         elif result_receiver_type is ReceiverTypes.INDIVIDUAL.value:  # 개인에게 발신
             result_receiving_members = receiving_members
 
@@ -346,9 +349,9 @@ async def insert_new_treasure(
         else:
             # dot_hint_image가 제공되지 않은 경우, 픽셀화
             if dot_target is None or dot_target == 1:
-                _to_dot = hint_image_first
+                _to_dot = hint_image_first_file
             elif dot_target == 2:
-                _to_dot = hint_image_second
+                _to_dot = hint_image_second_file
             else:
                 raise InvalidPixelTargetException()
             dot_hint_image_file = await pixelize_image_service(
@@ -358,8 +361,9 @@ async def insert_new_treasure(
             )
 
         # 메시지 첨부 이미지 읽기
-        if content_image:
-            content_image_file = await download_file(content_image)
+        content_image_file = (
+            await download_file(content_image) if content_image is not None else None
+        )
 
         # 이미지 이름 생성
         hint_image_first_name = generate_uuid_filename(hint_image_first_file)
@@ -391,7 +395,7 @@ async def insert_new_treasure(
 
         # 힌트 이미지 임베딩 생성
         embeddings = await get_embedding_of_two_images(
-            hint_image_first, hint_image_second
+            hint_image_first_file, hint_image_second_file
         )
 
         # 평균 벡터 계산
@@ -443,12 +447,12 @@ async def insert_new_treasure(
         )
         dot_hint_image_name_gen = (
             save_image_to_storage(dot_hint_image_file, dot_hint_image_name)
-            if dot_hint_image is not None
+            if dot_hint_image_file is not None
             else None
         )
         content_image_name_gen = (
             save_image_to_storage(content_image_file, content_image_name)
-            if content_image is not None
+            if content_image_file is not None
             else None
         )
 
@@ -537,7 +541,7 @@ async def find_near_treasures_around_me(
     lng_2: float = Query(..., description="두 번째 좌표의 경도"),
     include_opened: bool = Query(
         False,
-        description="이미 열람된 메세지를 가져올 지의 여부.",
+        description="자신이 이미 열람했던 메세지를 가져올 지의 여부.",
     ),
     get_received: bool = Query(
         False,

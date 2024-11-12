@@ -26,7 +26,7 @@ class MemberGroup(Base):
 
     # Relationships
     creator: Mapped["Member"] = relationship("Member")
-    members: Mapped[List["GroupMember"]] = relationship(
+    group_members: Mapped[List["GroupMember"]] = relationship(
         "GroupMember", back_populates="group", cascade="all, delete-orphan"
     )
 
@@ -46,7 +46,9 @@ class GroupMember(Base):
     )
 
     # Relationships
-    group: Mapped["MemberGroup"] = relationship("MemberGroup", back_populates="members")
+    group: Mapped["MemberGroup"] = relationship(
+        "MemberGroup", back_populates="group_members"
+    )
     member: Mapped["Member"] = relationship("Member")
 
     def __repr__(self) -> str:
