@@ -436,18 +436,18 @@ async def insert_new_treasure(
 
         # 파일 저장
         hint_image_first_name_gen = save_image_to_storage(
-            hint_image_first, hint_image_first_name
+            hint_image_first_file, hint_image_first_name
         )
         hint_image_second_name_gen = save_image_to_storage(
-            hint_image_second, hint_image_second_name
+            hint_image_second_file, hint_image_second_name
         )
         dot_hint_image_name_gen = (
-            save_image_to_storage(dot_hint_image, dot_hint_image_name)
+            save_image_to_storage(dot_hint_image_file, dot_hint_image_name)
             if dot_hint_image is not None
             else None
         )
         content_image_name_gen = (
-            save_image_to_storage(content_image, content_image_name)
+            save_image_to_storage(content_image_file, content_image_name)
             if content_image is not None
             else None
         )
