@@ -273,9 +273,9 @@ class _MapScreenState extends State<MapScreen>
           currentBounds,
           false,
           false,
-          false,
-          false,
-          false,
+          true,
+          true,
+          true,
         );
         break;
       case MenuItem.viewStarsForEveryone:
@@ -777,8 +777,7 @@ class _MapScreenState extends State<MapScreen>
   void _fetchMarkersInCurrentBounds() {
     switch (selectedOption) {
       case MenuItem.viewHiddenStars:
-        _fetchTreasuresInBounds(
-            currentBounds, false, false, false, false, false);
+        _fetchTreasuresInBounds(currentBounds, false, false, true, true, true);
         break;
       case MenuItem.viewStarsForEveryone:
         _fetchTreasuresInBounds(currentBounds, false, true, true, false, false);
