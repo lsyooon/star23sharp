@@ -41,7 +41,7 @@ class ListItem extends StatelessWidget {
                   child: Text(
                     item.title,
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: FontSizes.label,
                       color: Colors.white,
                       fontWeight: item.isSent
                           ? FontWeight.normal
@@ -61,7 +61,7 @@ class ListItem extends StatelessWidget {
               Text(
                 item.senderNickname,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: FontSizes.body,
                   color: Colors.white,
                 ),
                 textAlign: TextAlign.end, // 오른쪽 정렬
@@ -70,7 +70,7 @@ class ListItem extends StatelessWidget {
               Text(
                 item.createdDate,
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: FontSizes.small,
                   color: Colors.white.withOpacity(0.8),
                 ),
               )
