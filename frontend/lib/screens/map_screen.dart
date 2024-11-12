@@ -55,12 +55,12 @@ class _MapScreenState extends State<MapScreen>
     if (status.isDenied) {
       var result = await Permission.location.request();
       if (result.isGranted) {
-        _loadMap();
+        _goToCachedOrCurrentLocation();
       } else if (result.isPermanentlyDenied) {
         showPermissionDialog(context);
       }
     } else if (status.isGranted) {
-      _loadMap();
+      _goToCachedOrCurrentLocation();
     } else if (status.isPermanentlyDenied) {
       showPermissionDialog(context);
     } else {
@@ -98,6 +98,16 @@ class _MapScreenState extends State<MapScreen>
     if (lat != null && lng != null) {
       final cachedLocationLatLng = LatLng(lat, lng);
       mapController.setCenter(cachedLocationLatLng);
+      currentBounds = await mapController.getBounds();
+
+      _fetchTreasuresInBounds(
+        currentBounds,
+        false,
+        true,
+        true,
+        false,
+        false,
+      );
     } else {
       logger.d("캐시된 위치가 없습니다. 현재 위치를 가져옵니다.");
     }
@@ -105,6 +115,16 @@ class _MapScreenState extends State<MapScreen>
     // 현재 위치를 가져와 지도 중심 업데이트
     try {
       await _goToCurrentLocation();
+      currentBounds = await mapController.getBounds();
+
+      _fetchTreasuresInBounds(
+        currentBounds,
+        false,
+        true,
+        true,
+        false,
+        false,
+      );
     } catch (e) {
       logger.d("현재 위치를 가져오는 데 실패했습니다: $e");
     }
@@ -611,8 +631,8 @@ class _MapScreenState extends State<MapScreen>
                                             ),
                                             const SizedBox(height: 8),
                                             const Divider(
-                                              color: Colors.grey,        // 선 색상
-                                              thickness: 1,              // 오른쪽 여백
+                                              color: Colors.grey, // 선 색상
+                                              thickness: 1, // 오른쪽 여백
                                             ),
                                             const Text(
                                               "힌트 :",
