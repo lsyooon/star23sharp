@@ -9,7 +9,7 @@ from entity.message_box import MessageBox, MessageDirections
 from sqlalchemy import delete, select
 from sqlalchemy.orm.session import Session as Session_Object
 
-from .member_service import find_member_by_id
+from .member_service import assert_member_by_id
 from .message_service import is_message_public
 
 
@@ -71,7 +71,7 @@ def get_nonpublic_treasure_messagebox_if_authorizable(
             "get_authorizable_treasure_message: Public 보물 메세지에 대해 인증 가능한 MessageBox 개체를 얻어오려 시도하고 있음!!!"
         )
     if isinstance(member, MemberDTO):
-        orm_member = find_member_by_id(member.id, session)
+        orm_member = assert_member_by_id(member.id, session)
     else:
         orm_member = member
 
@@ -86,7 +86,7 @@ def get_treasure_message_if_accesible(
     member: Union[MemberDTO, Member], treasure_message: Message, session: Session_Object
 ) -> Optional[Message]:
     if isinstance(member, MemberDTO):
-        orm_member = find_member_by_id(member.id, session)
+        orm_member = assert_member_by_id(member.id, session)
     else:
         orm_member = member
 

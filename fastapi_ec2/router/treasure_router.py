@@ -26,7 +26,6 @@ from response.exceptions import (
     InvalidCoordinatesException,
     InvalidInputException,
     InvalidPixelTargetException,
-    MemberNotFoundException,
     RecipientNotFoundException,
     SelfRecipientException,
     TitleLengthExceededException,
@@ -44,7 +43,7 @@ from service.image_service import (
     pixelize_image_service,
 )
 from service.member_service import (
-    find_member_by_id,
+    assert_member_by_id,
     find_members_by_nickname_no_validation,
 )
 from service.message_box_service import (
@@ -56,7 +55,7 @@ from service.message_box_service import (
 )
 from service.message_service import (
     authorize_treasure_message,
-    find_multiple_treasures_by_id,
+    find_distinct_multiple_treasures_by_id,
     find_received_near_group_treasures,
     find_received_near_private_treasures,
     find_received_near_public_treasures,
@@ -180,7 +179,7 @@ AUTHORIZE_DESCRIPTION = f"""
 3. 다른 모든 사용자들은 해당 메세지에 대한 열람 권한을 잃습니다.
 
 ## 기타
-- 자기 자신이 발송한 보물 쪽지는 인증할 수 없습니다.
+- 자기 자신이 발송한 Public이 아닌 보물 쪽지는 인증할 수 없습니다.
 - 이미 열람한 쪽지도 인증할 수 없습니다.
 
 ## 매개변수:
@@ -262,9 +261,7 @@ async def insert_new_treasure(
         content_image = contentImage
 
         # 멤버 존재 검증
-        current_member = find_member_by_id(current_member_info[0].id, db)
-        if current_member is None:
-            raise MemberNotFoundException()
+        current_member = assert_member_by_id(current_member_info[0].id, db)
 
         # 입력값 검증
         if len(title) > VarcharLimit.TITLE.value:
@@ -345,12 +342,11 @@ async def insert_new_treasure(
                 else:
                     raise SelfRecipientException()
         elif result_receiver_type != ReceiverTypes.PUBLIC.value:  # 개인에게 발신
-            _recieving_member = find_member_by_id(_receivers_int[0], db)
-            if _recieving_member is None:
-                logging.error(
-                    f"수신자 id={_receivers_int[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다."
-                )
-                raise MemberNotFoundException()
+            _recieving_member = assert_member_by_id(
+                _receivers_int[0],
+                db,
+                message=f"수신자 id={_receivers_int[0]} 가 존재하지 않거나 비활성 또는 탈퇴한 계정입니다.",
+            )
             if _recieving_member.id == current_member.id:
                 raise SelfRecipientException()
             result_recieving_members.append(_recieving_member)
@@ -513,10 +509,8 @@ async def inspect_treasures(
     current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
     db: Session = Depends(get_db),
 ):
-    member_orm = find_member_by_id(current_member_info[0].id, db)
-    if member_orm is None:
-        raise MemberNotFoundException()
-    treasure_orms: List[Message] = find_multiple_treasures_by_id(ids, db)
+    member_orm = assert_member_by_id(current_member_info[0].id, db)
+    treasure_orms: List[Message] = find_distinct_multiple_treasures_by_id(ids, db)
     result_dtos = []
     for treasure in treasure_orms:
         if treasure.sender_id is member_orm.id:  # 내가 이 메세지를 보낸 사람
@@ -566,9 +560,8 @@ async def find_near_treasures(
     current_member_info: Tuple[MemberDTO, str] = Depends(get_current_member),
     db: Session = Depends(get_db),
 ):
-    member_orm = find_member_by_id(current_member_info[0].id, db)
-    if member_orm is None:
-        raise MemberNotFoundException()
+    member_orm = assert_member_by_id(current_member_info[0].id, db)
+
     if not is_lat_lng_valid(lat_1, lng_1) or not is_lat_lng_valid(lat_2, lng_2):
         raise InvalidCoordinatesException()
     xyz_1 = np.array(convert_lat_lng_to_xyz(lat_1, lng_1))
@@ -648,9 +641,7 @@ async def authorize_treasure(
     db: Session = Depends(get_db),
 ):
     # 시도자 검증
-    current_member = find_member_by_id(current_member_info[0].id, db)
-    if current_member is None:
-        raise MemberNotFoundException()
+    current_member = assert_member_by_id(current_member_info[0].id, db)
 
     # 인증 시도 시각
     created_at = datetime.datetime.now()

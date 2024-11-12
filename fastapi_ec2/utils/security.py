@@ -15,7 +15,7 @@ from response.exceptions import (
     MemberNotFoundException,
     UnhandledException,
 )
-from service.member_service import find_member_by_id
+from service.member_service import assert_member_by_id
 from sqlalchemy.orm import Session
 from utils.connection_pool import get_db
 
@@ -49,10 +49,7 @@ async def get_current_member(
         logging.exception("get_current_user: JWT error.")
         raise UnhandledException("get_current_user: JWT error.")
 
-    member = find_member_by_id(token_obj.memberId, Session)
-    if member is None:
-
-        raise MemberNotFoundException()
+    member = assert_member_by_id(token_obj.memberId, Session)
     if member.member_name != token_obj.memberName:
         logging.warning(
             f"get_current_member: 토큰: {token} 의 memberName 과 DB의 member_name 이 일치하지 않습니다!."
