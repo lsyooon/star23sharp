@@ -134,29 +134,38 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
     final List<Map<String, dynamic>> menuList = [
       {
-        'text': '별 보관함',
-        'goto': '/starstorage',
+        'text': '친구 목록',
+        'goto': '/starwriteform',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.65,
-          UIhelper.deviceHeight(context) * -0.09,
+          UIhelper.deviceHeight(context) * -0.08,
         ),
-        'img': 'assets/img/planet/planet1.png',
+        'img': 'assets/img/planet/planet4.png',
       },
       {
-        'text': '별 숨기기',
-        'goto': '/starform',
+        'text': '일반 쪽지',
+        'goto': '/starwriteform',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.15,
           UIhelper.deviceHeight(context) * 0.0,
         ),
+        'img': 'assets/img/planet/planet1.png',
+      },
+      {
+        'text': '보물 쪽지',
+        'goto': '/hidestar',
+        'position': Offset(
+          UIhelper.deviceWidth(context) * 0.6, // 너비의 60%
+          UIhelper.deviceHeight(context) * 0.125, // 높이의 50%
+        ),
         'img': 'assets/img/planet/planet2.png',
       },
       {
-        'text': '내 정보',
-        'goto': '/profile',
+        'text': '쪽지 보관함',
+        'goto': '/starstorage',
         'position': Offset(
-          UIhelper.deviceWidth(context) * 0.6, // 너비의 60%
-          UIhelper.deviceHeight(context) * 0.1, // 높이의 50%
+          UIhelper.deviceWidth(context) * 0.1, // 너비의 60%
+          UIhelper.deviceHeight(context) * 0.2, // 높이의 50%
         ),
         'img': 'assets/img/planet/planet3.png',
       },
@@ -196,28 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: GestureDetector(
                                 onTap: () async {
                                   String url = menu['goto'];
-                                  if (menu['text'] == "별 숨기기") {
-                                    final selectedUrl =
-                                        await showModalBottomSheet<String>(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      builder: (BuildContext context) {
-                                        return const StarWriteTypeModal();
-                                      },
-                                    );
-
-                                    // 선택된 URL이 null이 아닌 경우 페이지 이동
-                                    if (selectedUrl != null) {
-                                      url = selectedUrl;
-                                      Provider.of<MessageFormProvider>(context,
-                                              listen: false)
-                                          .setMessageFormType(type: url);
-                                      Navigator.pushNamed(context, url);
-                                    }
-                                  } else {
-                                    Navigator.pushNamed(context, url);
-                                  }
+                                  Navigator.pushNamed(context, url);
                                 },
                                 child: Column(
                                   children: [
@@ -241,55 +229,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             );
                           }),
-                          // 하단 메시지
-                          Positioned(
-                            bottom: 50,
-                            left: 20,
-                            right: 20,
-                            child: Column(
-                              children: [
-                                Container(
-                                  decoration: _commonContainerDecoration(),
-                                  padding: const EdgeInsets.all(8),
-                                  child: isunRead
-                                      ? const Column(
-                                          children: [
-                                            Text(
-                                              "알림함을 확인해 보세요!",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              "새로운 쪽지가 기다리고 있어요.",
-                                              style: TextStyle(
-                                                  color: Colors.yellow,
-                                                  fontSize: 13),
-                                            ),
-                                          ],
-                                        )
-                                      : const Column(
-                                          children: [
-                                            Text(
-                                              "모든 쪽지를 확인했어요",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              "쪽지를 전달해 보는건 어떨까요?",
-                                              style: TextStyle(
-                                                  color: Colors.yellow,
-                                                  fontSize: 13),
-                                            ),
-                                          ],
-                                        ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
                     ),
