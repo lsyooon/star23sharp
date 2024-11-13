@@ -281,13 +281,10 @@ class _MapScreenState extends State<MapScreen>
   void _handleMenuAction(MenuItem option) {
     setState(() {
       selectedOption = option;
-      _isMenuTouched = false;
+      _isMenuTouched = true;
     });
 
     switch (option) {
-      case MenuItem.hideMyStar:
-        Navigator.pushNamed(context, '/hidestar');
-        break;
       case MenuItem.viewHiddenStars:
         _fetchTreasuresInBounds(
           currentBounds,
@@ -319,6 +316,9 @@ class _MapScreenState extends State<MapScreen>
         );
         break;
     }
+    setState(() {
+      _isMenuTouched = false;
+    });
   }
 
   // 모든 마커 리스트
@@ -933,9 +933,9 @@ class _MapScreenState extends State<MapScreen>
         Positioned(
           bottom: deviceHeight * 0.1,
           left: deviceWidth * 0.12,
-          child: FloatingActionButton(
-            onPressed: _goToCachedOrCurrentLocation,
-            child: const Icon(Icons.my_location),
+          child: InkWell(
+            onTap: _goToCachedOrCurrentLocation,
+            child: Image.asset('assets/img/map/location.png'),
           ),
         ),
         Positioned(
@@ -949,6 +949,14 @@ class _MapScreenState extends State<MapScreen>
               });
             },
             isMenuTouched: _isMenuTouched,
+          ),
+        ),
+        Positioned(
+          bottom: deviceHeight * 0.17,
+          right: deviceWidth * 0.12,
+          child: InkWell(
+            onTap: () => {Navigator.pushNamed(context, '/hidestar')},
+            child: Image.asset('assets/img/map/plus.png'),
           ),
         ),
         if (_isSearchButtonVisible)

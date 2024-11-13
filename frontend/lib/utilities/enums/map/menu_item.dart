@@ -1,5 +1,4 @@
 enum MenuItem {
-  hideMyStar('내 별 숨기기'),
   viewHiddenStars('내가 숨긴 별 보기'),
   viewStarsForEveryone('모두에게 별 보기'),
   viewStarsForMe('나에게만 별 보기');
