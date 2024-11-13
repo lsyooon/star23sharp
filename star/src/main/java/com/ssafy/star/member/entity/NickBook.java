@@ -27,4 +27,9 @@ public class NickBook {
 
     @Column
     private String name;
+
+    public void modifyNickNameAndName(String nickname, String name) {
+        this.nickname = nickname;
+        this.name = name;
+    }
 }
