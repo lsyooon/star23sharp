@@ -34,6 +34,10 @@ public enum CustomErrorCode {
     CONTENT_TOO_LONG("L0020", "쪽지 내용이 너무 깁니다.", HttpStatus.BAD_REQUEST),
     INVALID_IMAGE_FORMAT("L0025", "잘못된 이미지 형식입니다. png, jpg, jpeg 파일만 허용됩니다.", HttpStatus.BAD_REQUEST),
     INCLUDE_MYSELF("L0022", "쪽지 수신자 중에 자기 자신이 존재합니다.", HttpStatus.BAD_REQUEST),
+    MEMBER_NOT_FOUND("M0006","회원이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    NICKBOOK_NOT_FOUND("M0012","존재하지 않는 닉북입니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_NICKBOOK_ACCESS("M0013","해당 닉북에 접근할 권한이 없습니다.",HttpStatus.FORBIDDEN),
+    NICKBOOK_ALREADY_EXISTS("M0014","이미 닉북에 등록된 닉네임입니다.", HttpStatus.BAD_REQUEST),
     ;
     private final String code;
     private final String message;
