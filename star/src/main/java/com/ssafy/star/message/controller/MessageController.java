@@ -23,9 +23,18 @@ public class MessageController {
         this.messageService = messageService;
     }
 
-    @GetMapping("/reception/list")
-    public ResponseEntity<?> getReceptionList(@AuthenticationPrincipal CustomUserDetails user){
-        List<ReceiveMessageListResponse> response = messageService.getReceiveMessageListResponse(user.getId());
+    @GetMapping("/reception/list/{filter}")
+    public ResponseEntity<?> getReceptionList(@AuthenticationPrincipal CustomUserDetails user,
+                                              @PathVariable int filter){
+        List<ReceiveMessageListResponse> response;
+        if (filter == 0) {  // 리스트 전체
+            response = messageService.getReceiveMessageListResponse(user.getId());
+        } else if (filter == 1) {   // 보물 쪽지
+            response = messageService.getReceiveTreasureMessageListResponse(user.getId());
+        } else {    // 일반 쪽지
+            response = messageService.getReceiveCommonMessageListResponse(user.getId());
+        }
+
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
         }
@@ -44,6 +53,7 @@ public class MessageController {
         } else {    // 일반 쪽지
             response = messageService.getSendCommonMessageListResponse(user.getId());
         }
+
         if (response.isEmpty()){
             return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 쪽지가 없습니다."));
         }

@@ -75,9 +75,19 @@ public interface MessageBoxRepository extends JpaRepository<MessageBox, Long> {
             "AND mb.messageDirection = :messageDirection " +
             "AND mb.isDeleted = false " +
             "AND ((m.isTreasure = true AND mb.state = true) OR (m.isTreasure = false))")
-    List<ReceiveMessageListResponse> findReceivedMessageList(
-            @Param("memberId") Long memberId,
-            @Param("messageDirection") short messageDirection);
+    List<ReceiveMessageListResponse> findReceivedMessageList(Long memberId, short messageDirection);
+
+    @Query("SELECT new com.ssafy.star.message.dto.response.ReceiveMessageListResponse(" +
+            "m.id, m.title, m.receiverType, m.sender.nickname, m.createdAt, m.isTreasure, mb.state) " +
+            "FROM MessageBox mb " +
+            "JOIN mb.message m " +
+            "WHERE mb.member.id = :memberId " +
+            "AND mb.messageDirection = :messageDirection " +
+            "AND mb.isDeleted = false " +
+            "AND m.isTreasure = :isTreasure " +
+            "AND (:state IS NULL OR mb.state = :state)")
+    List<ReceiveMessageListResponse> findReceivedMessageListByIsTreasure(Long memberId, short messageDirection,
+                                                                         boolean isTreasure, Boolean state);
 
 //    @Query("SELECT new com.ssafy.star.message.dto.response.SendMessageListResponseDto(" +
 //            "m.id, m.title,m.receiver ,m.receiverType, m.createdAt, m.isTreasure, mb.state, m.group.id, m.isFound) " +
