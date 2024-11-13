@@ -36,9 +36,8 @@ public class MessageController {
         }
 
         if (response.isEmpty()){
-            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 편지가 없습니다."));
+            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공. 받은 쪽지가 없습니다."));
         }
-
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 
@@ -78,14 +77,14 @@ public class MessageController {
     public ResponseEntity<ApiResponse<?>> deleteMessage(@AuthenticationPrincipal CustomUserDetails user,
                                                         @PathVariable Long messageId){
         messageService.removeMessage(user.getId(), messageId);
-        return ResponseEntity.ok().body(new ApiResponse<>("200", "메시지 삭제 완료"));
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "쪽지 삭제 완료"));
     }
 
     @PostMapping("/report")
     public ResponseEntity<ApiResponse<?>> reportMessage(@AuthenticationPrincipal CustomUserDetails user,
                                                         @RequestBody ComplaintMessageRequest request){
         messageService.complaintMessage(user.getId(), request);
-        return ResponseEntity.ok().body(new ApiResponse<>("200", "메시지 신고 완료"));
+        return ResponseEntity.ok().body(new ApiResponse<>("200", "쪽지 신고 완료"));
     }
 
     @GetMapping("/report-reason")
