@@ -12,6 +12,6 @@ public class NickBookResponse {
 
 
     private Long id;
-    private String nickName;
+    private String nickname;
     private String name;
 }
