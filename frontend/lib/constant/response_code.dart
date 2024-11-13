@@ -32,6 +32,8 @@ class ResponseCode {
   static const String selfAsRecipient = "L0022";
   static const String searchRangeTooWide = "L0023";
   static const String invalidImageSize = "L0024";
+  static const String invalidImageType = "L0025";
+  static const String harmfulImage = "L0026";
 
   // Member Errors
   static const String expiredToken = "M0000";
@@ -45,6 +47,9 @@ class ResponseCode {
   static const String invalidToken = "M0009";
   static const String invalidDeviceToken = "M0010";
   static const String deviceTokenNotFound = "M0011";
+  static const String nicbookNotFound = "M0012";
+  static const String nickbookNoPermission = "M0013";
+  static const String nickbookAlreadyExists = "M0014";
 
   // Push Notification Errors
   static const String pushNotificationFailed = "P0001";

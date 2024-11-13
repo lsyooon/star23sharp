@@ -15,8 +15,8 @@ class NickbookScreen extends StatefulWidget {
 }
 
 class NickbookScreenState extends State<NickbookScreen> {
-  List<Map<String, dynamic>> nicbooks = [];
-  bool showButton = true;
+  List<dynamic> nicbooks = [];
+  bool showButton = false;
   bool isLoading = true;
 
   @override
@@ -30,22 +30,21 @@ class NickbookScreenState extends State<NickbookScreen> {
       // API 호출
       final response = await UserService.getNicbook();
       if (response != null) {
-        final data = response['data'] as List<dynamic>;
-
         setState(() {
-          nicbooks = data.map((item) {
+          nicbooks = response.map((item) {
             return {
-              "nickname": item["nickname"], // 서버 데이터 매핑
+              "nickname": item["nickname"],
               "name": item["name"],
               "id": item["id"],
             };
           }).toList();
           isLoading = false;
-          logger.d(nicbooks);
-          showButton = false;
+          showButton = nicbooks.isEmpty;
         });
       }
-    } catch (e) {}
+    } catch (e) {
+      logger.e("Error in fetchNicbooks $e");
+    }
   }
 
   void showAddOrEditDialog(Map<String, dynamic>? nickbooks) {
@@ -238,6 +237,7 @@ class NickbookScreenState extends State<NickbookScreen> {
                               margin: const EdgeInsets.symmetric(
                                   vertical: 8.0, horizontal: 16.0),
                               child: ListTile(
+                                tileColor: Colors.transparent,
                                 title: Text(nic['name']),
                                 subtitle: Text(nic['nickname']),
                                 trailing: Row(

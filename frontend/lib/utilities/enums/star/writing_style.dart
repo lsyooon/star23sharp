@@ -34,9 +34,9 @@ extension WritingStyleExtension on WritingStyle {
         return '안녕하세요.';
       case WritingStyle.cute:
         return '''
-女: ヌr ㄱ l 0F앙♡ ●살콩하l언l
-男:ol뿐짓하lㅂr0 ol-l교장0l > <♥
-女: ♥ 우zl nㅓuБ님 nㅋㅎH요오 ε
+ヌr ㄱ l 0F앙♡ ●살콩하l언l
+ol뿐짓하lㅂr0 ol-l교장0l > <♥
+♥ 우zl nㅓuБ님 nㅋㅎH요오 ε
 ''';
       case WritingStyle.haoche:
         return '''

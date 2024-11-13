@@ -24,6 +24,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
   final FocusNode _messageFocusNode = FocusNode(); // 메시지 입력에 대한 FocusNode 추가
 
   final List<String> _recipients = [];
+  List<dynamic> nicBook = [];
   File? _selectedImage; // 선택된 이미지를 저장할 변수
   final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스
 
@@ -51,6 +52,27 @@ class _StarFormScreenState extends State<StarFormScreen> {
         _scrollToBottom();
       }
     });
+    fetchNicbooks();
+  }
+
+  Future<void> fetchNicbooks() async {
+    try {
+      // API 호출
+      final response = await UserService.getNicbook();
+      if (response != null) {
+        setState(() {
+          nicBook = response.map((item) {
+            return {
+              "nickname": item["nickname"],
+              "name": item["name"],
+              "id": item["id"],
+            };
+          }).toList();
+        });
+      }
+    } catch (e) {
+      logger.e("Error in fetchNicbooks $e");
+    }
   }
 
   void _scrollToBottom() {
@@ -74,14 +96,14 @@ class _StarFormScreenState extends State<StarFormScreen> {
           // 닉네임 중복 검사
           bool isDuplicate = await UserService.checkDuplicateId(
               1, _nicknameController.text.trim());
-
+          logger.d("닉네임 : $nickname");
           // 최대 인원수 제한 확인 후 추가
           if (_recipients.length < maxRecipients) {
             if (isDuplicate) {
               setState(() {
                 _recipients.add(nickname);
+                _nicknameController.clear();
               });
-              _nicknameController.clear();
             } else {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -169,7 +191,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
         Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
     final messageProvider =
         Provider.of<MessageFormProvider>(context, listen: false);
-    logger.d("${messageProvider.messageData}");
 
     return Center(
       child: Container(
@@ -250,29 +271,90 @@ class _StarFormScreenState extends State<StarFormScreen> {
                         const Text('모든 사용자에게 보내기'),
                       ],
                     ),
-                  // 받는 사람 입력
-                  TextFormField(
-                    controller: _nicknameController,
-                    enabled: !_sendToAll, // 체크박스 선택 시 input 비활성화
-
-                    decoration: InputDecoration(
-                      labelText: '받는 사람',
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          if (_nicknameController.text.isNotEmpty) {
-                            _addRecipient(_nicknameController.text);
-                          }
-                        },
-                      ),
-                    ),
-                    validator: (value) {
-                      if (_recipients.isEmpty && !_sendToAll) {
-                        return '받는 사람은 한명 이상이어야합니다';
+                  Autocomplete<Map<String, dynamic>>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<Map<String, dynamic>>.empty();
                       }
-                      return null;
+                      return nicBook.where((option) {
+                        final nickname =
+                            option['nickname']?.toLowerCase() ?? '';
+                        final name = option['name']?.toLowerCase() ?? '';
+                        final input = textEditingValue.text.toLowerCase();
+
+                        return nickname.contains(input) || name.contains(input);
+                      }).cast<Map<String, dynamic>>();
                     },
-                    onFieldSubmitted: _addRecipient,
+                    displayStringForOption: (option) => option['nickname'],
+                    onSelected: (Map<String, dynamic> selection) {
+                      if (!_recipients.contains(selection['nickname'])) {
+                        _addRecipient(selection['nickname']!);
+                      }
+                    },
+                    fieldViewBuilder: (BuildContext context,
+                        TextEditingController textEditingController,
+                        FocusNode focusNode,
+                        VoidCallback onFieldSubmitted) {
+                      _nicknameController.value = textEditingController.value;
+                      return TextFormField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        enabled: !_sendToAll,
+                        decoration: InputDecoration(
+                          labelText: '받는 사람',
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () {
+                              if (_nicknameController.text.isNotEmpty) {
+                                _addRecipient(_nicknameController.text);
+                              }
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (_recipients.isEmpty && !_sendToAll) {
+                            return '받는 사람은 한명 이상이어야합니다';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                    optionsViewBuilder: (BuildContext context,
+                        AutocompleteOnSelected<Map<String, dynamic>> onSelected,
+                        Iterable<Map<String, dynamic>> options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4.0,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: UIhelper.deviceWidth(context) * 0.7,
+                              maxHeight: UIhelper.deviceHeight(context) *
+                                  0.3, // 최대 높이 제한
+                            ),
+                            child: ListView.builder(
+                              shrinkWrap: true, // 리스트뷰가 필요한 만큼만 공간을 차지
+                              padding: EdgeInsets.zero,
+                              itemCount: options.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final option = options.elementAt(index);
+                                return ListTile(
+                                  title: Text(option['nickname']),
+                                  subtitle: Text(
+                                    option['name'],
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.grey),
+                                  ),
+                                  onTap: () {
+                                    onSelected(option);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   Wrap(
                     spacing: 8.0,
