@@ -30,7 +30,7 @@ public class NickBookService {
         return result;
     }
 
-    public void addNicknameToBook(Long memberId, NickBookRequest nickBookRequest) {
+    public NickBookResponse addNicknameToBook(Long memberId, NickBookRequest nickBookRequest) {
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
@@ -47,7 +47,9 @@ public class NickBookService {
                 .name(nickBookRequest.getName())
                 .build();
         try {
-            nickBookRepository.save(newNickBook);
+
+        NickBook  nickBook = nickBookRepository.save(newNickBook);
+        return new NickBookResponse(nickBook.getId(),nickBook.getNickname(),nickBook.getName());
         }catch (DataIntegrityViolationException e) {
             throw new CustomException(CustomErrorCode.NICKBOOK_ALREADY_EXISTS);
         }

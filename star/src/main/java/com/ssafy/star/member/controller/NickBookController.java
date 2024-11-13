@@ -36,8 +36,8 @@ public class NickBookController {
 
     @PostMapping("")
     public ResponseEntity<?> InsertNickBook(@AuthenticationPrincipal CustomUserDetails user, @Valid @RequestBody NickBookRequest nickBookRequest){
-        nickBookService.addNicknameToBook(user.getId(), nickBookRequest);
-        return ResponseEntity.ok(new ApiResponse("200","닉북 저장 성공",null));
+        NickBookResponse result = nickBookService.addNicknameToBook(user.getId(), nickBookRequest);
+        return ResponseEntity.ok(new ApiResponse("200","닉북 저장 성공",result));
     }
 
     @PutMapping("/{nickId}")
