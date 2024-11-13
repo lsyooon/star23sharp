@@ -32,8 +32,6 @@ class MainLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final isLoggedIn = Provider.of<AuthProvider>(context).isLoggedIn;
-
     final double bottomNavHeight = MediaQuery.of(context).size.height * 0.2;
 
     return Scaffold(

@@ -6,9 +6,9 @@ import 'package:star23sharp/widgets/index.dart';
 class StarStoragebox extends StatelessWidget {
   StarStoragebox({super.key});
 
-  final Future<List<StarListItemModel>?> sent = StarService.getStarList(true);
+  final Future<List<StarListItemModel>?> sent = StarService.getStarList(true, 0);
   final Future<List<StarListItemModel>?> receieved =
-      StarService.getStarList(false);
+      StarService.getStarList(false, 0);
 
   @override
   Widget build(BuildContext context) {
