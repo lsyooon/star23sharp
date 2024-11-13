@@ -61,4 +61,27 @@ public class PushNotificationService {
             throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_FAILED);
         }
     }
+
+    @Async
+    public void sendPushNotificationCommonMessage(String token, String messageId, String title, String content) {
+
+        Notification notification = Notification.builder()
+                .setTitle(title)
+                .setBody(content)
+                .build();
+
+        Message message = Message.builder()
+                .setToken(token)
+                .putData("messageId", messageId)
+                .setNotification(notification)
+                .build();
+
+        try {
+            firebaseMessaging.sendAsync(message);
+        } catch (Exception e) {
+            // 기타 예외 처리
+            throw new CustomException(CustomErrorCode.PUSH_NOTIFICATION_FAILED);
+        }
+    }
+
 }

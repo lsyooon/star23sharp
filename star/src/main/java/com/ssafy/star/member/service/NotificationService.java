@@ -195,7 +195,7 @@ public class NotificationService {
         }
         try {
             System.out.println("들어옴");
-            pushNotificationService.sendPushNotification(receiverToken.getDeviceToken(), "" + notification.getId(), notification.getTitle(), notification.getContent());
+            pushNotificationService.sendPushNotificationCommonMessage(receiverToken.getDeviceToken(), "" + messageId, notification.getTitle(), notification.getContent());
         } catch (Exception e) {
             System.out.println("푸시 알림 전송 실패: " + e.getMessage());
         }
