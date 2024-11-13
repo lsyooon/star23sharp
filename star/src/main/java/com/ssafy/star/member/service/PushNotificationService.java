@@ -63,7 +63,7 @@ public class PushNotificationService {
     }
 
     @Async
-    public void sendPushNotificationCommonMessage(String token, String messageId, String title, String content) {
+    public void sendPushNotificationCommonMessage(String token, String notificationId, String messageId, String title, String content) {
 
         Notification notification = Notification.builder()
                 .setTitle(title)
@@ -72,6 +72,7 @@ public class PushNotificationService {
 
         Message message = Message.builder()
                 .setToken(token)
+                .putData("notificationId", notificationId)
                 .putData("messageId", messageId)
                 .setNotification(notification)
                 .build();
