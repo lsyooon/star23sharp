@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 } else {
                   // 네트워크 연결이 여전히 없는 경우 사용자에게 알림
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("네트워크 연결이 여전히 없습니다.")),
+                    const SnackBar(content: Text("네트워크 연결이 없습니다.")),
                   );
                 }
               },
@@ -153,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'text': '내 정보',
-        'goto': '/profile',
+        'goto': '/nickbooks',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.6, // 너비의 60%
           UIhelper.deviceHeight(context) * 0.1, // 높이의 50%

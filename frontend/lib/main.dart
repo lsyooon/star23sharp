@@ -199,7 +199,7 @@ class MyApp extends StatelessWidget {
         '/hidestar': (context) => const MainLayout(child: HideStarScreen()),
         '/notification_setting': (context) =>
             const MainLayout(child: NotificationSettingsScreen()),
-        // '/loading': (context) => const MainLayout(child: LoadingScreen()),
+        '/nickbooks': (context) => const MainLayout(child: NickbookScreen()),
       },
     );
   }
