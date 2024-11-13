@@ -10,6 +10,23 @@ import 'package:star23sharp/widgets/modals/error_snackbar.dart';
 class MainLayout extends StatelessWidget {
   final Widget child;
 
+  void navigateToScreen(BuildContext context, String routeName){
+    final isLoggedIn = Provider.of<AuthProvider>(context, listen: false).isLoggedIn;
+
+    // 로그인 여부 확인
+    if (!isLoggedIn) {
+      ErrorSnackbar.show("로그인 후 사용 가능합니다.");
+      return;
+    }
+
+    // 현재 화면과 이동하려는 화면이 다를 때만 이동
+    if (ModalRoute.of(context)?.settings.name != routeName) {
+      Navigator.pushNamed(context, routeName).then((_) {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+      });
+    }
+  }
+
   const MainLayout({super.key, required this.child});
 
   @override
@@ -76,15 +93,7 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.notifications_outlined),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              if (!isLoggedIn) {
-                                ErrorSnackbar.show("로그인 해주세요!");
-                                return;
-                              }
-                              Navigator.pushNamed(context, '/notification')
-                                  .then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context,
-                                    '/home', (Route<dynamic> route) => false);
-                              });
+                              navigateToScreen(context, "/notification");
                             },
                           ),
                           IconButton(
@@ -92,15 +101,7 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.mail_outline),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              if (!isLoggedIn) {
-                                ErrorSnackbar.show("로그인 해주세요!");
-                                return;
-                              }
-                              Navigator.pushNamed(context, '/starstorage')
-                                  .then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context,
-                                    '/home', (Route<dynamic> route) => false);
-                              });
+                              navigateToScreen(context, "/starstorage");
                             },
                           ),
                         ],
@@ -113,14 +114,7 @@ class MainLayout extends StatelessWidget {
                     icon: Image.asset(
                         'assets/img/blackTheme/black_center_button.png'),
                     onPressed: () {
-                      if (!isLoggedIn) {
-                        ErrorSnackbar.show("로그인 하신 후 사용하실 수 있습니다!");
-                        return;
-                      }
-                      Navigator.pushNamed(context, '/map').then((_) {
-                        Navigator.pushNamedAndRemoveUntil(
-                            context, '/home', (Route<dynamic> route) => false);
-                      });
+                      navigateToScreen(context, "/map");
                     },
                   ),
                   // 오른쪽 Column의 배경 이미지 추가
@@ -143,13 +137,7 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.account_circle_outlined),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              if(!isLoggedIn){
-                                ErrorSnackbar.show("로그인 해주세요!");
-                                return;
-                              }
-                              Navigator.pushNamed(context, '/profile').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
-                              });
+                              navigateToScreen(context, "/profile");
                             },
                           ),
                           IconButton(

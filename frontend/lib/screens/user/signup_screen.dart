@@ -132,12 +132,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               if (isAvailable) // 중복 검사 결과에 따라 체크 아이콘 표시
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 20,
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Image.asset(
+                    'assets/icon/check.png',
+                    fit: BoxFit.cover,
+                    width: 15,
+                    height: 15
                   ),
                 ),
             ],
@@ -147,7 +148,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: [
             Expanded(
               child: TextField(
-                
                 controller: controller,
                 decoration: InputDecoration(
                   hintText: hintText,
@@ -300,15 +300,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 await UserService.signup(memberId, password, nickname);
             if (response) {
               // 회원가입 완료
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    "회원가입이 완료되었습니다!",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  backgroundColor: Colors.black54,
-                ),
-              );
+              ErrorSnackbar.show("회원가입이 완료되었습니다!", textColor: Colors.white);
               Navigator.pushNamed(context, '/home');
             } else {
               // 회원가입 실패
