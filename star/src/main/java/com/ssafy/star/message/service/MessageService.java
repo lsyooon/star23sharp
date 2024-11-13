@@ -62,7 +62,7 @@ public class MessageService {
 
     public List<ReceiveMessageListResponse> getReceiveMessageListResponse(Long userId) {
 
-        List<ReceiveMessageListResponse> responseList = new ArrayList<>();
+        List<ReceiveMessageListResponse> responseList;
         responseList = messageBoxRepository.findReceivedMessageList(userId, (short) 1);
         LocalDateTime now = LocalDateTime.now();
         for (ReceiveMessageListResponse res : responseList) {
@@ -118,28 +118,20 @@ public class MessageService {
 //    }
 
 
-    // 송신 쪽지 리스트 4번째
+    // 송신 쪽지 리스트
     public List<SendMessageListResponseDto> getSendMessageListResponse(Long userId) {
-        List<SendMessageListResponseDto> responseList = new ArrayList<>();
-        List<SendMessageListProjection> results = messageBoxRepository.findMessagesByMemberId(userId);
-        responseList = results.stream()
-                .map(result -> new SendMessageListResponseDto(
-                        result.getMessageId(), result.getTitle(), result.getRecipient(),
-                        result.getCreatedAt(), result.isKind(), result.getIsFound(),
-                        result.getReceiverType(), result.getGroupId()
-                ))
-                .collect(Collectors.toList());
-        LocalDateTime now = LocalDateTime.now();
-        for (SendMessageListResponseDto message : responseList) {
-            String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
-            message.setCreatedDate(formattedDate);
-        }
-
-        responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
-        return responseList;
-
+        return getSendMessageList(userId, null);
     }
 
+    // 송신 보물 쪽지 리스트
+    public List<SendMessageListResponseDto> getSendTreasureMessageListResponse(Long userId) {
+        return getSendMessageList(userId, true);
+    }
+
+    // 송신 일반 쪽지 리스트
+    public List<SendMessageListResponseDto> getSendCommonMessageListResponse(Long userId) {
+        return getSendMessageList(userId, false);
+    }
 
 
     /*
@@ -569,4 +561,32 @@ public class MessageService {
                 ? createdAt.format(timeFormatter) // 오늘 날짜면 시간만
                 : createdAt.format(dateFormatter); // 오늘 이전 날짜면 날짜만
     }
+
+    // 송신 쪽지 리스트
+    public List<SendMessageListResponseDto> getSendMessageList(Long userId, Boolean isTreasure) {
+        List<SendMessageListProjection> results;
+        if (isTreasure == null) {
+            results = messageBoxRepository.findMessagesByMemberId(userId);
+        } else {
+            results = messageBoxRepository.findMessagesByMemberIdANDIsTreasure(userId, isTreasure);
+        }
+
+        List<SendMessageListResponseDto> responseList = results.stream()
+                .map(result -> new SendMessageListResponseDto(
+                        result.getMessageId(), result.getTitle(), result.getRecipient(),
+                        result.getCreatedAt(), result.isKind(), result.getIsFound(),
+                        result.getReceiverType(), result.getGroupId()
+                ))
+                .collect(Collectors.toList());
+
+        LocalDateTime now = LocalDateTime.now();
+        for (SendMessageListResponseDto message : responseList) {
+            String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
+            message.setCreatedDate(formattedDate);
+        }
+
+        responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+        return responseList;
+    }
+
 }
