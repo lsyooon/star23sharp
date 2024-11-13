@@ -153,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'text': '보물 쪽지',
-        'goto': '/starwriteform',
+        'goto': '/hidestar',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.6, // 너비의 60%
           UIhelper.deviceHeight(context) * 0.125, // 높이의 50%
