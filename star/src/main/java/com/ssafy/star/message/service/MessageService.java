@@ -60,19 +60,21 @@ public class MessageService {
         this.notificationService = notificationService;
     }
 
+    // 수신 쪽지 전체 리스트
     public List<ReceiveMessageListResponse> getReceiveMessageListResponse(Long userId) {
-
-        List<ReceiveMessageListResponse> responseList;
-        responseList = messageBoxRepository.findReceivedMessageList(userId, (short) 1);
-        LocalDateTime now = LocalDateTime.now();
-        for (ReceiveMessageListResponse res : responseList) {
-            String formattedDate = formatCreatedDate(res.getCreatedAt(), now);
-            res.setCreatedDate(formattedDate);
-        }
-        responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
-
-        return responseList;
+        return getReceiveMessageList(userId, null, null);
     }
+
+    // 수신 보물 쪽지 리스트
+    public List<ReceiveMessageListResponse> getReceiveTreasureMessageListResponse(Long userId) {
+        return getReceiveMessageList(userId, true, true);
+    }
+
+    // 수신 일반 쪽지 리스트
+    public List<ReceiveMessageListResponse> getReceiveCommonMessageListResponse(Long userId) {
+        return getReceiveMessageList(userId, false, null);
+    }
+
     /*
      *
      *  수신 쪽지 리스트 V1
@@ -583,6 +585,26 @@ public class MessageService {
         for (SendMessageListResponseDto message : responseList) {
             String formattedDate = formatCreatedDate(message.getCreatedAt(), now);
             message.setCreatedDate(formattedDate);
+        }
+
+        responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+        return responseList;
+    }
+
+    // 수신 쪽지 리스트
+    public List<ReceiveMessageListResponse> getReceiveMessageList(Long userId, Boolean isTreasure, Boolean state) {
+        List<ReceiveMessageListResponse> responseList;
+
+        if (isTreasure == null) {
+            responseList = messageBoxRepository.findReceivedMessageList(userId, (short) 1);
+        } else {
+            responseList = messageBoxRepository.findReceivedMessageListByIsTreasure(userId, (short) 1, isTreasure, state);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        for (ReceiveMessageListResponse res : responseList) {
+            String formattedDate = formatCreatedDate(res.getCreatedAt(), now);
+            res.setCreatedDate(formattedDate);
         }
 
         responseList.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
