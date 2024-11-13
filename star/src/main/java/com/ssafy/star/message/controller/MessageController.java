@@ -33,19 +33,22 @@ public class MessageController {
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 성공", response));
     }
 
-
-
-    @GetMapping("/send/list")
-    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList(@AuthenticationPrincipal CustomUserDetails user){
-        List<SendMessageListResponseDto> response = messageService.getSendMessageListResponse(user.getId());
+    @GetMapping("/send/list/{filter}")
+    public ResponseEntity<ApiResponse<List<SendMessageListResponseDto>>> getSendMessageList(@AuthenticationPrincipal CustomUserDetails user,
+                                                                                            @PathVariable int filter){
+        List<SendMessageListResponseDto> response;
+        if (filter == 0) {  // 리스트 전체
+            response = messageService.getSendMessageListResponse(user.getId());
+        } else if (filter == 1) {   // 보물 쪽지
+            response = messageService.getSendTreasureMessageListResponse(user.getId());
+        } else {    // 일반 쪽지
+            response = messageService.getSendCommonMessageListResponse(user.getId());
+        }
         if (response.isEmpty()){
-            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 편지가 없습니다."));
+            return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료. 보낸 쪽지가 없습니다."));
         }
         return ResponseEntity.ok().body(new ApiResponse<>("200", "조회 완료", response));
     }
-
-
-
 
     @GetMapping("/reception/{messageId}")
     public ResponseEntity<ApiResponse<ReceiveMessageResponse>> getReceptionMessage(@AuthenticationPrincipal CustomUserDetails user,
