@@ -110,8 +110,7 @@ class MainLayout extends StatelessWidget {
                   // 가운데 버튼
                   IconButton(
                     iconSize: 50.0,
-                    icon: Image.asset(
-                        'assets/img/blackTheme/black_center_button.png'),
+                    icon: Image.asset('assets/img/blackTheme/compass.png'),
                     onPressed: () {
                       if (!isLoggedIn) {
                         ErrorSnackbar.show("로그인 하신 후 사용하실 수 있습니다!");
@@ -143,12 +142,14 @@ class MainLayout extends StatelessWidget {
                             icon: const Icon(Icons.account_circle_outlined),
                             color: const Color(0xFF868686),
                             onPressed: () {
-                              if(!isLoggedIn){
+                              if (!isLoggedIn) {
                                 ErrorSnackbar.show("로그인 해주세요!");
                                 return;
                               }
-                              Navigator.pushNamed(context, '/profile').then((_) {
-                                Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+                              Navigator.pushNamed(context, '/profile')
+                                  .then((_) {
+                                Navigator.pushNamedAndRemoveUntil(context,
+                                    '/home', (Route<dynamic> route) => false);
                               });
                             },
                           ),
@@ -163,7 +164,7 @@ class MainLayout extends StatelessWidget {
                               if (Navigator.canPop(context)) {
                                 Navigator.pop(context); // 화면이 있다면 뒤로가기
                               } else {
-                                SystemNavigator.pop();  // 뒤로 갈 화면이 없다면 앱 종료
+                                SystemNavigator.pop(); // 뒤로 갈 화면이 없다면 앱 종료
                               }
                             },
                           ),
