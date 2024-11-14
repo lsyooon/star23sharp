@@ -6,7 +6,6 @@ import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
 import 'package:star23sharp/widgets/index.dart';
-import 'package:star23sharp/widgets/modals/star_write_type_modal.dart';
 import 'package:star23sharp/providers/index.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -97,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 } else {
                   // 네트워크 연결이 여전히 없는 경우 사용자에게 알림
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("네트워크 연결이 여전히 없습니다.")),
+                    const SnackBar(content: Text("네트워크 연결이 없습니다.")),
                   );
                 }
               },
@@ -135,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Map<String, dynamic>> menuList = [
       {
         'text': '친구 목록',
-        'goto': '/starwriteform',
+        'goto': '/nickbooks',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.65,
           UIhelper.deviceHeight(context) * -0.08,
@@ -188,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 30),
-            const Logo(),
+            const IgnorePointer(ignoring: true, child: Logo()),
             // 로그인 여부에 따른 UI 변경
             authProvider.isLoggedIn
                 ? Expanded(

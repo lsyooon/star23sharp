@@ -24,6 +24,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
   final FocusNode _messageFocusNode = FocusNode(); // 메시지 입력에 대한 FocusNode 추가
 
   final List<String> _recipients = [];
+  List<dynamic> nicBook = [];
   File? _selectedImage; // 선택된 이미지를 저장할 변수
   final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스
 
@@ -51,6 +52,27 @@ class _StarFormScreenState extends State<StarFormScreen> {
         _scrollToBottom();
       }
     });
+    fetchNicbooks();
+  }
+
+  Future<void> fetchNicbooks() async {
+    try {
+      // API 호출
+      final response = await UserService.getNicbook();
+      if (response != null) {
+        setState(() {
+          nicBook = response.map((item) {
+            return {
+              "nickname": item["nickname"],
+              "name": item["name"],
+              "id": item["id"],
+            };
+          }).toList();
+        });
+      }
+    } catch (e) {
+      logger.e("Error in fetchNicbooks $e");
+    }
   }
 
   void _scrollToBottom() {
@@ -72,16 +94,16 @@ class _StarFormScreenState extends State<StarFormScreen> {
       if (!_recipients.contains(nickname) && userNickname != nickname) {
         if (_validateNickname(nickname)) {
           // 닉네임 중복 검사
-          bool isDuplicate = await UserService.checkDuplicateId(
-              1, _nicknameController.text.trim());
-
+          logger.d("닉네임 : $nickname");
+          logger.d("닉네임controller : ${_nicknameController.text}");
+          bool isDuplicate = await UserService.checkDuplicateId(1, nickname);
           // 최대 인원수 제한 확인 후 추가
           if (_recipients.length < maxRecipients) {
             if (isDuplicate) {
               setState(() {
                 _recipients.add(nickname);
+                _nicknameController.clear();
               });
-              _nicknameController.clear();
             } else {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -173,7 +195,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
         Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
     final messageProvider =
         Provider.of<MessageFormProvider>(context, listen: false);
-    logger.d("${messageProvider.messageData}");
 
     return Center(
       child: Container(
@@ -254,29 +275,156 @@ class _StarFormScreenState extends State<StarFormScreen> {
                         const Text('모든 사용자에게 보내기'),
                       ],
                     ),
-                  // 받는 사람 입력
-                  TextFormField(
-                    controller: _nicknameController,
-                    enabled: !_sendToAll, // 체크박스 선택 시 input 비활성화
+                  Autocomplete<Map<String, dynamic>>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return nicBook.where((option) {
+                          return !_recipients.contains(option['nickname']);
+                        }).cast<Map<String, dynamic>>();
+                      }
 
-                    decoration: InputDecoration(
-                      labelText: '받는 사람',
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          if (_nicknameController.text.isNotEmpty) {
-                            _addRecipient(_nicknameController.text);
+                      return nicBook.where((option) {
+                        final nickname =
+                            option['nickname']?.toLowerCase() ?? '';
+                        final name = option['name']?.toLowerCase() ?? '';
+                        final input = textEditingValue.text.toLowerCase();
+
+                        return (!_recipients.contains(option['nickname'])) &&
+                            (nickname.contains(input) || name.contains(input));
+                      }).cast<Map<String, dynamic>>();
+                    },
+                    displayStringForOption: (option) => option['nickname'],
+                    onSelected: (Map<String, dynamic> selection) {
+                      if (!_recipients.contains(selection['nickname'])) {
+                        logger.d(
+                            "Autocomplete 선택된 닉네임: ${selection['nickname']}");
+                        _addRecipient(selection['nickname'].trim());
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _nicknameController.text = ''; // 입력 필드 초기화
+                        });
+                      }
+                    },
+                    fieldViewBuilder: (BuildContext context,
+                        TextEditingController textEditingController,
+                        FocusNode focusNode,
+                        VoidCallback onFieldSubmitted) {
+                      // 동기화: 컨트롤러 내용을 수정
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_nicknameController != textEditingController) {
+                          textEditingController.text = _nicknameController.text;
+                        }
+                      });
+
+                      return TextFormField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        enabled: !_sendToAll,
+                        onFieldSubmitted: (value) {
+                          if (value.isNotEmpty &&
+                              !_recipients.contains(value)) {
+                            logger.d("TextFormField 입력된 값 추가: $value");
+                            _addRecipient(value.trim());
+                            textEditingController.clear();
                           }
                         },
-                      ),
-                    ),
-                    validator: (value) {
-                      if (_recipients.isEmpty && !_sendToAll) {
-                        return '받는 사람은 한명 이상이어야합니다';
-                      }
-                      return null;
+                        decoration: InputDecoration(
+                          labelText: '받는 사람',
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  if (textEditingController.text.isNotEmpty &&
+                                      !_recipients.contains(
+                                          textEditingController.text)) {
+                                    logger.d(
+                                        "TextFormField 추가: ${textEditingController.text.trim()}");
+                                    _addRecipient(
+                                        textEditingController.text.trim());
+                                    textEditingController.clear();
+                                  }
+                                },
+                              ),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {},
+                                child: const Tooltip(
+                                  message: '''받는 사람의 닉네임을 입력하세요.
+친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
+                                  ''',
+                                  waitDuration: Duration(milliseconds: 0),
+                                  showDuration: Duration(seconds: 3),
+                                  margin: EdgeInsets.only(left: 97),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  triggerMode: TooltipTriggerMode.tap,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                  textStyle: TextStyle(
+                                      color: Colors.white), // 툴팁 텍스트 스타일
+
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(
+                                      Icons.info_outline,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        validator: (value) {
+                          if (_recipients.isEmpty && !_sendToAll) {
+                            return '받는 사람은 한명 이상이어야 합니다.';
+                          }
+                          return null;
+                        },
+                      );
                     },
-                    onFieldSubmitted: _addRecipient,
+                    optionsViewBuilder: (BuildContext context,
+                        AutocompleteOnSelected<Map<String, dynamic>> onSelected,
+                        Iterable<Map<String, dynamic>> options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4.0,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: UIhelper.deviceWidth(context) * 0.7,
+                              maxHeight: options.isNotEmpty
+                                  ? (options.length * 67.0)
+                                      .clamp(0.0, 240.0) // 동적 높이 설정
+                                  : 0.0,
+                            ),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              padding: EdgeInsets.zero,
+                              itemCount: options.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final option = options.elementAt(index);
+                                return ListTile(
+                                  title: Text(option['nickname']),
+                                  subtitle: Text(
+                                    option['name'],
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.grey),
+                                  ),
+                                  onTap: () {
+                                    onSelected(option);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   Wrap(
                     spacing: 8.0,

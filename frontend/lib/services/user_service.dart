@@ -189,7 +189,8 @@ class UserService {
   static Future<dynamic> getMemberInfo() async {
     try {
       logger.d('회원 조회 시 헤더! : ${DioService.authDio.options.headers}');
-      logger.d(getTimeRemaining(DioService.authDio.options.headers['Authorization']));
+      logger.d(getTimeRemaining(
+          DioService.authDio.options.headers['Authorization']));
       final response = await DioService.authDio.get(
         '/member/info',
       );
@@ -197,6 +198,81 @@ class UserService {
       var result = ResponseModel.fromJson(response.data);
       if (result.code == '200') {
         return result.data;
+      } else {
+        throw Exception(result.message);
+      }
+    } on DioException catch (e) {
+      logger.d('Failed to create post: $e');
+      ErrorHandler.handle(e);
+    }
+  }
+
+  static Future<dynamic> getNicbook() async {
+    try {
+      final response = await DioService.authDio.get(
+        '/member/nick-book',
+      );
+
+      var result = ResponseModel.fromJson(response.data);
+      if (result.code == '200') {
+        logger.d(result.data.toString());
+        return result.data;
+      } else {
+        throw Exception(result.message);
+      }
+    } on DioException catch (e) {
+      logger.d('Failed to create post: $e');
+      ErrorHandler.handle(e);
+    }
+  }
+
+  static Future<dynamic> addNicbook(nickbook) async {
+    try {
+      final response = await DioService.authDio.post(
+        '/member/nick-book',
+        data: nickbook,
+      );
+
+      var result = ResponseModel.fromJson(response.data);
+      if (result.code == '200') {
+        logger.d(result.data.toString());
+
+        return result.data;
+      } else {
+        throw Exception(result.message);
+      }
+    } on DioException catch (e) {
+      logger.d('Failed to create post: $e');
+      ErrorHandler.handle(e);
+    }
+  }
+
+  static Future<void> deleteNicbook(id) async {
+    try {
+      final response = await DioService.authDio.delete(
+        '/member/nick-book/$id',
+      );
+
+      var result = ResponseModel.fromJson(response.data);
+      if (result.code == '200') {
+        logger.d(result);
+      } else {
+        throw Exception(result.message);
+      }
+    } on DioException catch (e) {
+      logger.d('Failed to create post: $e');
+      ErrorHandler.handle(e);
+    }
+  }
+
+  static Future<void> updateNicbook(id, newNickbook) async {
+    try {
+      final response = await DioService.authDio
+          .get('/member/nick-book/$id', data: newNickbook);
+
+      var result = ResponseModel.fromJson(response.data);
+      if (result.code == '200') {
+        logger.d(result.data.toString());
       } else {
         throw Exception(result.message);
       }
