@@ -69,6 +69,9 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         currentStyle != WritingStyle.basic) {
       String result = await OpenAIService.instance
           .fetchStyledMessage(content, currentStyle);
+      if (result.length > 100) {
+        result = result.substring(0, 100);
+      }
       setState(() {
         changedMessages[currentStyle] = result;
       });
