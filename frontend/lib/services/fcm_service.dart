@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -20,14 +21,39 @@ void onNotificationTap(NotificationResponse notificationResponse) {
     final Map<String, dynamic> parsedPayload =
         payload != null ? jsonDecode(payload) : {};
     final notificationId = parsedPayload['notificationId'];
+    final messageId = parsedPayload['messageId'];
+
+    // Navigator 상태 확인
+    if (notificationId == null) {
+      logger.e("Notification ID is missing in the payload.");
+      return;
+    }
+    if (AppGlobal.navigatorKey.currentState == null) {
+      logger.e("Navigator key is not initialized.");
+      return;
+    }
     logger.d(" 포그라운드 fcm service:onNotification 아이디는:  " + notificationId);
-    if (notificationId != null) {
+    final isLoggedIn = Provider.of<AuthProvider>(
+            AppGlobal.navigatorKey.currentContext!,
+            listen: false)
+        .isLoggedIn;
+    if (isLoggedIn) {
+      if (messageId != null) {
+        logger.d("알림 messageId: $messageId");
+        AppGlobal.navigatorKey.currentState!.pushNamed(
+          '/star_received_detail',
+          arguments: int.tryParse(messageId), // messageId 전달
+        );
+        return;
+      }
       AppGlobal.navigatorKey.currentState!.pushNamed(
         '/notification',
         arguments: int.tryParse(notificationId), // notificationId를 전달
       );
     } else {
-      logger.e("Notification ID is missing in the payload.");
+      AppGlobal.navigatorKey.currentState!.pushNamed(
+        '/signin',
+      );
     }
   } catch (e) {
     logger.e("Failed to parse notification payload: $e");
@@ -174,13 +200,7 @@ class FCMService {
       await dio.download(
         imageUrl, // 다운로드 URL
         filePath, // 저장할 파일 경로
-        onReceiveProgress: (received, total) {
-          // if (total != -1) {
-          //   // 다운로드 진행 상황 출력 (선택사항)
-          //   print(
-          //       'Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
-          // }
-        },
+        onReceiveProgress: (received, total) {},
       );
 
       return filePath; // 다운로드된 파일 경로 반환
@@ -188,47 +208,4 @@ class FCMService {
       throw Exception('Image download failed: $e');
     }
   }
-  // //API를 이용한 발송 요청
-  // static Future<void> send(
-  //     {required String title, required String message}) async {
-  //   final jsonCredentials =
-  //       await rootBundle.loadString('assets/data/firebaseAuth.json');
-  //   final creds = auth.ServiceAccountCredentials.fromJson(jsonCredentials);
-  //   final client = await auth.clientViaServiceAccount(
-  //     creds,
-  //     ['https://www.googleapis.com/auth/cloud-platform'],
-  //   );
-
-  //   final notificationData = {
-  //     'message': {
-  //       'token': _token, //기기 토큰
-  //       'data': {
-  //         //payload 데이터 구성
-  //         'via': 'FlutterFire Cloud Messaging!!!',
-  //       },
-
-  //       'notification': {
-  //         'title': title, //푸시 알림 제목
-  //         'body': message, //푸시 알림 내용
-  //       }
-  //     },
-  //   };
-  //   final fcmKey = dotenv.env['FCM_ADMIN_KEY'].toString();
-  //   final response = await client.post(
-  //     Uri.parse('https://fcm.googleapis.com/v1/projects/$fcmKey/messages:send'),
-  //     headers: {
-  //       'content-type': 'application/json',
-  //     },
-  //     body: jsonEncode(notificationData),
-  //   );
-
-  //   client.close();
-  //   if (response.statusCode == 200) {
-  //     debugPrint(
-  //         'FCM notification sent with status code: ${response.statusCode}');
-  //   } else {
-  //     debugPrint(
-  //         '${response.statusCode} , ${response.reasonPhrase} , ${response.body}');
-  //   }
-  // }
 }
