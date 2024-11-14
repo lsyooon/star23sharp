@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:star23sharp/models/index.dart';
 
 class MessageFormProvider with ChangeNotifier {
-  bool _isTeasureStar = true;
+  bool _isTeasureStar = false;
 
   bool get isTeasureStar => _isTeasureStar;
 
@@ -17,7 +17,7 @@ class MessageFormProvider with ChangeNotifier {
   }
 
   void setMessageFormType({required String type}) {
-    if (type == '/map') {
+    if (type == 'hidestar') {
       isTeasureStar = true;
     } else {
       isTeasureStar = false;

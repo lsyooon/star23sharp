@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +20,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen>
     with AutomaticKeepAliveClientMixin {
-  late KakaoMapController mapController;
+  KakaoMapController? mapController;
   bool _isMenuTouched = false;
   Set<Marker> markers = {};
   Map<String, Map<String, dynamic>> markerInfo = {};
@@ -36,6 +37,8 @@ class _MapScreenState extends State<MapScreen>
   bool _isFar = false;
   bool _isPictureCorrect = false;
   final bool _isVerifyLoading = false;
+  Set<Marker> myLocate = {};
+  StreamSubscription<Position>? _positionStreamSubscription;
 
   // 탭 간의 이동이나 스크롤을 할 때 상태가 리셋되지 않고 그대로 유지
   @override
@@ -46,6 +49,44 @@ class _MapScreenState extends State<MapScreen>
   void initState() {
     super.initState();
     _requestLocationPermission();
+  }
+
+  @override
+  void dispose() {
+    _positionStreamSubscription?.cancel();
+    super.dispose();
+  }
+
+  // 위치 스트림을 사용하여 현재 위치 트래킹 시작
+  void _startLocationTracking() {
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10,
+    );
+
+    _positionStreamSubscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position position) {
+      final currentPosition = LatLng(position.latitude, position.longitude);
+      if (mapController == null) return;
+      // 현재 위치 마커 업데이트
+      setState(() {
+        myLocate = {
+          Marker(
+            markerId: '99999999',
+            latLng: currentPosition,
+            markerImageSrc:
+                'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/myLocate.svg',
+          )
+        }.toSet();
+
+        // 지도 중심도 현재 위치로 이동
+        mapController!.setCenter(currentPosition);
+      });
+
+      // 위치 캐시 저장
+      _cacheLocation(currentPosition);
+    });
   }
 
   // 위치 권한 요청
@@ -90,6 +131,7 @@ class _MapScreenState extends State<MapScreen>
 
   // 캐시된 위치 불러오기
   Future<void> _goToCachedOrCurrentLocation() async {
+    if (mapController == null) return;
     final cachedLocation = await SharedPreferences.getInstance();
     final lat = cachedLocation.getDouble('lat');
     final lng = cachedLocation.getDouble('lng');
@@ -97,8 +139,18 @@ class _MapScreenState extends State<MapScreen>
     // 캐시된 위치가 있으면 그 위치로 먼저 이동
     if (lat != null && lng != null) {
       final cachedLocationLatLng = LatLng(lat, lng);
-      mapController.setCenter(cachedLocationLatLng);
-      currentBounds = await mapController.getBounds();
+      mapController!.setCenter(cachedLocationLatLng);
+
+      currentBounds = await mapController!.getBounds();
+
+      myLocate = {
+        Marker(
+          markerId: '99999999',
+          latLng: LatLng(lat, lng),
+          markerImageSrc:
+              'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/myLocate.svg',
+        )
+      }.toSet();
 
       _fetchTreasuresInBounds(
         currentBounds,
@@ -115,7 +167,7 @@ class _MapScreenState extends State<MapScreen>
     // 현재 위치를 가져와 지도 중심 업데이트
     try {
       await _goToCurrentLocation();
-      currentBounds = await mapController.getBounds();
+      currentBounds = await mapController!.getBounds();
 
       _fetchTreasuresInBounds(
         currentBounds,
@@ -143,7 +195,16 @@ class _MapScreenState extends State<MapScreen>
   Future<void> _goToCurrentLocation() async {
     var position = await Geolocator.getCurrentPosition();
 
-    mapController.setCenter(LatLng(position.latitude, position.longitude));
+    if (mapController == null) return;
+    mapController!.setCenter(LatLng(position.latitude, position.longitude));
+    myLocate = {
+      Marker(
+        markerId: '99999999',
+        latLng: LatLng(position.latitude, position.longitude),
+        markerImageSrc:
+            'https://w7.pngwing.com/pngs/272/94/png-transparent-current-location-logo-microsoft-mappoint-pointer-computer-icons-world-map-location-logo-sign-magenta-map-thumbnail.png',
+      )
+    }.toSet();
 
     await _cacheLocation(LatLng(position.latitude, position.longitude));
   }
@@ -281,13 +342,10 @@ class _MapScreenState extends State<MapScreen>
   void _handleMenuAction(MenuItem option) {
     setState(() {
       selectedOption = option;
-      _isMenuTouched = false;
+      _isMenuTouched = true;
     });
 
     switch (option) {
-      case MenuItem.hideMyStar:
-        Navigator.pushNamed(context, '/hidestar');
-        break;
       case MenuItem.viewHiddenStars:
         _fetchTreasuresInBounds(
           currentBounds,
@@ -319,6 +377,9 @@ class _MapScreenState extends State<MapScreen>
         );
         break;
     }
+    setState(() {
+      _isMenuTouched = false;
+    });
   }
 
   // 모든 마커 리스트
@@ -408,6 +469,9 @@ class _MapScreenState extends State<MapScreen>
                                       return GestureDetector(
                                         onTap: () {
                                           if (mounted) {
+                                            if (marker.markerId == '99999999') {
+                                              return;
+                                            }
                                             Navigator.pop(context);
                                             _showMarkerDetail(
                                                 context, marker.markerId);
@@ -625,14 +689,13 @@ class _MapScreenState extends State<MapScreen>
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 16,
-                                                  // fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
                                             const SizedBox(height: 8),
                                             const Divider(
-                                              color: Colors.grey, // 선 색상
-                                              thickness: 1, // 오른쪽 여백
+                                              color: Colors.grey,
+                                              thickness: 1,
                                             ),
                                             const Text(
                                               "힌트 :",
@@ -867,6 +930,7 @@ class _MapScreenState extends State<MapScreen>
                 'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/star.svg',
           );
         }).toSet();
+        markers.addAll(myLocate);
       });
     } else {
       logger.d("서버에서 데이터를 가져오지 못했습니다.");
@@ -896,8 +960,9 @@ class _MapScreenState extends State<MapScreen>
               onMapCreated: (controller) async {
                 mapController = controller;
                 await _goToCachedOrCurrentLocation();
+                _startLocationTracking();
 
-                currentBounds = await mapController.getBounds();
+                currentBounds = await mapController!.getBounds();
 
                 _fetchTreasuresInBounds(
                   currentBounds,
@@ -909,10 +974,6 @@ class _MapScreenState extends State<MapScreen>
                 );
               },
               onMarkerTap: (markerId, latLng, zoomLevel) {
-                // setState(() {
-                //   _showMarkerList(context);
-                // });
-
                 setState(() {
                   _showMarkerDetail(context, markerId);
                 });
@@ -933,9 +994,9 @@ class _MapScreenState extends State<MapScreen>
         Positioned(
           bottom: deviceHeight * 0.1,
           left: deviceWidth * 0.12,
-          child: FloatingActionButton(
-            onPressed: _goToCachedOrCurrentLocation,
-            child: const Icon(Icons.my_location),
+          child: InkWell(
+            onTap: _goToCachedOrCurrentLocation,
+            child: Image.asset('assets/img/map/location.png'),
           ),
         ),
         Positioned(
@@ -949,6 +1010,14 @@ class _MapScreenState extends State<MapScreen>
               });
             },
             isMenuTouched: _isMenuTouched,
+          ),
+        ),
+        Positioned(
+          bottom: deviceHeight * 0.17,
+          right: deviceWidth * 0.12,
+          child: InkWell(
+            onTap: () => {Navigator.pushNamed(context, '/hidestar')},
+            child: Image.asset('assets/img/map/plus.png'),
           ),
         ),
         if (_isSearchButtonVisible)

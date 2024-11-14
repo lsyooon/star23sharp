@@ -209,10 +209,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                                 child: Column(
                                   children: [
-                                    Image.asset(
-                                      menu['img'],
+                                    Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Image.asset(
+                                          menu['img'],
+                                        ),
+                                        if (menu['text'] == '쪽지 보관함' &&
+                                            isunRead)
+                                          Positioned(
+                                            top: -10,
+                                            right: -10,
+                                            child: Image.asset(
+                                              'assets/img/exclamation_mark.png',
+                                            ),
+                                          ),
+                                        const SizedBox(height: 5),
+                                      ],
                                     ),
-                                    const SizedBox(height: 5),
                                     Container(
                                       decoration: _commonContainerDecoration(),
                                       padding: const EdgeInsets.symmetric(
