@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
@@ -31,20 +33,18 @@ class StarReceivedDetailScreen extends StatelessWidget {
             // {
             //     "messageId": 7,
             //     "senderNickname": [
-            //         "테스트"
+            //         "아로미"
             //     ],
             //     "createdAt": "2024-11-05T17:09:31.181",
             //     "title": "TEST_20",
-            //     "content": "fdsfsdfsfewfe",
+            //     "content": "fdsfsdfsfewfefdsfsdfsfewfefdsfsdfsfewfefdsfsdfsfewfefdsfsdfsfewfefdsfsdfsfewfefdsfsdfsfewfefdsfsdfsfewfefdsfsdfsfewfe",
             //     "image": "https://github.com/user-attachments/assets/acc518d1-0127-4e81-ac8b-da8048193613",
-            //     "kind": true,
+            //     "kind": false,
             //     "receiverType": 1,
             //     "reported": false
             // }
             // ''';
-            // // JSON 문자열을 Map<String, dynamic>으로 파싱
             // Map<String, dynamic> jsonData = jsonDecode(jsonString);
-            // // ReceivedStarModel 객체 생성
             // ReceivedStarModel item = ReceivedStarModel.fromJson(jsonData);
             
             return Container(
@@ -107,15 +107,15 @@ class StarReceivedDetailScreen extends StatelessWidget {
                                       item.image!,
                                       fit: BoxFit.contain,
                                       width: UIhelper.deviceWidth(context) * 0.8,
-                                      height: UIhelper.deviceHeight(context) * 0.3, // 이미지 높이 제한
+                                      height: UIhelper.deviceHeight(context) * 0.25, // 이미지 높이 제한
                                     ),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 5),
                                   Text(
                                     item.content,
                                     style: const TextStyle(
                                       fontSize: 16.0,
                                       color: Colors.black87,
-                                      height: 1.5,
+                                      height: 1.3,
                                     ),
                                   ),
                                 ],
@@ -134,6 +134,25 @@ class StarReceivedDetailScreen extends StatelessWidget {
                       children: [
                         Text('👥 ${item.senderName.first}', style: const TextStyle(fontSize: FontSizes.small),),
                         Text('📅 ${formatDate(item.createdAt)}', style: const TextStyle(fontSize: FontSizes.small)),
+                        if(!item.kind) // 일반쪽지이면 답장버튼 생성
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 35.0, vertical: 3),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/starwriteform', arguments: item.senderName.first);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFA292EC),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                child: const Text("답장하기", style: TextStyle(fontSize: 16.0, color: Colors.white),),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

@@ -165,6 +165,10 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String? nickname = ModalRoute.of(context)!.settings.arguments as String?;
+    if(nickname != null){
+      _recipients.add(nickname);
+    }
     final isTreasureStar =
         Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
     final messageProvider =

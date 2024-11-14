@@ -12,11 +12,12 @@ import 'package:star23sharp/utilities/index.dart';
 
 class StarService {
   // 별 리스트 조회
-  static Future<List<StarListItemModel>?> getStarList(bool isSentStar) async {
+  static Future<List<StarListItemModel>?> getStarList(bool isSentStar, int type) async {
     List<StarListItemModel> starList = [];
-    String type = isSentStar ? "send" : "reception";
+    String isSent = isSentStar ? "send" : "reception";
+    // type -> 0: 전체, 1: 보물, 2: 일반
     try {
-      var response = await DioService.authDio.get('/message/$type/list');
+      var response = await DioService.authDio.get('/message/$isSent/list/$type');
 
       var result = ResponseModel.fromJson(response.data);
       if (result.code == '200') {
