@@ -274,46 +274,110 @@ class _StarFormScreenState extends State<StarFormScreen> {
                   Autocomplete<Map<String, dynamic>>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       if (textEditingValue.text.isEmpty) {
-                        return const Iterable<Map<String, dynamic>>.empty();
+                        return nicBook.where((option) {
+                          return !_recipients.contains(option['nickname']);
+                        }).cast<Map<String, dynamic>>();
                       }
+
                       return nicBook.where((option) {
                         final nickname =
                             option['nickname']?.toLowerCase() ?? '';
                         final name = option['name']?.toLowerCase() ?? '';
                         final input = textEditingValue.text.toLowerCase();
 
-                        return nickname.contains(input) || name.contains(input);
+                        return (!_recipients.contains(option['nickname'])) &&
+                            (nickname.contains(input) || name.contains(input));
                       }).cast<Map<String, dynamic>>();
                     },
                     displayStringForOption: (option) => option['nickname'],
                     onSelected: (Map<String, dynamic> selection) {
                       if (!_recipients.contains(selection['nickname'])) {
-                        _addRecipient(selection['nickname'].trim()!);
+                        logger.d(
+                            "Autocomplete 선택된 닉네임: ${selection['nickname']}");
+                        _addRecipient(selection['nickname'].trim());
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _nicknameController.text = ''; // 입력 필드 초기화
+                        });
                       }
                     },
                     fieldViewBuilder: (BuildContext context,
                         TextEditingController textEditingController,
                         FocusNode focusNode,
                         VoidCallback onFieldSubmitted) {
-                      _nicknameController.value = textEditingController.value;
+                      // 동기화: 컨트롤러 내용을 수정
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_nicknameController != textEditingController) {
+                          textEditingController.text = _nicknameController.text;
+                        }
+                      });
+
                       return TextFormField(
                         controller: textEditingController,
                         focusNode: focusNode,
                         enabled: !_sendToAll,
+                        onFieldSubmitted: (value) {
+                          if (value.isNotEmpty &&
+                              !_recipients.contains(value)) {
+                            logger.d("TextFormField 입력된 값 추가: $value");
+                            _addRecipient(value.trim());
+                            textEditingController.clear();
+                          }
+                        },
                         decoration: InputDecoration(
                           labelText: '받는 사람',
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () {
-                              if (_nicknameController.text.isNotEmpty) {
-                                _addRecipient(_nicknameController.text.trim());
-                              }
-                            },
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  if (textEditingController.text.isNotEmpty &&
+                                      !_recipients.contains(
+                                          textEditingController.text)) {
+                                    logger.d(
+                                        "TextFormField 추가: ${textEditingController.text.trim()}");
+                                    _addRecipient(
+                                        textEditingController.text.trim());
+                                    textEditingController.clear();
+                                  }
+                                },
+                              ),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {},
+                                child: const Tooltip(
+                                  message: '''받는 사람의 닉네임을 입력하세요.
+친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
+                                  ''',
+                                  waitDuration: Duration(milliseconds: 0),
+                                  showDuration: Duration(seconds: 3),
+                                  margin: EdgeInsets.only(left: 97),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  triggerMode: TooltipTriggerMode.tap,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                  textStyle: TextStyle(
+                                      color: Colors.white), // 툴팁 텍스트 스타일
+
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(
+                                      Icons.info_outline,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         validator: (value) {
                           if (_recipients.isEmpty && !_sendToAll) {
-                            return '받는 사람은 한명 이상이어야합니다';
+                            return '받는 사람은 한명 이상이어야 합니다.';
                           }
                           return null;
                         },
@@ -329,11 +393,13 @@ class _StarFormScreenState extends State<StarFormScreen> {
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
                               maxWidth: UIhelper.deviceWidth(context) * 0.7,
-                              maxHeight: UIhelper.deviceHeight(context) *
-                                  0.3, // 최대 높이 제한
+                              maxHeight: options.isNotEmpty
+                                  ? (options.length * 67.0)
+                                      .clamp(0.0, 240.0) // 동적 높이 설정
+                                  : 0.0,
                             ),
                             child: ListView.builder(
-                              shrinkWrap: true, // 리스트뷰가 필요한 만큼만 공간을 차지
+                              shrinkWrap: true,
                               padding: EdgeInsets.zero,
                               itemCount: options.length,
                               itemBuilder: (BuildContext context, int index) {
