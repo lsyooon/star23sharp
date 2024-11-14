@@ -99,7 +99,8 @@ class _HideStarScreenState extends State<HideStarScreen> {
           final File dotHintImageFile =
               await uint8ListToFile(_pixelizedImageData!, 'dot_hint_image.png');
 
-          messageProvider.setMessageFormType(type: '/map');
+          messageProvider.setMessageFormType(type: 'hidestar');
+
 
           var position = await Geolocator.getCurrentPosition();
           // final cachedLocation = await SharedPreferences.getInstance();
@@ -395,8 +396,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
                           maxLength: 20,
                           decoration: InputDecoration(
                             hintText: "힌트 입력 (최대 20자)",
-                            hintStyle:
-                                TextStyle(color: Colors.white.withOpacity(0.8)),
+                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
                             filled: true,
                             fillColor: Colors.white.withOpacity(0.3),
                             border: const OutlineInputBorder(
