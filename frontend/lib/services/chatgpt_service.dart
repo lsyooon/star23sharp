@@ -17,7 +17,7 @@ class OpenAIService {
       final String prompt = '''
      문체: ${style.name}
      예시:${style.example}
-     이런 느낌으로 '$originalMessage'의 문체를 바꿔주는데, 95자 이하로 해야해.응답은 반드시 결과 값 만 반환해주세요. ''';
+     이런 느낌으로 '$originalMessage'의 문체를 바꿔주는데, 90자 이하로 해야해.응답은 반드시 결과 값 만 반환해주세요. ''';
       // 시스템 메시지 설정
       final systemMessage = OpenAIChatCompletionChoiceMessageModel(
         content: [
