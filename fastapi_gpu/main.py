@@ -9,7 +9,7 @@ from models.pixel_effect_module import PixelEffectModule
 from PIL import Image, ImageOps
 from transformers import pipeline
 
-NSFW_THRESHOLD = 0.5
+NSFW_THRESHOLD = 0.8
 
 app = FastAPI()
 
@@ -30,8 +30,11 @@ to_pil = T.ToPILImage()
 
 def is_nsfw_safe(image: Image) -> bool:
     nsfw_result = nsfw_filter(image)
-    if nsfw_result[2]["score"] > NSFW_THRESHOLD:  # label: UNSAFE
-        return False
+    for dict in nsfw_result:
+        if dict["label"] == "UNSAFE":
+            if dict["score"] > NSFW_THRESHOLD:  # label: UNSAFE
+                return False
+            break
     return True
 
 
@@ -140,3 +143,14 @@ async def embed_images(
         embedding_list = embeddings_tensor[idx].cpu().numpy().tolist()
         embeddings.append({"filename": filenames[idx], "embedding": embedding_list})
     return {"nsfw": "safe", "embeddings": embeddings}
+
+
+@app.post("/image/nsfw")
+async def nsfw_check_endpoint(
+    file: UploadFile = File(..., description="Image file to check nsfw")
+):
+    contents = await file.read()
+    image = _open_image(io.BytesIO(contents))
+    if not is_nsfw_safe(image):
+        return {"nsfw": "unsafe"}
+    return {"nsfw": "safe"}

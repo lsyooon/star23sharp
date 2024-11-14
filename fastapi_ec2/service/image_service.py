@@ -22,6 +22,7 @@ BACKUP_GPU_URL = os.environ.get("BACKUP_GPU_URL")
 PIXELIZE_ENDPOINT = "/image/pixelize"
 EMBEDDING_ENDPOINT = "/image/embedding"
 EMBEDDINGS_ENDPOINT = "/image/embeddings"
+NSFW_ENDPOINT = "/image/nsfw"
 
 # 엔드포인트 파라메터 기본값들
 PIXELIZE_DEFAULT_KERNEL = 7
@@ -158,3 +159,18 @@ async def get_embedding_of_two_images(
     embedding_2 = embeddings[1]["embedding"]
 
     return embedding_1, embedding_2
+
+
+async def check_nsfw_service(imagefile: Union[UploadFile, FileModel]) -> bool:
+    if isinstance(imagefile, UploadFile):
+        imagefile = await download_file(imagefile)
+
+    response = await proxy_file_request(NSFW_ENDPOINT, files={"file": imagefile.root})
+    response_json = response.json()
+    if response_json["nsfw"] == "safe":
+        return True
+    elif response_json["nsfw"] == "unsafe":
+        return False
+    else:
+        logging.exception("NSFW 체크 중에 에러가 발생했습니다.")
+        raise GPUProxyServerException("NSFW 체크 중에 에러가 발생했습니다.")

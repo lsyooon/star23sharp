@@ -26,6 +26,7 @@ from response.exceptions import (
     HintLengthExceededException,
     InvalidInputException,
     InvalidPixelTargetException,
+    NSFWImageDetectedException,
     SelfRecipientException,
     TitleLengthExceededException,
     TreasureNotFoundException,
@@ -40,6 +41,7 @@ from service.group_service import (
 from service.image_service import (
     PIXELIZE_DEFAULT_KERNEL,
     PIXELIZE_DEFAULT_PIXEL_SIZE,
+    check_nsfw_service,
     get_embedding_of_two_images,
     get_embedding_service,
     pixelize_image_service,
@@ -196,6 +198,7 @@ AUTHORIZE_DESCRIPTION = f"""
 - "image_not_similar": 업로드한 이미지가 보물 이미지와 유사하지 않은 경우.
 - "already_found" : 인증에 성공했지만, 이미 다른 유저가 먼저 인증에 성공한 경우.
 """
+
 
 @treasure_router.post(
     "/insert",
@@ -452,11 +455,13 @@ async def insert_new_treasure(
             if dot_hint_image_file is not None
             else None
         )
-        content_image_name_gen = (
-            save_image_to_storage(content_image_file, content_image_name)
-            if content_image_file is not None
-            else None
-        )
+        # Content Image의 경우 nsfw check 도 해야함
+        if content_image_file is not None:
+            if not await check_nsfw_service(content_image_file):
+                raise NSFWImageDetectedException("첨부 이미지가 유해한 이미지입니다!!")
+            content_image_name_gen = save_image_to_storage(
+                content_image_file, content_image_name
+            )
 
         # transaction end 전에 알림용 데이터 저장
         result_message_id = new_message.id
