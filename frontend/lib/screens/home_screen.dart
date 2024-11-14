@@ -188,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 30),
-            const Logo(),
+            const IgnorePointer(ignoring: true, child: Logo()),
             // 로그인 여부에 따른 UI 변경
             authProvider.isLoggedIn
                 ? Expanded(

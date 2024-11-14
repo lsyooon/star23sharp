@@ -155,6 +155,17 @@ class DioService {
               Navigator.pushNamed(
                   AppGlobal.navigatorKey.currentContext!, '/signin');
             }
+          } else if (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.sendTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.unknown) {
+            // 네트워크 연결 실패 처리
+            logger.e('Network connection failed or timeout occurred.');
+            ScaffoldMessenger.of(AppGlobal.navigatorKey.currentContext!)
+                .showSnackBar(
+              const SnackBar(content: Text('서버와 연결할 수 없습니다. 네트워크를 확인해주세요.')),
+            );
+            handler.reject(e);
           } else {
             try {
               final failure = ErrorHandler.handle(e).failure;

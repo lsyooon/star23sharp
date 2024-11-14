@@ -94,9 +94,9 @@ class _StarFormScreenState extends State<StarFormScreen> {
       if (!_recipients.contains(nickname) && userNickname != nickname) {
         if (_validateNickname(nickname)) {
           // 닉네임 중복 검사
-          bool isDuplicate = await UserService.checkDuplicateId(
-              1, _nicknameController.text.trim());
           logger.d("닉네임 : $nickname");
+          logger.d("닉네임controller : ${_nicknameController.text}");
+          bool isDuplicate = await UserService.checkDuplicateId(1, nickname);
           // 최대 인원수 제한 확인 후 추가
           if (_recipients.length < maxRecipients) {
             if (isDuplicate) {
@@ -288,7 +288,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                     displayStringForOption: (option) => option['nickname'],
                     onSelected: (Map<String, dynamic> selection) {
                       if (!_recipients.contains(selection['nickname'])) {
-                        _addRecipient(selection['nickname']!);
+                        _addRecipient(selection['nickname'].trim()!);
                       }
                     },
                     fieldViewBuilder: (BuildContext context,
@@ -306,7 +306,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             icon: const Icon(Icons.add),
                             onPressed: () {
                               if (_nicknameController.text.isNotEmpty) {
-                                _addRecipient(_nicknameController.text);
+                                _addRecipient(_nicknameController.text.trim());
                               }
                             },
                           ),
