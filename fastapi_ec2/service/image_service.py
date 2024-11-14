@@ -13,7 +13,8 @@ from starlette.datastructures import UploadFile
 from utils.resource import _FILEMODEL_INDEX_FILECONTENT, FileModel, download_file
 
 # 서버 설정 CONFIG
-GPU_URL = os.environ.get("GPU_URL", None)
+GPU_URL = os.environ["GPU_URL"]
+BACKUP_GPU_URL = os.environ.get("BACKUP_GPU_URL")
 
 # 프록시 서버 엔드포인트 정의
 PIXELIZE_ENDPOINT = "/image/pixelize"
@@ -29,22 +30,62 @@ async def proxy_file_request(
     endpoint: str, files: dict, data: dict = None
 ) -> httpx.Response:
     """
-    프록시 서버로 요청을 보냅니다.
-
-    매개변수:
-        endpoint (str): 프록시 서버의 엔드포인트.
-        files (dict): 업로드할 파일들.
-        data (dict, optional): 추가 데이터.
-
-    반환값:
-        httpx.Response: 프록시 서버의 응답.
+    Send request to the proxy server.
+    Try the main GPU server first; if connection fails or server error occurs, try the backup GPU server.
     """
-    url = f"{GPU_URL}{endpoint}"
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, files=files, data=data)
-    if response.status_code != 200:
+
+    async def send_request(url):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, files=files, data=data)
+            return response
+
+    main_url = f"{GPU_URL}{endpoint}"
+    backup_url = f"{BACKUP_GPU_URL}{endpoint}" if BACKUP_GPU_URL else None
+
+    # Try the main GPU server first
+    try:
+        response = await send_request(main_url)
+        if response.status_code == 200:
+            return response
+        elif response.status_code >= 500:
+            # Server error, try backup server if available
+            logging.error(f"Server error at main GPU server: {response.status_code}")
+            if backup_url:
+                response = await send_request(backup_url)
+                if response.status_code == 200:
+                    return response
+                else:
+                    logging.error(
+                        f"Server error at backup GPU server: {response.status_code}"
+                    )
+                    raise GPUProxyServerException()
+            else:
+                raise GPUProxyServerException()
+        else:
+            # Client error, do not retry
+            logging.error(f"Client error at main GPU server: {response.status_code}")
+            raise InvalidInputException(
+                "GPU 서버에서 온 응답 관련 오류입니다. Client 와는 관계가 없을 수도 있습니다."
+            )
+    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout) as e:
+        logging.error(f"Connection error to main GPU server: {e}")
+        # Try the backup GPU server
+        if backup_url:
+            try:
+                response = await send_request(backup_url)
+                if response.status_code == 200:
+                    return response
+                else:
+                    logging.error(f"Error at backup GPU server: {response.status_code}")
+                    raise GPUProxyServerException()
+            except Exception as e2:
+                logging.error(f"Connection error to backup GPU server: {e2}")
+                raise GPUProxyServerException()
+        else:
+            raise GPUProxyServerException()
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
         raise GPUProxyServerException()
-    return response
 
 
 async def pixelize_image_service(
@@ -53,20 +94,12 @@ async def pixelize_image_service(
     pixel_size: int = PIXELIZE_DEFAULT_PIXEL_SIZE,
 ) -> FileModel:
     """
-    이미지에 픽셀화 효과를 적용하기 위해 프록시 서버로 요청을 보냅니다.
-
-    매개변수:
-        file (Union[UploadFile, FileModel]): 픽셀화할 이미지 파일.
-        kernel_size (int): 픽셀화 효과를 위한 커널 크기.
-        pixel_size (int): 픽셀화 효과를 위한 픽셀 크기.
-
-    반환값:
-        httpx.Response: 프록시 서버의 응답.
+    Send a request to the proxy server to apply a pixelation effect to the image.
     """
-    # 값 검증
+    # Validate inputs
     if kernel_size < 1 or pixel_size < 1:
         logging.error(
-            f"pixelize_image_service: kernel size: {kernel_size} 와 pixel_size: {pixel_size} 중 하나 이상이 1 미만입니다!"
+            f"pixelize_image_service: kernel size: {kernel_size} and pixel_size: {pixel_size} must be at least 1!"
         )
         raise InvalidInputException()
 
@@ -86,13 +119,7 @@ async def pixelize_image_service(
 
 async def get_embedding_service(file: Union[UploadFile, FileModel]) -> httpx.Response:
     """
-    이미지의 임베딩을 얻기 위해 프록시 서버로 요청을 보냅니다.
-
-    매개변수:
-        file (Union[UploadFile, FileModel]): 임베딩을 얻을 이미지 파일.
-
-    반환값:
-        httpx.Response: 프록시 서버의 응답.
+    Send a request to the proxy server to get the embedding of an image.
     """
     if isinstance(file, UploadFile):
         file = await download_file(file)
@@ -105,14 +132,7 @@ async def get_embedding_of_two_images(
     file_1: Union[UploadFile, FileModel], file_2: Union[UploadFile, FileModel]
 ) -> Tuple[List[float], List[float]]:
     """
-    두 이미지의 임베딩을 얻기 위해 프록시 서버로 요청을 보냅니다.
-
-    매개변수:
-        file_1 (Union[UploadFile, FileModel]): 첫 번째 이미지 파일.
-        file_2 (Union[UploadFile, FileModel]): 두 번째 이미지 파일.
-
-    반환값:
-        tuple: 두 이미지의 임베딩.
+    Send a request to the proxy server to get the embeddings of two images.
     """
     if isinstance(file_1, UploadFile):
         file_1 = await download_file(file_1)
