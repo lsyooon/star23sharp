@@ -3,6 +3,7 @@ import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/date_formatter.dart';
+import 'package:star23sharp/utilities/image_zoom_dialog.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class StarSentDetailScreen extends StatelessWidget {
@@ -81,11 +82,16 @@ class StarSentDetailScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   if (item.image != null)
-                                    Image.network(
-                                      item.image!,
-                                      fit: BoxFit.contain,
-                                      width: UIhelper.deviceWidth(context) * 0.8,
-                                      height: UIhelper.deviceHeight(context) * 0.25, // 이미지 높이 제한
+                                    GestureDetector(
+                                      onTap: () {
+                                        showImageModal(context, item.image!); // 클릭 시 함수 실행
+                                      },
+                                      child: Image.network(
+                                        item.image!,
+                                        fit: BoxFit.contain,
+                                        width: UIhelper.deviceWidth(context) * 0.8,
+                                        height: UIhelper.deviceHeight(context) * 0.25, // 이미지 높이 제한
+                                      ),
                                     ),
                                   const SizedBox(height: 10),
                                   Text(

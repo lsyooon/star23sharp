@@ -3,31 +3,45 @@ import 'package:star23sharp/models/star_list_item_model.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
-class StarStoragebox extends StatefulWidget {
+class StarStoragebox extends StatefulWidget with RouteAware {
   const StarStoragebox({super.key});
 
   @override
   _StarStorageboxState createState() => _StarStorageboxState();
 }
 
-class _StarStorageboxState extends State<StarStoragebox> {
+class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
   int selectedIndex = 0;
-  
   final List<String> dropdownItems = ['전체', '보물 쪽지', '일반 쪽지'];
   String selectedItem = '전체';
-  
+  late Future<List<StarListItemModel>?> sent;
+  late Future<List<StarListItemModel>?> received;
+
+  @override
+  void initState() {
+    super.initState();
+    sent = StarService.getStarList(true, selectedIndex);
+    received = StarService.getStarList(false, selectedIndex);
+  }
+
+  // 선택된 값에 따른 데이터 로드
+  void _loadData() {
+    setState(() {
+      sent = StarService.getStarList(true, selectedIndex);
+      received = StarService.getStarList(false, selectedIndex);
+    });
+  }
 
   void updateSelectedIndex(String? newValue) {
     setState(() {
       selectedItem = newValue!;
       selectedIndex = dropdownItems.indexOf(newValue); // 드롭다운에서 선택된 값의 인덱스를 설정
+      _loadData(); // 선택값이 변경되면 다시 데이터를 불러옴
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    Future<List<StarListItemModel>?> sent = StarService.getStarList(true, selectedIndex);
-    Future<List<StarListItemModel>?> receieved = StarService.getStarList(false, selectedIndex);
     return Stack(
       children: [
         Center(
@@ -109,14 +123,77 @@ class _StarStorageboxState extends State<StarStoragebox> {
                             fontFamily: 'Hakgyoansim Chilpanjiugae',
                           ),
                           tabs: [
-                            Tab(text: "보낸 쪽지"),
                             Tab(text: "받은 쪽지"),
+                            Tab(text: "보낸 쪽지"),
                           ],
                         ),
                       ),
                       Expanded(
                         child: TabBarView(
                           children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE3E1E1).withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: FutureBuilder<List<StarListItemModel>?>( 
+                                future: received,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == 
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                      child: Image.asset(
+                                        "assets/img/logo/loading_logo.gif",
+                                        height: UIhelper.deviceHeight(context) *
+                                            0.3,
+                                      ),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Center(
+                                        child:
+                                            Text('Error: ${snapshot.error}'));
+                                  } else if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const Center(
+                                        child: Text(
+                                      '받은 쪽지가 없습니다.',
+                                      style: TextStyle(
+                                          fontSize: FontSizes.body,
+                                          color: Colors.white),
+                                    ));
+                                  } else {
+                                    final List<StarListItemModel> itemsData =
+                                        snapshot.data!;
+                                    return GridView.builder(
+                                      padding: EdgeInsets.zero,
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 1,
+                                        childAspectRatio: 5.3,
+                                        mainAxisSpacing: 5,
+                                        crossAxisSpacing: 10,
+                                      ),
+                                      itemCount: itemsData.length,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 2, horizontal: 10),
+                                          decoration: BoxDecoration(
+                                            color: index % 2 == 1
+                                                ? const Color(0xFFF6F6F6)
+                                                    .withOpacity(0.2)
+                                                : Colors.white.withOpacity(0),
+                                          ),
+                                          child: ListItem(
+                                            item: itemsData[index],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
                             Container(
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE3E1E1).withOpacity(0.4),
@@ -166,69 +243,6 @@ class _StarStorageboxState extends State<StarStoragebox> {
                                                 ? const Color(0xFFF6F6F6)
                                                     .withOpacity(0.2)
                                                 : Colors.transparent,
-                                          ),
-                                          child: ListItem(
-                                            item: itemsData[index],
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE3E1E1).withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: FutureBuilder<List<StarListItemModel>?>( 
-                                future: receieved,
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == 
-                                      ConnectionState.waiting) {
-                                    return Center(
-                                      child: Image.asset(
-                                        "assets/img/logo/loading_logo.gif",
-                                        height: UIhelper.deviceHeight(context) *
-                                            0.3,
-                                      ),
-                                    );
-                                  } else if (snapshot.hasError) {
-                                    return Center(
-                                        child:
-                                            Text('Error: ${snapshot.error}'));
-                                  } else if (!snapshot.hasData ||
-                                      snapshot.data!.isEmpty) {
-                                    return const Center(
-                                        child: Text(
-                                      '받은 쪽지가 없습니다.',
-                                      style: TextStyle(
-                                          fontSize: FontSizes.body,
-                                          color: Colors.white),
-                                    ));
-                                  } else {
-                                    final List<StarListItemModel> itemsData =
-                                        snapshot.data!;
-                                    return GridView.builder(
-                                      padding: EdgeInsets.zero,
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 1,
-                                        childAspectRatio: 5.3,
-                                        mainAxisSpacing: 5,
-                                        crossAxisSpacing: 10,
-                                      ),
-                                      itemCount: itemsData.length,
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 2, horizontal: 10),
-                                          decoration: BoxDecoration(
-                                            color: index % 2 == 1
-                                                ? const Color(0xFFF6F6F6)
-                                                    .withOpacity(0.2)
-                                                : Colors.white.withOpacity(0),
                                           ),
                                           child: ListItem(
                                             item: itemsData[index],

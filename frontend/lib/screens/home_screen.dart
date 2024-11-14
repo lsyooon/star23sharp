@@ -6,7 +6,6 @@ import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/index.dart';
 import 'package:star23sharp/widgets/index.dart';
-import 'package:star23sharp/widgets/modals/star_write_type_modal.dart';
 import 'package:star23sharp/providers/index.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -155,8 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'text': '보물 쪽지',
         'goto': '/hidestar',
         'position': Offset(
-          UIhelper.deviceWidth(context) * 0.6, // 너비의 60%
-          UIhelper.deviceHeight(context) * 0.125, // 높이의 50%
+          UIhelper.deviceWidth(context) * 0.6, 
+          UIhelper.deviceHeight(context) * 0.125, 
         ),
         'img': 'assets/img/planet/planet2.png',
       },
@@ -164,8 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'text': '쪽지 보관함',
         'goto': '/starstorage',
         'position': Offset(
-          UIhelper.deviceWidth(context) * 0.1, // 너비의 60%
-          UIhelper.deviceHeight(context) * 0.2, // 높이의 50%
+          UIhelper.deviceWidth(context) * 0.16,
+          UIhelper.deviceHeight(context) * 0.2, 
         ),
         'img': 'assets/img/planet/planet3.png',
       },
