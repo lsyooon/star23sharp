@@ -109,8 +109,7 @@ class MainLayout extends StatelessWidget {
                   // 가운데 버튼
                   IconButton(
                     iconSize: 50.0,
-                    icon: Image.asset(
-                        'assets/img/blackTheme/black_center_button.png'),
+                    icon: Image.asset('assets/img/blackTheme/compass.png'),
                     onPressed: () {
                       navigateToScreen(context, "/map");
                     },
@@ -149,7 +148,7 @@ class MainLayout extends StatelessWidget {
                               if (Navigator.canPop(context)) {
                                 Navigator.pop(context); // 화면이 있다면 뒤로가기
                               } else {
-                                SystemNavigator.pop();  // 뒤로 갈 화면이 없다면 앱 종료
+                                SystemNavigator.pop(); // 뒤로 갈 화면이 없다면 앱 종료
                               }
                             },
                           ),

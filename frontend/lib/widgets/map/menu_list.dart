@@ -46,7 +46,7 @@ class MenuList extends StatelessWidget {
       color: const Color(0xFF505050),
       position: RelativeRect.fromLTRB(
         position.dx - menuBox.size.width * 2.3,
-        position.dy - menuBox.size.height * 5,
+        position.dy - menuBox.size.height * 3.8,
         position.dx + menuBox.size.width,
         0,
       ),
