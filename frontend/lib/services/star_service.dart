@@ -16,7 +16,7 @@ class StarService {
     List<StarListItemModel> starList = [];
     String type = isSentStar ? "send" : "reception";
     try {
-      var response = await DioService.authDio.get('/message/$type/list');
+      var response = await DioService.authDio.get('/message/$type/list/0');
 
       var result = ResponseModel.fromJson(response.data);
       if (result.code == '200') {
