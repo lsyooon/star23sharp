@@ -34,6 +34,10 @@ public class NickBookService {
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
+        if(member.getNickname().equals(nickBookRequest.getNickname())) {
+            throw new CustomException(CustomErrorCode.SELF_NICKBOOK_ADDITION_NOT_ALLOWED);
+        }
+
         boolean existNickname = memberRepository.existsByNickname(nickBookRequest.getNickname());
         if (!existNickname) {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);

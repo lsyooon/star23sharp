@@ -38,6 +38,7 @@ public enum CustomErrorCode {
     NICKBOOK_NOT_FOUND("M0012","존재하지 않는 닉북입니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_NICKBOOK_ACCESS("M0013","해당 닉북에 접근할 권한이 없습니다.",HttpStatus.FORBIDDEN),
     NICKBOOK_ALREADY_EXISTS("M0014","이미 닉북에 등록된 닉네임입니다.", HttpStatus.BAD_REQUEST),
+    SELF_NICKBOOK_ADDITION_NOT_ALLOWED("M0002","본인을 추가할 수 없습니다.", HttpStatus.BAD_REQUEST),
     ;
     private final String code;
     private final String message;
