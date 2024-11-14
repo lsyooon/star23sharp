@@ -7,6 +7,9 @@ from fastapi import FastAPI, File, Form, Response, UploadFile
 from models.boq_embeddings import BOQEmbeddings
 from models.pixel_effect_module import PixelEffectModule
 from PIL import Image, ImageOps
+from transformers import pipeline
+
+NSFW_THRESHOLD = 0.5
 
 app = FastAPI()
 
@@ -15,8 +18,21 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 embedding_model = BOQEmbeddings(device=device)
 pixel_effect_model = PixelEffectModule(device=device)
 
+nsfw_filter = pipeline(
+    "image-classification",
+    model="MichalMlodawski/nsfw-image-detection-large",
+    device=device,
+)
+
 # Transformation to convert tensors to PIL Images
 to_pil = T.ToPILImage()
+
+
+def is_nsfw_safe(image: Image) -> bool:
+    nsfw_result = nsfw_filter(image)
+    if nsfw_result[2]["score"] > NSFW_THRESHOLD:  # label: UNSAFE
+        return False
+    return True
 
 
 def _open_image(input_file):
@@ -83,9 +99,11 @@ async def embed_image(
     """
     contents = await file.read()
     image = _open_image(io.BytesIO(contents))
+    # if not is_nsfw_safe(image):
+    #     return {"nsfw": "unsafe"}
     embedding_tensor = embedding_model.embed_image(image)
     embedding_list = embedding_tensor.cpu().numpy().tolist()
-    return {"embedding": embedding_list}
+    return {"nsfw": "safe", "embedding": embedding_list}
 
 
 @app.post("/image/embeddings")
@@ -108,6 +126,8 @@ async def embed_images(
     for file in files:
         contents = await file.read()
         image = _open_image(io.BytesIO(contents))
+        if not is_nsfw_safe(image):
+            return {"nsfw": "unsafe"}
         images.append(image)
         filenames.append(file.filename)
 
@@ -119,4 +139,4 @@ async def embed_images(
     for idx in range(len(images)):
         embedding_list = embeddings_tensor[idx].cpu().numpy().tolist()
         embeddings.append({"filename": filenames[idx], "embedding": embedding_list})
-    return {"embeddings": embeddings}
+    return {"nsfw": "safe", "embeddings": embeddings}

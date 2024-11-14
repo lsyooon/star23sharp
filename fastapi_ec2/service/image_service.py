@@ -6,8 +6,10 @@ from typing import List, Tuple, Union
 import httpx
 from response.exceptions import (
     EmbeddingsCountMismatchException,
+    GPUProxyConnectionException,
     GPUProxyServerException,
     InvalidInputException,
+    NSFWImageDetectedException,
 )
 from starlette.datastructures import UploadFile
 from utils.resource import _FILEMODEL_INDEX_FILECONTENT, FileModel, download_file
@@ -80,12 +82,9 @@ async def proxy_file_request(
                     raise GPUProxyServerException()
             except Exception as e2:
                 logging.error(f"Connection error to backup GPU server: {e2}")
-                raise GPUProxyServerException()
+                raise GPUProxyConnectionException()
         else:
-            raise GPUProxyServerException()
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
-        raise GPUProxyServerException()
+            raise GPUProxyConnectionException()
 
 
 async def pixelize_image_service(
@@ -146,6 +145,10 @@ async def get_embedding_of_two_images(
     response = await proxy_file_request(EMBEDDINGS_ENDPOINT, files=files)
 
     response_data = response.json()
+
+    if response_data.get("nsfw") == "unsafe":
+        raise NSFWImageDetectedException()
+
     embeddings = response_data.get("embeddings", [])
 
     if len(embeddings) != 2:

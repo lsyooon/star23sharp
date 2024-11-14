@@ -254,3 +254,12 @@ class GroupIncludesOwnerException(AppException):
 
     status_code = status.HTTP_400_BAD_REQUEST
     code = "G0003"
+
+
+class NSFWImageDetectedException(AppException):
+    """
+    이미지가 유해한 이미지로 판단됩니다.
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "L0026"
