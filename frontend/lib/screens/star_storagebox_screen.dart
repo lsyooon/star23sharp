@@ -3,15 +3,31 @@ import 'package:star23sharp/models/star_list_item_model.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
-class StarStoragebox extends StatelessWidget {
-  StarStoragebox({super.key});
+class StarStoragebox extends StatefulWidget {
+  const StarStoragebox({super.key});
 
-  final Future<List<StarListItemModel>?> sent = StarService.getStarList(true);
-  final Future<List<StarListItemModel>?> receieved =
-      StarService.getStarList(false);
+  @override
+  _StarStorageboxState createState() => _StarStorageboxState();
+}
+
+class _StarStorageboxState extends State<StarStoragebox> {
+  int selectedIndex = 0;
+  
+  final List<String> dropdownItems = ['전체', '보물 쪽지', '일반 쪽지'];
+  String selectedItem = '전체';
+  
+
+  void updateSelectedIndex(String? newValue) {
+    setState(() {
+      selectedItem = newValue!;
+      selectedIndex = dropdownItems.indexOf(newValue); // 드롭다운에서 선택된 값의 인덱스를 설정
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    Future<List<StarListItemModel>?> sent = StarService.getStarList(true, selectedIndex);
+    Future<List<StarListItemModel>?> receieved = StarService.getStarList(false, selectedIndex);
     return Stack(
       children: [
         Center(
@@ -28,12 +44,50 @@ class StarStoragebox extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                "별모음",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: FontSizes.title,
-                    fontWeight: FontWeight.bold),
+              Stack(
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "보관함",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: FontSizes.title,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 40),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        DropdownButton<String>(
+                          value: selectedItem,
+                          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                          dropdownColor: Colors.black.withOpacity(0.6),
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(
+                            height: 1,
+                            color: Colors.white,
+                          ),
+                          onChanged: updateSelectedIndex,
+                          items: dropdownItems.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value, style: const TextStyle(
+                                fontFamily: 'Hakgyoansim Chilpanjiugae',
+                                fontSize: 18
+                              ),),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.8,
@@ -55,8 +109,8 @@ class StarStoragebox extends StatelessWidget {
                             fontFamily: 'Hakgyoansim Chilpanjiugae',
                           ),
                           tabs: [
-                            Tab(text: "내가 보낸 별"),
-                            Tab(text: "내가 받은 별"),
+                            Tab(text: "보낸 쪽지"),
+                            Tab(text: "받은 쪽지"),
                           ],
                         ),
                       ),
@@ -71,14 +125,12 @@ class StarStoragebox extends StatelessWidget {
                               child: FutureBuilder<List<StarListItemModel>?>(
                                 future: sent,
                                 builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
+                                  if (snapshot.connectionState == 
                                       ConnectionState.waiting) {
                                     return Center(
                                       child: Image.asset(
                                         "assets/img/logo/loading_logo.gif",
-                                        // width: UIhelper.deviceWidth(context) * 0.4, // 별 로고 너비
-                                        height: UIhelper.deviceHeight(context) *
-                                            0.3, // 별 로고 높이
+                                        height: UIhelper.deviceHeight(context) * 0.3,
                                       ),
                                     );
                                   } else if (snapshot.hasError) {
@@ -88,7 +140,7 @@ class StarStoragebox extends StatelessWidget {
                                   } else if (!snapshot.hasData ||
                                       snapshot.data!.isEmpty) {
                                     return const Center(
-                                        child: Text('보낸 별이 없습니다.',
+                                        child: Text('보낸 쪽지가 없습니다.',
                                             style: TextStyle(
                                                 fontSize: FontSizes.body,
                                                 color: Colors.white)));
@@ -100,7 +152,7 @@ class StarStoragebox extends StatelessWidget {
                                       gridDelegate:
                                           const SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: 1,
-                                        childAspectRatio: 5.3, // 작을수록 높이 길어짐
+                                        childAspectRatio: 5.3, 
                                         mainAxisSpacing: 5,
                                         crossAxisSpacing: 10,
                                       ),
@@ -130,17 +182,16 @@ class StarStoragebox extends StatelessWidget {
                                 color: const Color(0xFFE3E1E1).withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: FutureBuilder<List<StarListItemModel>?>(
+                              child: FutureBuilder<List<StarListItemModel>?>( 
                                 future: receieved,
                                 builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
+                                  if (snapshot.connectionState == 
                                       ConnectionState.waiting) {
                                     return Center(
                                       child: Image.asset(
                                         "assets/img/logo/loading_logo.gif",
-                                        // width: UIhelper.deviceWidth(context) * 0.4, // 별 로고 너비
                                         height: UIhelper.deviceHeight(context) *
-                                            0.3, // 별 로고 높이
+                                            0.3,
                                       ),
                                     );
                                   } else if (snapshot.hasError) {
@@ -151,7 +202,7 @@ class StarStoragebox extends StatelessWidget {
                                       snapshot.data!.isEmpty) {
                                     return const Center(
                                         child: Text(
-                                      '받은 별이 없습니다.',
+                                      '받은 쪽지가 없습니다.',
                                       style: TextStyle(
                                           fontSize: FontSizes.body,
                                           color: Colors.white),
