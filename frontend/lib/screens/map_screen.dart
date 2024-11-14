@@ -202,7 +202,7 @@ class _MapScreenState extends State<MapScreen>
         markerId: '99999999',
         latLng: LatLng(position.latitude, position.longitude),
         markerImageSrc:
-            'https://w7.pngwing.com/pngs/272/94/png-transparent-current-location-logo-microsoft-mappoint-pointer-computer-icons-world-map-location-logo-sign-magenta-map-thumbnail.png',
+            'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/myLocate.svg',
       )
     }.toSet();
 
