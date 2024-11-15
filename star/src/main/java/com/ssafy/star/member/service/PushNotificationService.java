@@ -1,5 +1,6 @@
 package com.ssafy.star.member.service;
 
+import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
@@ -7,6 +8,8 @@ import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 @Service
 public class PushNotificationService {
@@ -29,6 +32,9 @@ public class PushNotificationService {
                 .setToken(token)
                 .putData("notificationId", id)
                 .setNotification(notification)
+                .setAndroidConfig(AndroidConfig.builder()
+                        .setTtl(Duration.ofMinutes(5).toMillis())
+                        .build())
                 .build();
 
         try {
@@ -56,6 +62,9 @@ public class PushNotificationService {
                 .setToken(token)
                 .putData("notificationId", id)
                 .setNotification(notification)
+                .setAndroidConfig(AndroidConfig.builder()
+                        .setTtl(Duration.ofMinutes(5).toMillis())
+                        .build())
                 .build();
 
         try {
@@ -79,6 +88,9 @@ public class PushNotificationService {
                 .putData("notificationId", notificationId)
                 .putData("messageId", messageId)
                 .setNotification(notification)
+                .setAndroidConfig(AndroidConfig.builder()
+                        .setTtl(Duration.ofMinutes(5).toMillis())
+                        .build())
                 .build();
 
         try {
