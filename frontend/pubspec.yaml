@@ -54,6 +54,8 @@ flutter:
     - .env
     - assets/img/
     - assets/img/blackTheme/
+    - assets/img/blueTheme/
+    - assets/img/redTheme/
     - assets/img/logo/
     - assets/img/map/
     - assets/img/planet/

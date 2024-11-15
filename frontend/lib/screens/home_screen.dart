@@ -40,6 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // 비동기 초기화 작업을 위한 별도 메서드
   Future<void> _initialize() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     await loadAccessToken(authProvider); // Secure Storage에서 토큰 불러오기
     if (authProvider.accessToken != null && authProvider.refreshToken != null) {
       // 회원정보
@@ -57,6 +59,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (mounted) {
       setState(() {});
+    }
+
+    // 테마 불러오기
+    String? theme = await storage.read(key: 'theme');
+    if(theme == 'AppTheme.blue'){
+      themeProvider.setTheme(AppTheme.blue);
+    }else if(theme == 'AppTheme.red'){
+      themeProvider.setTheme(AppTheme.red);
+    }else{
+      themeProvider.setTheme(AppTheme.black);
     }
   }
 
