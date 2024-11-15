@@ -14,8 +14,8 @@ class ProfileScreen extends StatelessWidget {
     UserService.getMemberInfo();
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
-      {'text':'친구 목록'}, 
-      {'text':'사용법 보러가기'}
+      {'text': '친구 목록'},
+      {'text': '사용법 보러가기'}
     ];
 
     return Stack(
@@ -38,15 +38,14 @@ class ProfileScreen extends StatelessWidget {
                 "내 정보",
                 style: TextStyle(
                     color: Colors.white,
-                    fontSize: FontSizes.title, 
+                    fontSize: FontSizes.title,
                     fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 5),
               Text(
                 "안녕하세요 $nickname님!",
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: FontSizes.body),
+                    color: Colors.white, fontSize: FontSizes.body),
               ),
               const SizedBox(height: 30),
               Container(
@@ -62,32 +61,40 @@ class ProfileScreen extends StatelessWidget {
                     // 각 항목에 대해 InkWell로 클릭 가능하게 만들기
                     ...List.generate(items.length, (index) {
                       // 리스트 아이템의 높이를 Container 높이의 1/3로 설정
-                      double itemHeight = (UIhelper.deviceHeight(context) * 0.3) * 0.33;
+                      double itemHeight =
+                          (UIhelper.deviceHeight(context) * 0.3) * 0.33;
 
                       return InkWell(
                         onTap: () async {
-                          if(index == 1){
-                            final Uri uri = Uri.parse("https://k11b104.p.ssafy.io/manual");
+                          if (index == 1) {
+                            final Uri uri =
+                                Uri.parse("https://k11b104.p.ssafy.io/manual");
                             if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              await launchUrl(uri,
+                                  mode: LaunchMode.externalApplication);
                             } else {
-                              ErrorHandler.handle(Exception("페이지를 이동할 수 없습니다."));
+                              ErrorHandler.handle(
+                                  Exception("페이지를 이동할 수 없습니다."));
                             }
-                          }else{
-                            Navigator.pushNamed(AppGlobal.navigatorKey.currentContext!, '/modify_profile');
+                          } else {
+                            Navigator.pushNamed(
+                                AppGlobal.navigatorKey.currentContext!,
+                                '/nickbooks');
                           }
                         },
                         child: Container(
                           height: itemHeight, // Container 높이의 1/3
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
-                            color: index % 2 == 1 ? const Color(0xFFF6F6F6).withOpacity(0.2) : Colors.transparent,  // 배경색을 흰색으로 설정하고 투명도 50%
+                            color: index % 2 == 1
+                                ? const Color(0xFFF6F6F6).withOpacity(0.2)
+                                : Colors.transparent, // 배경색을 흰색으로 설정하고 투명도 50%
                             borderRadius: BorderRadius.circular(8), // 둥근 모서리
                           ),
                           child: Row(
                             children: [
                               Text(
-                                "${index + 1}. ",  // 번호 매기기
+                                "${index + 1}. ", // 번호 매기기
                                 style: const TextStyle(
                                   fontSize: FontSizes.body,
                                   fontWeight: FontWeight.bold,
@@ -96,7 +103,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               Expanded(
                                 child: Text(
-                                  items[index]['text']!,  // 리스트의 항목을 텍스트로 출력
+                                  items[index]['text']!, // 리스트의 항목을 텍스트로 출력
                                   style: const TextStyle(
                                     fontSize: FontSizes.body,
                                     fontWeight: FontWeight.w500,
@@ -118,10 +125,15 @@ class ProfileScreen extends StatelessWidget {
                 width: UIhelper.deviceWidth(context) * 0.5, // 너비 50%
                 child: ElevatedButton(
                   onPressed: () async {
-                    var refresh = Provider.of<AuthProvider>(context, listen: false).refreshToken;
+                    var refresh =
+                        Provider.of<AuthProvider>(context, listen: false)
+                            .refreshToken;
                     bool response = await UserService.logout(refresh!);
-                    if(response){
-                      Provider.of<AuthProvider>(AppGlobal.navigatorKey.currentContext!, listen: false).clearTokens();
+                    if (response) {
+                      Provider.of<AuthProvider>(
+                              AppGlobal.navigatorKey.currentContext!,
+                              listen: false)
+                          .clearTokens();
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         '/home', // 네임드 라우트 사용
@@ -130,12 +142,15 @@ class ProfileScreen extends StatelessWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA292EC).withOpacity(0.4), // 배경색 설정
+                    backgroundColor:
+                        const Color(0xFFA292EC).withOpacity(0.4), // 배경색 설정
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12), // 모서리 둥글게 설정
                     ),
                   ),
-                  child: const Text("로그아웃", style: TextStyle(fontSize: FontSizes.body, color: Colors.white)),
+                  child: const Text("로그아웃",
+                      style: TextStyle(
+                          fontSize: FontSizes.body, color: Colors.white)),
                 ),
               ),
             ],

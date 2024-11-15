@@ -45,16 +45,47 @@ void _handleMessage(RemoteMessage message) {
   logger.d("Handling message: $message");
   // 데이터에서 notificationId 추출
   final notificationId = message.data['notificationId'];
-  logger.d("백그라운드 fcm service:onNotification 아이디는:  " + notificationId);
+  final messageId = message.data['messageId'];
+  logger.d("백그라운드 main.dart:_handleMessage notificationId:  " + notificationId);
+  logger.d("백그라운드 main.dart _handleMessage: message아이디는:  " + messageId);
 
   Future.delayed(const Duration(seconds: 1), () {
-    if (notificationId != null) {
+    final isLoggedIn = Provider.of<AuthProvider>(
+            AppGlobal.navigatorKey.currentContext!,
+            listen: false)
+        .isLoggedIn;
+
+    if (isLoggedIn) {
+      if (messageId != null) {
+        logger.d("알림 messageId: $messageId");
+
+        // 홈 화면을 네비게이션 스택에 추가하고, 그 위에 상세 페이지를 추가
+        AppGlobal.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+          '/home', // 홈 화면
+          (route) => false, // 기존 스택을 제거
+        );
+
+        AppGlobal.navigatorKey.currentState!.pushNamed(
+          '/star_received_detail',
+          arguments: int.tryParse(messageId), // messageId 전달
+        );
+        return;
+      }
+
+// 홈 화면을 네비게이션 스택에 추가하고, 그 위에 알림 페이지를 추가
+      AppGlobal.navigatorKey.currentState!.pushNamedAndRemoveUntil(
+        '/home', // 홈 화면
+        (route) => false, // 기존 스택을 제거
+      );
+
       AppGlobal.navigatorKey.currentState!.pushNamed(
-        "/notification",
+        '/notification',
         arguments: int.tryParse(notificationId), // notificationId를 전달
       );
     } else {
-      logger.e("Notification ID is missing in the message data.");
+      AppGlobal.navigatorKey.currentState!.pushNamed(
+        '/signin',
+      );
     }
   });
 }
@@ -100,7 +131,6 @@ void main() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
     String? imageUrl = message.notification?.android?.imageUrl;
-    final notificationId = message.data['notificationId'];
     if (notification != null) {
       if (imageUrl != null) {
         // 이미지가 포함된 경우
@@ -120,17 +150,27 @@ void main() async {
           notificationId: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         );
       }
-      // 알림 화면을 업데이트
-      if (AppGlobal.navigatorKey.currentState?.overlay != null) {
-        final currentRoute =
-            ModalRoute.of(AppGlobal.navigatorKey.currentState!.context);
-        if (currentRoute?.settings.name == '/notification') {
-          final alarmScreenState = AppGlobal.navigatorKey.currentState!.context
-              .findAncestorStateOfType<PushAlarmScreenState>();
-          if (alarmScreenState != null) {
-            alarmScreenState.fetchNotifications();
+      // 현재 라우트 확인
+      final currentState = AppGlobal.navigatorKey.currentState;
+      if (currentState != null) {
+        String? currentPath;
+        currentState.popUntil((route) {
+          currentPath = route.settings.name;
+          return true;
+        });
+        logger.d("현재 화면 url: $currentPath");
+
+        // 현재 화면이 '/notification'인 경우 fetchNotifications 호출
+        if (currentPath == '/notification') {
+          if (PushAlarmScreenState.instance != null) {
+            logger.d("PushAlarmScreenState 인스턴스 감지");
+            PushAlarmScreenState.instance!.fetchNotifications();
           }
+        } else {
+          logger.e("알림 화면 상태를 찾을 수 없음.");
         }
+      } else {
+        logger.e("현재 Navigator 상태를 찾을 수 없음.");
       }
     }
   });
