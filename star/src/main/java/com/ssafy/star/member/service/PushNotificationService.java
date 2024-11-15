@@ -42,7 +42,7 @@ public class PushNotificationService {
     @Async
     public void sendPushNotification(String token, String title, String content, String id, String hint, String image) {
 
-        if (hint == null) {
+        if (hint == null || hint.trim().equals("")) {
             hint = "힌트가 없어요ㅠ0ㅠ";
         }
 
