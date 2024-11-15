@@ -279,13 +279,13 @@ class _MapScreenState extends State<MapScreen>
 
   // 사진 검증 후 성공/실패 모달 분기
   void _verifyPicture(XFile image, Map<String, dynamic> markerData) async {
-    setState(() {
-      _isVerifyLoading = true;
-    });
+    // setState(() {
+    //   _isVerifyLoading = true;
+    // });
     bool isCorrect = await isCorrectPicture(image, markerData);
-    setState(() {
-      _isVerifyLoading = false;
-    });
+    // setState(() {
+    //   _isVerifyLoading = false;
+    // });
     if (isCorrect) {
       Navigator.pop(context);
       CorrectMessageModal.show(
@@ -771,13 +771,13 @@ class _MapScreenState extends State<MapScreen>
                     ),
                   ),
                 ),
-                if (_isVerifyLoading)
-                  Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
+                // if (_isVerifyLoading)
+                //   Container(
+                //     color: Colors.black.withOpacity(0.5),
+                //     child: const Center(
+                //       child: CircularProgressIndicator(),
+                //     ),
+                //   ),
               ],
             );
           },
