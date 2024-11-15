@@ -151,7 +151,7 @@ public class NotificationService {
         notification.setMember(member);
         notification.setMessage(message);
         notification.setImage(message.getDotHintImage());
-        notification.setHint("힌트 : " + message.getHint());
+        notification.setHint(message.getHint());
         notificationRepository.save(notification);
 
         if (receiverToken == null || !receiverToken.isActive()) { // 토큰 없거나 알림 비활성 상태면 바로 나옴

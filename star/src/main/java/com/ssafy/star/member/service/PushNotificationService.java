@@ -42,9 +42,13 @@ public class PushNotificationService {
     @Async
     public void sendPushNotification(String token, String title, String content, String id, String hint, String image) {
 
+        if (hint == null) {
+            hint = "힌트가 없어요ㅠ0ㅠ";
+        }
+
         Notification notification = Notification.builder()
                 .setTitle(title)
-                .setBody(content + "\n" + hint)
+                .setBody(content + "\n힌트 : " + hint)
                 .setImage(image)
                 .build();
 
