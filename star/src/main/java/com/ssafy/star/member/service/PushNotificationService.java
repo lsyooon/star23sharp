@@ -23,15 +23,17 @@ public class PushNotificationService {
     @Async
     public void sendPushNotification(String token, String id, String title, String content) {
 
-        Notification notification = Notification.builder()
-                .setTitle(title)
-                .setBody(content)
-                .build();
+//        Notification notification = Notification.builder()
+//                .setTitle(title)
+//                .setBody(content)
+//                .build();
 
         Message message = Message.builder()
                 .setToken(token)
                 .putData("notificationId", id)
-                .setNotification(notification)
+                .putData("title", title)
+                .putData("content", content)
+//                .setNotification(notification)
                 .setAndroidConfig(AndroidConfig.builder()
                         .setTtl(Duration.ofMinutes(5).toMillis())
                         .build())
@@ -52,16 +54,19 @@ public class PushNotificationService {
             hint = "힌트가 없어요ㅠ0ㅠ";
         }
 
-        Notification notification = Notification.builder()
-                .setTitle(title)
-                .setBody(content + "\n힌트 : " + hint)
-                .setImage(image)
-                .build();
+//        Notification notification = Notification.builder()
+//                .setTitle(title)
+//                .setBody(content + "\n힌트 : " + hint)
+//                .setImage(image)
+//                .build();
 
         Message message = Message.builder()
                 .setToken(token)
                 .putData("notificationId", id)
-                .setNotification(notification)
+                .putData("title", title)
+                .putData("content", content)
+                .putData("image", image)
+//                .setNotification(notification)
                 .setAndroidConfig(AndroidConfig.builder()
                         .setTtl(Duration.ofMinutes(5).toMillis())
                         .build())
@@ -78,16 +83,18 @@ public class PushNotificationService {
     @Async
     public void sendPushNotificationCommonMessage(String token, String notificationId, String messageId, String title, String content) {
 
-        Notification notification = Notification.builder()
-                .setTitle(title)
-                .setBody(content)
-                .build();
+//        Notification notification = Notification.builder()
+//                .setTitle(title)
+//                .setBody(content)
+//                .build();
 
         Message message = Message.builder()
                 .setToken(token)
+                .putData("title", title)
+                .putData("content", content)
                 .putData("notificationId", notificationId)
                 .putData("messageId", messageId)
-                .setNotification(notification)
+//                .setNotification(notification)
                 .setAndroidConfig(AndroidConfig.builder()
                         .setTtl(Duration.ofMinutes(5).toMillis())
                         .build())
