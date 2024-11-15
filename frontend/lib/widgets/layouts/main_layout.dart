@@ -10,8 +10,9 @@ import 'package:star23sharp/widgets/modals/error_snackbar.dart';
 class MainLayout extends StatelessWidget {
   final Widget child;
 
-  void navigateToScreen(BuildContext context, String routeName){
-    final isLoggedIn = Provider.of<AuthProvider>(context, listen: false).isLoggedIn;
+  void navigateToScreen(BuildContext context, String routeName) {
+    final isLoggedIn =
+        Provider.of<AuthProvider>(context, listen: false).isLoggedIn;
 
     // 로그인 여부 확인
     if (!isLoggedIn) {
@@ -22,7 +23,8 @@ class MainLayout extends StatelessWidget {
     // 현재 화면과 이동하려는 화면이 다를 때만 이동
     if (ModalRoute.of(context)?.settings.name != routeName) {
       Navigator.pushNamed(context, routeName).then((_) {
-        Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/home', (Route<dynamic> route) => false);
       });
     }
   }
@@ -87,16 +89,24 @@ class MainLayout extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
-                            iconSize: 28.0,
-                            icon: const Icon(Icons.notifications_outlined),
+                            iconSize: 30.0,
+                            icon: Image.asset(
+                              'assets/img/blackTheme/bell.png',
+                              width: 30.0,
+                              height: 30.0,
+                            ),
                             color: const Color(0xFF868686),
                             onPressed: () {
                               navigateToScreen(context, "/notification");
                             },
                           ),
                           IconButton(
-                            iconSize: 28.0,
-                            icon: const Icon(Icons.mail_outline),
+                            iconSize: 30.0,
+                            icon: Image.asset(
+                              'assets/img/blackTheme/mailbox.png',
+                              width: 30.0,
+                              height: 30.0,
+                            ),
                             color: const Color(0xFF868686),
                             onPressed: () {
                               navigateToScreen(context, "/starstorage");
@@ -130,18 +140,23 @@ class MainLayout extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
-                            iconSize: 28.0,
-                            icon: const Icon(Icons.account_circle_outlined),
+                            iconSize: 35.0,
+                            icon: Image.asset(
+                              'assets/img/blackTheme/profile.png',
+                              width: 35.0,
+                              height: 35.0,
+                            ),
                             color: const Color(0xFF868686),
                             onPressed: () {
                               navigateToScreen(context, "/profile");
                             },
                           ),
                           IconButton(
-                            iconSize: 28.0,
-                            icon: Transform.rotate(
-                              angle: pi / 2, // 90도 회전 (오른쪽으로)
-                              child: const Icon(Icons.u_turn_left),
+                            iconSize: 30.0,
+                            icon: Image.asset(
+                              'assets/img/blackTheme/back.png',
+                              width: 30.0,
+                              height: 30.0,
                             ),
                             color: const Color(0xFF868686),
                             onPressed: () {
