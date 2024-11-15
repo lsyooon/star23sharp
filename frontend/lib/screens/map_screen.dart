@@ -36,7 +36,7 @@ class _MapScreenState extends State<MapScreen>
   bool _isFound = false;
   bool _isFar = false;
   bool _isPictureCorrect = false;
-  final bool _isVerifyLoading = false;
+  bool _isVerifyLoading = false;
   Set<Marker> myLocate = {};
   StreamSubscription<Position>? _positionStreamSubscription;
 
@@ -76,7 +76,7 @@ class _MapScreenState extends State<MapScreen>
             markerId: '99999999',
             latLng: currentPosition,
             markerImageSrc:
-                'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/myLocate.svg',
+                'https://img1.picmix.com/output/stamp/normal/6/8/1/0/2550186_93a1e.gif',
           )
         }.toSet();
 
@@ -148,7 +148,7 @@ class _MapScreenState extends State<MapScreen>
           markerId: '99999999',
           latLng: LatLng(lat, lng),
           markerImageSrc:
-              'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/myLocate.svg',
+              'https://img1.picmix.com/output/stamp/normal/6/8/1/0/2550186_93a1e.gif',
         )
       }.toSet();
 
@@ -202,7 +202,7 @@ class _MapScreenState extends State<MapScreen>
         markerId: '99999999',
         latLng: LatLng(position.latitude, position.longitude),
         markerImageSrc:
-            'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/myLocate.svg',
+            'https://img1.picmix.com/output/stamp/normal/6/8/1/0/2550186_93a1e.gif',
       )
     }.toSet();
 
@@ -279,8 +279,13 @@ class _MapScreenState extends State<MapScreen>
 
   // 사진 검증 후 성공/실패 모달 분기
   void _verifyPicture(XFile image, Map<String, dynamic> markerData) async {
+    // setState(() {
+    //   _isVerifyLoading = true;
+    // });
     bool isCorrect = await isCorrectPicture(image, markerData);
-
+    // setState(() {
+    //   _isVerifyLoading = false;
+    // });
     if (isCorrect) {
       Navigator.pop(context);
       CorrectMessageModal.show(
@@ -996,20 +1001,30 @@ class _MapScreenState extends State<MapScreen>
           left: deviceWidth * 0.12,
           child: InkWell(
             onTap: _goToCachedOrCurrentLocation,
-            child: Image.asset('assets/img/map/location.png'),
+            child: Opacity(
+              opacity: 0.5,
+              child: Image.asset(
+                'assets/img/map/location.png',
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
           ),
         ),
         Positioned(
           bottom: deviceHeight * 0.1,
           right: deviceWidth * 0.12,
-          child: MenuList(
-            onItemSelected: (MenuItem selectedOption) {
-              _handleMenuAction(selectedOption);
-              setState(() {
-                _isMenuTouched = false;
-              });
-            },
-            isMenuTouched: _isMenuTouched,
+          child: Opacity(
+            opacity: 0.5,
+            child: MenuList(
+              onItemSelected: (MenuItem selectedOption) {
+                _handleMenuAction(selectedOption);
+                setState(() {
+                  _isMenuTouched = false;
+                });
+              },
+              isMenuTouched: _isMenuTouched,
+            ),
           ),
         ),
         Positioned(
@@ -1017,7 +1032,14 @@ class _MapScreenState extends State<MapScreen>
           right: deviceWidth * 0.12,
           child: InkWell(
             onTap: () => {Navigator.pushNamed(context, '/hidestar')},
-            child: Image.asset('assets/img/map/plus.png'),
+            child: Opacity(
+              opacity: 0.5,
+              child: Image.asset(
+                'assets/img/map/plus.png',
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
           ),
         ),
         if (_isSearchButtonVisible)
