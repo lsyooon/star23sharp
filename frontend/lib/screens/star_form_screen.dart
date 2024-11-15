@@ -55,6 +55,15 @@ class _StarFormScreenState extends State<StarFormScreen> {
     fetchNicbooks();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    String? nickname = ModalRoute.of(context)!.settings.arguments as String?;
+    if (nickname != null) {
+      _recipients.add(nickname);
+    }
+  }
+
   Future<void> fetchNicbooks() async {
     try {
       // API 호출
@@ -187,10 +196,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    String? nickname = ModalRoute.of(context)!.settings.arguments as String?;
-    if(nickname != null){
-      _recipients.add(nickname);
-    }
     final isTreasureStar =
         Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
     final messageProvider =
@@ -209,22 +214,22 @@ class _StarFormScreenState extends State<StarFormScreen> {
             child: Column(
               children: [
                 Container(
-                    color: const Color(0xFFA292EC),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 20.0),
-                    child: Container(
-                      width: UIhelper.deviceWidth(context) * 0.85,
-                      alignment: Alignment.center,
-                      child: const Text(
-                        '쪽지 보내기',
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  color: const Color(0xFFA292EC),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16.0, horizontal: 20.0),
+                  child: Container(
+                    width: UIhelper.deviceWidth(context) * 0.85,
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '쪽지 보내기',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -236,8 +241,11 @@ class _StarFormScreenState extends State<StarFormScreen> {
                           height: 90,
                           width: 90,
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[300]!, width: 1), // 테두리 색과 두께 설정
-                            borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                            border: Border.all(
+                                color: Colors.grey[300]!,
+                                width: 1), // 테두리 색과 두께 설정
+                            borderRadius:
+                                BorderRadius.circular(12), // 둥근 테두리 설정
                           ),
                           child: Stack(
                             children: [
@@ -246,7 +254,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
                                   child: Image.file(
                                     _selectedImage!,
                                     fit: BoxFit.cover,
-                
                                   ),
                                 ),
                               if (_selectedImage != null)
@@ -296,7 +303,12 @@ class _StarFormScreenState extends State<StarFormScreen> {
                         ),
                       Row(
                         children: [
-                          const Text("받는 사람", style: TextStyle(fontSize: FontSizes.body, color: Color(0xff747474)),),
+                          const Text(
+                            "받는 사람",
+                            style: TextStyle(
+                                fontSize: FontSizes.body,
+                                color: Color(0xff747474)),
+                          ),
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () {},
@@ -316,7 +328,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                               ),
                               textStyle: const TextStyle(
                                   color: Colors.white), // 툴팁 텍스트 스타일
-                
+
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Icon(
@@ -336,15 +348,17 @@ class _StarFormScreenState extends State<StarFormScreen> {
                               return !_recipients.contains(option['nickname']);
                             }).cast<Map<String, dynamic>>();
                           }
-                
+
                           return nicBook.where((option) {
                             final nickname =
                                 option['nickname']?.toLowerCase() ?? '';
                             final name = option['name']?.toLowerCase() ?? '';
                             final input = textEditingValue.text.toLowerCase();
-                
-                            return (!_recipients.contains(option['nickname'])) &&
-                                (nickname.contains(input) || name.contains(input));
+
+                            return (!_recipients
+                                    .contains(option['nickname'])) &&
+                                (nickname.contains(input) ||
+                                    name.contains(input));
                           }).cast<Map<String, dynamic>>();
                         },
                         displayStringForOption: (option) => option['nickname'],
@@ -365,10 +379,11 @@ class _StarFormScreenState extends State<StarFormScreen> {
                           // 동기화: 컨트롤러 내용을 수정
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (_nicknameController != textEditingController) {
-                              textEditingController.text = _nicknameController.text;
+                              textEditingController.text =
+                                  _nicknameController.text;
                             }
                           });
-                
+
                           return TextFormField(
                             controller: textEditingController,
                             focusNode: focusNode,
@@ -383,17 +398,24 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             },
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12), // 둥근 테두리
-                                borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 연한 회색 테두리
+                                borderRadius:
+                                    BorderRadius.circular(12), // 둥근 테두리
+                                borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                    width: 1), // 연한 회색 테두리
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey[500]!, width: 1), // 포커스 상태에서의 테두리 색상
+                                borderSide: BorderSide(
+                                    color: Colors.grey[500]!,
+                                    width: 1), // 포커스 상태에서의 테두리 색상
                               ),
                               // 활성화 상태에서 테두리 설정
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 활성화 상태에서의 테두리 색상
+                                borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                    width: 1), // 활성화 상태에서의 테두리 색상
                               ),
                               suffixIcon: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -401,7 +423,8 @@ class _StarFormScreenState extends State<StarFormScreen> {
                                   IconButton(
                                     icon: const Icon(Icons.add),
                                     onPressed: () {
-                                      if (textEditingController.text.isNotEmpty &&
+                                      if (textEditingController
+                                              .text.isNotEmpty &&
                                           !_recipients.contains(
                                               textEditingController.text)) {
                                         logger.d(
@@ -412,7 +435,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
                                       }
                                     },
                                   ),
-                                  
                                 ],
                               ),
                             ),
@@ -425,7 +447,8 @@ class _StarFormScreenState extends State<StarFormScreen> {
                           );
                         },
                         optionsViewBuilder: (BuildContext context,
-                            AutocompleteOnSelected<Map<String, dynamic>> onSelected,
+                            AutocompleteOnSelected<Map<String, dynamic>>
+                                onSelected,
                             Iterable<Map<String, dynamic>> options) {
                           return Align(
                             alignment: Alignment.topLeft,
@@ -443,7 +466,8 @@ class _StarFormScreenState extends State<StarFormScreen> {
                                   shrinkWrap: true,
                                   padding: EdgeInsets.zero,
                                   itemCount: options.length,
-                                  itemBuilder: (BuildContext context, int index) {
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
                                     final option = options.elementAt(index);
                                     return ListTile(
                                       title: Text(option['nickname']),
@@ -472,31 +496,43 @@ class _StarFormScreenState extends State<StarFormScreen> {
                           );
                         }).toList(),
                       ),
-                      const SizedBox(height: 5,),
+                      const SizedBox(
+                        height: 5,
+                      ),
                       // 제목 입력
-                      const Text("제목", style: TextStyle(fontSize: FontSizes.body, color: Color(0xff747474)),),
+                      const Text(
+                        "제목",
+                        style: TextStyle(
+                            fontSize: FontSizes.body, color: Color(0xff747474)),
+                      ),
                       TextFormField(
                         controller: _titleController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12), // 둥근 테두리
-                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 연한 회색 테두리
+                            borderSide: BorderSide(
+                                color: Colors.grey[300]!,
+                                width: 1), // 연한 회색 테두리
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[500]!, width: 1), // 포커스 상태에서의 테두리 색상
+                            borderSide: BorderSide(
+                                color: Colors.grey[500]!,
+                                width: 1), // 포커스 상태에서의 테두리 색상
                           ),
                           // 활성화 상태에서 테두리 설정
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 활성화 상태에서의 테두리 색상
+                            borderSide: BorderSide(
+                                color: Colors.grey[300]!,
+                                width: 1), // 활성화 상태에서의 테두리 색상
                           ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return '제목을 입력해주세요.';
                           }
-                
+
                           if (value.length > 15) {
                             return '제목은 15자 이하로 입력해주세요.';
                           }
@@ -505,7 +541,11 @@ class _StarFormScreenState extends State<StarFormScreen> {
                       ),
                       const SizedBox(height: 5),
                       // 메시지 입력
-                      const Text("내용", style: TextStyle(fontSize: FontSizes.body, color: Color(0xff747474)),),
+                      const Text(
+                        "내용",
+                        style: TextStyle(
+                            fontSize: FontSizes.body, color: Color(0xff747474)),
+                      ),
                       TextFormField(
                         controller: _messageController,
                         focusNode: _messageFocusNode, // 포커스 노드 설정
@@ -513,19 +553,26 @@ class _StarFormScreenState extends State<StarFormScreen> {
                         maxLength: maxCharacters,
                         decoration: InputDecoration(
                           hintText: '메시지를 입력해주세요',
-                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 16),
+                          hintStyle:
+                              const TextStyle(color: Colors.grey, fontSize: 16),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12), // 둥근 테두리
-                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 연한 회색 테두리
+                            borderSide: BorderSide(
+                                color: Colors.grey[300]!,
+                                width: 1), // 연한 회색 테두리
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[500]!, width: 1), // 포커스 상태에서의 테두리 색상
+                            borderSide: BorderSide(
+                                color: Colors.grey[500]!,
+                                width: 1), // 포커스 상태에서의 테두리 색상
                           ),
                           // 활성화 상태에서 테두리 설정
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 활성화 상태에서의 테두리 색상
+                            borderSide: BorderSide(
+                                color: Colors.grey[300]!,
+                                width: 1), // 활성화 상태에서의 테두리 색상
                           ),
                           floatingLabelBehavior: _messageController.text.isEmpty
                               ? FloatingLabelBehavior.always
@@ -548,16 +595,17 @@ class _StarFormScreenState extends State<StarFormScreen> {
                               ? '최대 글자수를 초과했습니다.'
                               : '남은 글자 수: ${maxCharacters - _messageController.text.length}',
                           style: TextStyle(
-                            color: _messageController.text.length > maxCharacters
-                                ? const Color.fromARGB(255, 174, 57, 49)
-                                : Colors.black,
+                            color:
+                                _messageController.text.length > maxCharacters
+                                    ? const Color.fromARGB(255, 174, 57, 49)
+                                    : Colors.black,
                           ),
                         ),
                       ),
-                
+
                       const SizedBox(height: 16),
                       // 버튼
-                
+
                       Padding(
                         padding: const EdgeInsets.only(bottom: 30),
                         child: SizedBox(
@@ -566,14 +614,16 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             onPressed: _saveMessage,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFA292EC),
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
                             child: const Text(
                               '다음',
-                              style: TextStyle(fontSize: 16.0, color: Colors.white),
+                              style: TextStyle(
+                                  fontSize: 16.0, color: Colors.white),
                             ),
                           ),
                         ),
