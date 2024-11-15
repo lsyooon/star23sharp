@@ -10,6 +10,7 @@ import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/map_service.dart';
 import 'package:star23sharp/widgets/index.dart';
+import 'package:star23sharp/widgets/modals/error_snackbar.dart';
 
 class HideStarScreen extends StatefulWidget {
   const HideStarScreen({super.key});
@@ -41,36 +42,45 @@ class _HideStarScreenState extends State<HideStarScreen> {
   void _showPixelizedImageModal() {
     final deviceWidth = UIhelper.deviceWidth(context);
     final deviceHeight = UIhelper.deviceHeight(context);
+
     if (_pixelizedImageData != null) {
       showDialog(
         context: context,
-        barrierDismissible: false,
+        barrierDismissible: true, // 다른 부분을 눌렀을 때 닫히도록 설정
         builder: (BuildContext context) {
-          return Container(
-            color: Colors.black.withOpacity(0.8),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: SizedBox(
-                      width: deviceWidth * 0.8,
-                      height: deviceHeight * 0.5,
-                      child: Image.memory(
-                        _pixelizedImageData!,
-                        fit: BoxFit.contain,
+          return GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop(); // 모달 닫기
+            },
+            child: Container(
+              color: Colors.black.withOpacity(0.8), // 배경 색 설정
+              child: GestureDetector(
+                onTap: () {}, // 내부 클릭 시 닫히지 않도록 방지
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          width: deviceWidth * 0.8,
+                          height: deviceHeight * 0.5,
+                          child: Image.memory(
+                            _pixelizedImageData!,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      // ElevatedButton(
+                      //   onPressed: () {
+                      //     Navigator.of(context).pop(); // 명시적으로 모달 닫기
+                      //   },
+                      //   child: const Text("확인"),
+                      // ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text("확인"),
-                  ),
-                ],
+                ),
               ),
             ),
           );
@@ -101,7 +111,6 @@ class _HideStarScreenState extends State<HideStarScreen> {
 
           messageProvider.setMessageFormType(type: 'hidestar');
 
-
           var position = await Geolocator.getCurrentPosition();
           // final cachedLocation = await SharedPreferences.getInstance();
           final lat = position.latitude;
@@ -116,15 +125,13 @@ class _HideStarScreenState extends State<HideStarScreen> {
           );
           return true;
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("이미지 픽셀화에 실패했습니다.")),
-          );
+          ErrorSnackbar.show("이미지 픽셀화에 실패했습니다");
+
           return false;
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("권한이 없어 작업을 수행할 수 없습니다.")),
-        );
+        ErrorSnackbar.show("권한이 없어 작업을 수행할 수 없습니다");
+
         logger.d("픽셀화 Error : $e");
         return false;
       }
@@ -151,7 +158,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
-          "내 별 숨기기",
+          "보물 쪽지 숨기기",
           style: TextStyle(
             color: Colors.white,
             fontSize: 32,
@@ -170,7 +177,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
           child: Column(
             children: [
               const Text(
-                "사진을 두 장 찍어주세요",
+                "힌트 사진을 두 장 찍어주세요",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -181,39 +188,31 @@ class _HideStarScreenState extends State<HideStarScreen> {
               SizedBox(
                 width: 170,
                 height: 170,
-                child: PageView(
+                child: PageView.builder(
                   controller: _pageController,
+                  itemCount: 2, // 두 장의 사진
                   onPageChanged: (index) {
                     setState(() {
                       _currentIndex = index;
                     });
                   },
-                  children: List.generate(2, (index) {
-                    return GestureDetector(
-                      onTap: () {
-                        _takePhoto(index);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: images[index] != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.file(
-                                  File(images[index]!.path),
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.add,
-                                color: Colors.white,
-                                size: 50,
-                              ),
+                  itemBuilder: (context, index) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: images[index] != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.file(
+                                File(images[index]!.path),
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : null,
                     );
-                  }),
+                  },
                 ),
               ),
               const SizedBox(height: 10),
@@ -238,18 +237,6 @@ class _HideStarScreenState extends State<HideStarScreen> {
                             : Colors.white.withOpacity(0.5),
                         shape: BoxShape.circle,
                       ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            color: _currentIndex == index
-                                ? Colors.black
-                                : Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                     ),
                   );
                 }),
@@ -260,24 +247,36 @@ class _HideStarScreenState extends State<HideStarScreen> {
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: () async {
-            if (images[0] != null && images[1] != null) {
-              setState(() {
-                isPreviewMode = true;
-                isLoading = true;
-              });
-              await _pixelizeImages();
-              setState(() {
-                isLoading = false;
-              });
+            if (images[_currentIndex] == null) {
+              // 현재 페이지의 사진을 찍음
+              await _takePhoto(_currentIndex);
+
+              if (_currentIndex == 0) {
+                // 첫 번째 사진을 찍었으면 페이지를 전환
+                _pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              } else if (_currentIndex == 1 && images[0] != null) {
+                // 두 번째 사진까지 찍었으면 픽셀화 진행
+                setState(() {
+                  isPreviewMode = true;
+                  isLoading = true;
+                });
+                await _pixelizeImages();
+                setState(() {
+                  isLoading = false;
+                });
+              }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("사진을 두 장 모두 찍어주세요."),
-                ),
+                const SnackBar(content: Text("이미 사진이 촬영되었습니다.")),
               );
             }
           },
-          child: const Text("다음"),
+          child: Text(
+            "사진 찍기",
+          ),
         ),
       ],
     );
@@ -290,22 +289,36 @@ class _HideStarScreenState extends State<HideStarScreen> {
         Provider.of<MessageFormProvider>(context, listen: false);
 
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(), // 로딩 인디케이터
+            SizedBox(height: 16), // 간격 추가
+            Text(
+              '''이미지를 제출 중입니다
+ 잠시만 기다려주세요''',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      );
     }
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
-          "내 별 숨기기",
+          "보물 쪽지 숨기기",
           style: TextStyle(
             color: Colors.white,
             fontSize: 32,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(
-          height: 20,
-        ),
+        const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.all(20),
           width: deviceWidth * 0.7,
@@ -321,67 +334,74 @@ class _HideStarScreenState extends State<HideStarScreen> {
                   child: Column(
                     children: [
                       const Text(
-                        "하단에 글로 힌트를 추가해봐요!",
+                        "힌트 사진은 이렇게 전달되요!",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
-                          // fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: _showPixelizedImageModal,
-                        child: Container(
-                          width: deviceWidth * 0.5,
-                          height: deviceWidth * 0.5,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _pixelizedImageData != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: SizedBox(
-                                    height: 150,
-                                    child: Image.memory(
-                                      _pixelizedImageData!,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                )
-                              : (images[0] != null
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: deviceWidth * 0.45,
+                              height: deviceWidth * 0.45,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _pixelizedImageData != null
                                   ? ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
-                                      child: SizedBox(
-                                        height: 150,
-                                        child: Image.file(
-                                          File(images[0]!.path),
-                                          fit: BoxFit.cover,
-                                        ),
+                                      child: Image.memory(
+                                        _pixelizedImageData!,
+                                        fit: BoxFit.cover,
                                       ),
                                     )
-                                  : const Icon(
-                                      Icons.add,
-                                      color: Colors.white,
-                                      size: 50,
-                                    )),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Center(
-                        child: Text(
-                          "사진을 누르면 크게 볼 수 있어요!",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            // fontWeight: FontWeight.bold,
-                          ),
+                                  : (images[0] != null
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Image.file(
+                                            File(images[0]!.path),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.add,
+                                          color: Colors.white,
+                                          size: 50,
+                                        )),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Opacity(
+                                opacity: 0.7,
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.5),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.search,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        "힌트를 입력해주세요.",
+                        "글로도 힌트를 남길 수 있어요.",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -396,7 +416,8 @@ class _HideStarScreenState extends State<HideStarScreen> {
                           maxLength: 20,
                           decoration: InputDecoration(
                             hintText: "힌트 입력 (최대 20자)",
-                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.8)),
                             filled: true,
                             fillColor: Colors.white.withOpacity(0.3),
                             border: const OutlineInputBorder(
