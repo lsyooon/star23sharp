@@ -136,8 +136,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'text': '친구 목록',
         'goto': '/nickbooks',
         'position': Offset(
-          UIhelper.deviceWidth(context) * 0.65,
-          UIhelper.deviceHeight(context) * -0.08,
+          UIhelper.deviceWidth(context) * 0.6,
+          UIhelper.deviceHeight(context) * 0.25,
         ),
         'img': 'assets/img/planet/planet4.png',
       },
@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'goto': '/starwriteform',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.15,
-          UIhelper.deviceHeight(context) * 0.0,
+          UIhelper.deviceHeight(context) * 0.3,
         ),
         'img': 'assets/img/planet/planet1.png',
       },
@@ -154,8 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'text': '보물 쪽지',
         'goto': '/hidestar',
         'position': Offset(
-          UIhelper.deviceWidth(context) * 0.6, 
-          UIhelper.deviceHeight(context) * 0.125, 
+          UIhelper.deviceWidth(context) * 0.57,
+          UIhelper.deviceHeight(context) * 0.46,
         ),
         'img': 'assets/img/planet/planet2.png',
       },
@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'goto': '/starstorage',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.16,
-          UIhelper.deviceHeight(context) * 0.2, 
+          UIhelper.deviceHeight(context) * 0.5,
         ),
         'img': 'assets/img/planet/planet3.png',
       },
@@ -183,97 +183,112 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Stack(
           children: [
-            const SizedBox(height: 30),
-            const IgnorePointer(ignoring: true, child: Logo()),
-            // 로그인 여부에 따른 UI 변경
-            authProvider.isLoggedIn
-                ? Expanded(
-                    child: IgnorePointer(
-                      ignoring: false,
-                      child: Stack(
-                        clipBehavior: Clip.none, // Overflow를 허용
+            const Positioned(
+              top: 30,
+              left: 0,
+              right: 0,
+              child: Logo(),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 30),
 
-                        children: [
-                          ...menuList.map((menu) {
-                            return Positioned(
-                              left: menu['position'].dx,
-                              top: menu['position'].dy,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  String url = menu['goto'];
-                                  Navigator.pushNamed(context, url);
-                                },
-                                child: Column(
-                                  children: [
-                                    Stack(
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        Image.asset(
-                                          menu['img'],
-                                        ),
-                                        if (menu['text'] == '쪽지 보관함' &&
-                                            isunRead)
-                                          Positioned(
-                                            top: -10,
-                                            right: -10,
-                                            child: Image.asset(
-                                              'assets/img/exclamation_mark.png',
+                  // 로그인 여부에 따른 UI 변경
+                  authProvider.isLoggedIn
+                      ? Expanded(
+                          child: IgnorePointer(
+                            ignoring: false,
+                            child: Stack(
+                              clipBehavior: Clip.none, // Overflow를 허용
+
+                              children: [
+                                ...menuList.map((menu) {
+                                  return Positioned(
+                                    left: menu['position'].dx,
+                                    top: menu['position'].dy,
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        String url = menu['goto'];
+                                        Navigator.pushNamed(context, url);
+                                      },
+                                      child: Column(
+                                        children: [
+                                          Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              Image.asset(
+                                                menu['img'],
+                                              ),
+                                              if (menu['text'] == '쪽지 보관함' &&
+                                                  isunRead)
+                                                Positioned(
+                                                  top: -10,
+                                                  right: -10,
+                                                  child: Image.asset(
+                                                    'assets/img/exclamation_mark.png',
+                                                  ),
+                                                ),
+                                              const SizedBox(height: 5),
+                                            ],
+                                          ),
+                                          Container(
+                                            decoration:
+                                                _commonContainerDecoration(),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            child: Text(
+                                              menu['text'],
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: FontSizes.label),
                                             ),
                                           ),
-                                        const SizedBox(height: 5),
-                                      ],
-                                    ),
-                                    Container(
-                                      decoration: _commonContainerDecoration(),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      child: Text(
-                                        menu['text'],
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: FontSizes.label),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  )
-                : Column(
-                    children: buttons.map((button) {
-                      return Column(
-                        children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(
-                                  MediaQuery.of(context).size.width * 0.5, 50),
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 60, vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: button['onPressed'],
-                            child: Text(
-                              button['text'],
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: FontSizes.label),
+                                  );
+                                }),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                        )
+                      : Column(
+                          children: buttons.map((button) {
+                            return Column(
+                              children: [
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(
+                                        MediaQuery.of(context).size.width * 0.5,
+                                        50),
+                                    backgroundColor:
+                                        Colors.white.withOpacity(0.2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 60, vertical: 15),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: button['onPressed'],
+                                  child: Text(
+                                    button['text'],
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: FontSizes.label),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                ],
+              ),
+            ),
           ],
         ),
       ],
