@@ -313,22 +313,19 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             behavior: HitTestBehavior.opaque,
                             onTap: () {},
                             child: Tooltip(
-                              message: '''받는 사람의 닉네임을 입력하세요.
-                친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
-                              ''',
+                              message: '''받는 사람의 닉네임을 입력해주세요.\n친구 목록에 닉네임을 추가하면 \n좀 더 쉽게 닉네임을 검색할 수 있어요!''',
                               showDuration: const Duration(seconds: 3),
                               margin: const EdgeInsets.only(left: 90),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 10),
                               triggerMode: TooltipTriggerMode.tap,
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.8),
+                                color: Colors.black.withOpacity(0.7),
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(10)),
                               ),
                               textStyle: const TextStyle(
                                   color: Colors.white), // 툴팁 텍스트 스타일
-
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Icon(

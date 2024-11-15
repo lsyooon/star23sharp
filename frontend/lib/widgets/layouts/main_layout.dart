@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -80,7 +78,7 @@ class MainLayout extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(0),
                         child: Image.asset(
-                          'assets/img/blackTheme/black_button_circle.png', // 왼쪽 Column 배경 이미지 경로
+                          themeProvider.sideButtonContainer,
                           fit: BoxFit.fill,
                         ),
                       ),
@@ -116,14 +114,31 @@ class MainLayout extends StatelessWidget {
                       ),
                     ],
                   ),
-                  // 가운데 버튼
-                  IconButton(
-                    iconSize: 50.0,
-                    icon: Image.asset('assets/img/blackTheme/compass.png'),
-                    onPressed: () {
-                      navigateToScreen(context, "/map");
-                    },
+                  Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(themeProvider.centerButton), 
+                        fit: BoxFit.fill, 
+                      ),
+                    ),
+                    // 정해지는
+                    child: IconButton(
+                      iconSize: 20.0,
+                      icon: Image.asset('assets/img/blackTheme/compass.png'),
+                      onPressed: () {
+                        navigateToScreen(context, "/map");
+                      },
+                    ),
                   ),
+                  //  IconButton(
+                  //   iconSize: 50.0,
+                  //   icon: Image.asset('assets/img/blackTheme/compass.png'),
+                  //   onPressed: () {
+                  //     navigateToScreen(context, "/map");
+                  //   },
+                  // ),
                   // 오른쪽 Column의 배경 이미지 추가
                   Stack(
                     alignment: Alignment.center,
@@ -131,9 +146,9 @@ class MainLayout extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 0.0),
                         child: Image.asset(
-                          'assets/img/blackTheme/black_button_circle.png', // 오른쪽 Column 배경 이미지 경로
+                          themeProvider.sideButtonContainer,
                           fit: BoxFit.fill,
-                        ),
+                          ),
                       ),
                       // Column 내용
                       Column(

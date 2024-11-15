@@ -132,15 +132,20 @@ class StarReceivedDetailScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   Padding(
-                    padding: const EdgeInsets.only(left: 5.0, bottom: 2),
+                    padding: const EdgeInsets.only(left: 5.0, bottom: 10),
                     child:  Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Divider(
+                          color: Colors.grey.withOpacity(0.2), // 수평선 색상
+                          thickness: 1, // 수평선 두께
+                          endIndent: 5, // 오른쪽 여백
+                        ),
                         Text('👥 ${item.senderName.first}', style: const TextStyle(fontSize: FontSizes.small),),
                         Text('📅 ${formatDate(item.createdAt)}', style: const TextStyle(fontSize: FontSizes.small)),
                         if(!item.kind) // 일반쪽지이면 답장버튼 생성
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 35.0, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 35.0),
                             child: SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(

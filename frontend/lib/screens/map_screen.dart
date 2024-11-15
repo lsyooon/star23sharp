@@ -36,7 +36,7 @@ class _MapScreenState extends State<MapScreen>
   bool _isFound = false;
   bool _isFar = false;
   bool _isPictureCorrect = false;
-  bool _isVerifyLoading = false;
+  final bool _isVerifyLoading = false;
   Set<Marker> myLocate = {};
   StreamSubscription<Position>? _positionStreamSubscription;
 

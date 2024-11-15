@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -40,21 +41,35 @@ class _HomeScreenState extends State<HomeScreen> {
   // 비동기 초기화 작업을 위한 별도 메서드
   Future<void> _initialize() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     await loadAccessToken(authProvider); // Secure Storage에서 토큰 불러오기
     if (authProvider.accessToken != null && authProvider.refreshToken != null) {
       // 회원정보
-      Map<String, dynamic> user = await UserService.getMemberInfo();
+      Map<String, dynamic>? user = await UserService.getMemberInfo();
       logger.d(user);
-      Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,
-              listen: false)
+      if(user != null){
+        Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,listen: false)
           .setUserDetails(
-              id: user['memberId'],
-              name: user['nickname'],
-              isPushEnabled: user['pushNotificationEnabled']);
+            id: user['memberId'],
+            name: user['nickname'],
+            isPushEnabled: user['pushNotificationEnabled']);
+      }
+      
       isunRead = await StarService.getIsUnreadMessage();
     }
     if (mounted) {
       setState(() {});
+    }
+
+    // 테마 불러오기
+    String? theme = await storage.read(key: 'theme');
+    if(theme == 'AppTheme.blue'){
+      themeProvider.setTheme(AppTheme.blue);
+    }else if(theme == 'AppTheme.red'){
+      themeProvider.setTheme(AppTheme.red);
+    }else{
+      themeProvider.setTheme(AppTheme.black);
     }
   }
 
@@ -227,11 +242,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                               if (menu['text'] == '쪽지 보관함' &&
                                                   isunRead)
                                                 Positioned(
-                                                  top: -10,
-                                                  right: -10,
-                                                  child: Image.asset(
-                                                    'assets/img/exclamation_mark.png',
-                                                  ),
+                                                  top: -6, // -10, 85
+                                                  right: -5, // -10, -10, 0
+                                                  child: 
+                                                    Lottie.asset(
+                                                      'assets/icon/alert.json',
+                                                      width: 25,
+                                                      height: 25,
+                                                    ),
+                                                  // top: -10,
+                                                  // right: -10,
+                                                  // child: Image.asset(
+                                                  //   'assets/img/exclamation_mark.png',
+                                                  // ),
                                                 ),
                                               const SizedBox(height: 5),
                                             ],
