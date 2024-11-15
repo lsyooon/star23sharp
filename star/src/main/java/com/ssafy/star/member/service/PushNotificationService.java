@@ -44,7 +44,7 @@ public class PushNotificationService {
 
         Notification notification = Notification.builder()
                 .setTitle(title)
-                .setBody(content + "\n" + hint)
+                .setBody(content + "\n힌트 : " + hint)
                 .setImage(image)
                 .build();
 
