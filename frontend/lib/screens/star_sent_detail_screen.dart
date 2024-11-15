@@ -112,10 +112,15 @@ class StarSentDetailScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   Padding(
-                    padding: const EdgeInsets.only(left: 5.0, bottom: 2),
+                    padding: const EdgeInsets.only(left: 5.0, bottom: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Divider(
+                          color: Colors.grey.withOpacity(0.2), // 수평선 색상
+                          thickness: 1, // 수평선 두께
+                          endIndent: 5, // 오른쪽 여백
+                        ),
                         if(item.recipient != null)
                           Text(
                             '🎉 ${item.recipient}',

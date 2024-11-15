@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -42,14 +43,16 @@ class _HomeScreenState extends State<HomeScreen> {
     await loadAccessToken(authProvider); // Secure Storage에서 토큰 불러오기
     if (authProvider.accessToken != null && authProvider.refreshToken != null) {
       // 회원정보
-      Map<String, dynamic> user = await UserService.getMemberInfo();
+      Map<String, dynamic>? user = await UserService.getMemberInfo();
       logger.d(user);
-      Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,
-              listen: false)
+      if(user != null){
+        Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,listen: false)
           .setUserDetails(
-              id: user['memberId'],
-              name: user['nickname'],
-              isPushEnabled: user['pushNotificationEnabled']);
+            id: user['memberId'],
+            name: user['nickname'],
+            isPushEnabled: user['pushNotificationEnabled']);
+      }
+      
       isunRead = await StarService.getIsUnreadMessage();
     }
     if (mounted) {
@@ -137,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'goto': '/nickbooks',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.65,
-          UIhelper.deviceHeight(context) * -0.08,
+          UIhelper.deviceHeight(context) * -0.06,
         ),
         'img': 'assets/img/planet/planet4.png',
       },
@@ -155,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'goto': '/hidestar',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.6, 
-          UIhelper.deviceHeight(context) * 0.125, 
+          UIhelper.deviceHeight(context) * 0.15, 
         ),
         'img': 'assets/img/planet/planet2.png',
       },
@@ -217,11 +220,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                         if (menu['text'] == '쪽지 보관함' &&
                                             isunRead)
                                           Positioned(
-                                            top: -10,
-                                            right: -10,
-                                            child: Image.asset(
-                                              'assets/img/exclamation_mark.png',
-                                            ),
+                                            top: -6, // -10, 85
+                                            right: -5, // -10, -10, 0
+                                            child: 
+                                              Lottie.asset(
+                                                'assets/icon/alert.json',
+                                                width: 25,
+                                                height: 25,
+                                              ),
+                                            // CircleAvatar(
+                                            //   radius: 5, // 원의 반지름
+                                            //   backgroundColor: Colors.red, // 원 배경색
+                                            // )
+                                            // Image.asset(
+                                            //   'assets/img/exclamation_mark.png',
+                                            // ),
                                           ),
                                         const SizedBox(height: 5),
                                       ],

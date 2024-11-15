@@ -11,7 +11,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    UserService.getMemberInfo();
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
       {'text':'친구 목록'}, 

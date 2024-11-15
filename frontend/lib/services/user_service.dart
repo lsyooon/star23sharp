@@ -204,6 +204,7 @@ class UserService {
     } on DioException catch (e) {
       logger.d('Failed to create post: $e');
       ErrorHandler.handle(e);
+      return null;
     }
   }
 
