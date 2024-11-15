@@ -106,7 +106,11 @@ class StarService {
           processedData[key] = value;
         }
       });
-      processedData['createdAt'] = DateTime.now().toIso8601String();
+
+      processedData['createdAt'] = DateTime.now()
+          .toUtc()
+          .add(const Duration(hours: 9))
+          .toIso8601String();
 
       var formData = FormData();
       var dio = Dio();
