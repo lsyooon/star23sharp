@@ -148,7 +148,7 @@ class MainLayout extends StatelessWidget {
                         child: Image.asset(
                           themeProvider.sideButtonContainer,
                           fit: BoxFit.fill,
-                        ),
+                          ),
                       ),
                       // Column 내용
                       Column(
