@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
@@ -136,8 +137,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'text': '친구 목록',
         'goto': '/nickbooks',
         'position': Offset(
-          UIhelper.deviceWidth(context) * 0.65,
-          UIhelper.deviceHeight(context) * -0.08,
+          UIhelper.deviceWidth(context) * 0.6,
+          UIhelper.deviceHeight(context) * 0.25,
         ),
         'img': 'assets/img/planet/planet4.png',
       },
@@ -146,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'goto': '/starwriteform',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.15,
-          UIhelper.deviceHeight(context) * 0.0,
+          UIhelper.deviceHeight(context) * 0.3,
         ),
         'img': 'assets/img/planet/planet1.png',
       },
@@ -154,8 +155,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'text': '보물 쪽지',
         'goto': '/hidestar',
         'position': Offset(
-          UIhelper.deviceWidth(context) * 0.6, 
-          UIhelper.deviceHeight(context) * 0.125, 
+          UIhelper.deviceWidth(context) * 0.57,
+          UIhelper.deviceHeight(context) * 0.46,
         ),
         'img': 'assets/img/planet/planet2.png',
       },
@@ -164,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'goto': '/starstorage',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.16,
-          UIhelper.deviceHeight(context) * 0.2, 
+          UIhelper.deviceHeight(context) * 0.5,
         ),
         'img': 'assets/img/planet/planet3.png',
       },
@@ -183,97 +184,145 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Stack(
           children: [
-            const SizedBox(height: 30),
-            const IgnorePointer(ignoring: true, child: Logo()),
-            // 로그인 여부에 따른 UI 변경
-            authProvider.isLoggedIn
-                ? Expanded(
-                    child: IgnorePointer(
-                      ignoring: false,
-                      child: Stack(
-                        clipBehavior: Clip.none, // Overflow를 허용
+            const Positioned(
+              top: 100,
+              left: 0,
+              right: 0,
+              child: Logo(),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 250),
 
-                        children: [
-                          ...menuList.map((menu) {
-                            return Positioned(
-                              left: menu['position'].dx,
-                              top: menu['position'].dy,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  String url = menu['goto'];
-                                  Navigator.pushNamed(context, url);
-                                },
-                                child: Column(
-                                  children: [
-                                    Stack(
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        Image.asset(
-                                          menu['img'],
-                                        ),
-                                        if (menu['text'] == '쪽지 보관함' &&
-                                            isunRead)
-                                          Positioned(
-                                            top: -10,
-                                            right: -10,
-                                            child: Image.asset(
-                                              'assets/img/exclamation_mark.png',
+                  // 로그인 여부에 따른 UI 변경
+                  authProvider.isLoggedIn
+                      ? Expanded(
+                          child: IgnorePointer(
+                            ignoring: false,
+                            child: Stack(
+                              clipBehavior: Clip.none, // Overflow를 허용
+
+                              children: [
+                                ...menuList.map((menu) {
+                                  return Positioned(
+                                    left: menu['position'].dx,
+                                    top: menu['position'].dy,
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        String url = menu['goto'];
+                                        Navigator.pushNamed(context, url);
+                                      },
+                                      child: Column(
+                                        children: [
+                                          Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              Image.asset(
+                                                menu['img'],
+                                              ),
+                                              if (menu['text'] == '쪽지 보관함' &&
+                                                  isunRead)
+                                                Positioned(
+                                                  top: -10,
+                                                  right: -10,
+                                                  child: Image.asset(
+                                                    'assets/img/exclamation_mark.png',
+                                                  ),
+                                                ),
+                                              const SizedBox(height: 5),
+                                            ],
+                                          ),
+                                          Container(
+                                            decoration:
+                                                _commonContainerDecoration(),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            child: Text(
+                                              menu['text'],
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: FontSizes.label),
                                             ),
                                           ),
-                                        const SizedBox(height: 5),
-                                      ],
-                                    ),
-                                    Container(
-                                      decoration: _commonContainerDecoration(),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      child: Text(
-                                        menu['text'],
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: FontSizes.label),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  )
-                : Column(
-                    children: buttons.map((button) {
-                      return Column(
-                        children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(
-                                  MediaQuery.of(context).size.width * 0.5, 50),
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 60, vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: button['onPressed'],
-                            child: Text(
-                              button['text'],
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: FontSizes.label),
+                                  );
+                                }),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                        ],
-                      );
-                    }).toList(),
+                        )
+                      : Column(
+                          children: [
+                            ...buttons.map((button) {
+                              return Column(
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(
+                                          MediaQuery.of(context).size.width *
+                                              0.5,
+                                          50),
+                                      backgroundColor:
+                                          Colors.white.withOpacity(0.2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 60, vertical: 15),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    onPressed: button['onPressed'],
+                                    child: Text(
+                                      button['text'],
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: FontSizes.label),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                              );
+                            }),
+                          ],
+                        ),
+                  TextButton(
+                    onPressed: () async {
+                      final Uri uri =
+                          Uri.parse("https://k11b104.p.ssafy.io/manual");
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("페이지를 이동할 수 없습니다.")),
+                        );
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero, // 버튼 패딩 제거
+                      tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
+                    ),
+                    child: const Text(
+                      "사용법 보러가기",
+                      style: TextStyle(
+                        color: Colors.white, // 텍스트 색상
+                        fontSize: 16.0, // 텍스트 크기
+                        decoration: TextDecoration.underline, // 밑줄 추가
+                        decorationColor: Colors.white, // 밑줄 색상
+                        decorationThickness: 1.5, // 밑줄 두께 조정
+                        height: 3, // 텍스트 높이를 늘려 간격 확보
+                      ),
+                    ),
                   ),
+                ],
+              ),
+            ),
           ],
         ),
       ],

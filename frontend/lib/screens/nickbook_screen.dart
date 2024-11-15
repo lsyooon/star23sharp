@@ -243,15 +243,24 @@ class NickbookScreenState extends State<NickbookScreen> {
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Colors.blue),
-                                      onPressed: () => showAddOrEditDialog(nic),
+                                    InkWell(
+                                      onTap: () => showAddOrEditDialog(nic),
+                                      child: Image.asset(
+                                        'assets/icon/edit_icon.png',
+                                        width: 24,
+                                        height: 24,
+                                      ),
                                     ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.red),
-                                      onPressed: () => deleteNickname(nic),
+                                    const SizedBox(
+                                      width: 20,
+                                    ),
+                                    InkWell(
+                                      onTap: () => deleteNickname(nic),
+                                      child: Image.asset(
+                                        'assets/icon/delete_icon.png',
+                                        width: 24,
+                                        height: 24,
+                                      ),
                                     ),
                                   ],
                                 ),
