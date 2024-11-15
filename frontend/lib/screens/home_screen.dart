@@ -202,16 +202,16 @@ class _HomeScreenState extends State<HomeScreen> {
         Stack(
           children: [
             const Positioned(
-              top: 100,
+              top: 30,
               left: 0,
-              right: 0,
+              right: 10,
               child: Logo(),
             ),
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 250),
+                  const SizedBox(height: 40),
 
                   // 로그인 여부에 따른 UI 변경
                   authProvider.isLoggedIn
@@ -282,6 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         )
                       : Column(
                           children: [
+                            const SizedBox(height: 100),
                             ...buttons.map((button) {
                               return Column(
                                 children: [

@@ -76,7 +76,7 @@ class _MapScreenState extends State<MapScreen>
             markerId: '99999999',
             latLng: currentPosition,
             markerImageSrc:
-                'https://img1.picmix.com/output/stamp/normal/6/8/1/0/2550186_93a1e.gif',
+                'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/blue_dot.png',
           )
         }.toSet();
 
@@ -148,7 +148,7 @@ class _MapScreenState extends State<MapScreen>
           markerId: '99999999',
           latLng: LatLng(lat, lng),
           markerImageSrc:
-              'https://img1.picmix.com/output/stamp/normal/6/8/1/0/2550186_93a1e.gif',
+              'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/blue_dot.png',
         )
       }.toSet();
 
@@ -202,7 +202,7 @@ class _MapScreenState extends State<MapScreen>
         markerId: '99999999',
         latLng: LatLng(position.latitude, position.longitude),
         markerImageSrc:
-            'https://img1.picmix.com/output/stamp/normal/6/8/1/0/2550186_93a1e.gif',
+            'https://star23sharp.s3.ap-northeast-2.amazonaws.com/marker/blue_dot.png',
       )
     }.toSet();
 
@@ -547,6 +547,10 @@ class _MapScreenState extends State<MapScreen>
   // 마커 디테일
   Future<void> _showMarkerDetail(BuildContext context, String markerId) async {
     if (!mounted) return;
+    logger.d(markerId);
+    if (markerId == '99999999') {
+      return;
+    }
     final markerData = await fetchTreasureDetail(int.parse(markerId));
     if (!mounted) return;
     if (markerData == null) {
@@ -588,7 +592,7 @@ class _MapScreenState extends State<MapScreen>
                     ),
                     child: Container(
                       width: deviceWidth,
-                      height: deviceHeight * 0.5,
+                      height: deviceHeight * 0.58,
                       decoration: BoxDecoration(
                         color: const Color(0xFF9588E7).withOpacity(0.8),
                         borderRadius: BorderRadius.circular(15),
@@ -615,7 +619,7 @@ class _MapScreenState extends State<MapScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 32),
+                                const SizedBox(height: 35),
                                 Center(
                                   child: Text(
                                     markerData['title'],
@@ -630,7 +634,7 @@ class _MapScreenState extends State<MapScreen>
                                 Center(
                                   child: Container(
                                     width: deviceWidth * 0.65,
-                                    height: deviceHeight * 0.25,
+                                    height: deviceHeight * 0.35,
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(10),
@@ -646,79 +650,104 @@ class _MapScreenState extends State<MapScreen>
                                             const SizedBox(
                                               height: 8,
                                             ),
-                                            const Text(
-                                              "힌트사진",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 4,
-                                            ),
-                                            Center(
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                                child: SizedBox(
-                                                  width: deviceWidth * 0.55,
-                                                  height: deviceWidth * 0.55,
-                                                  child: markerData[
-                                                                  "dot_hint_image"] !=
-                                                              null &&
-                                                          markerData[
-                                                                  "dot_hint_image"]
-                                                              .isNotEmpty
-                                                      ? GestureDetector(
-                                                          onTap: () {
-                                                            _showImageModal(
-                                                                markerData[
-                                                                    "dot_hint_image"]);
-                                                          },
-                                                          child: Image.network(
-                                                            markerData[
-                                                                "dot_hint_image"],
-                                                            fit: BoxFit.cover,
-                                                          ),
-                                                        )
-                                                      : const SizedBox(),
+                                            Row(
+                                              children: [
+                                                const Text(
+                                                  "힌트 :",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                  ),
                                                 ),
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 4,
-                                            ),
-                                            const Center(
-                                              child: Text(
-                                                "사진을 누르면 크게 볼 수 있어요!",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  markerData['hint'],
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                  ),
                                                 ),
-                                              ),
+                                              ],
                                             ),
                                             const SizedBox(height: 8),
                                             const Divider(
                                               color: Colors.grey,
                                               thickness: 1,
                                             ),
-                                            const Text(
-                                              "힌트 :",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              markerData['hint'],
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                              ),
-                                            ),
                                             const SizedBox(
-                                              height: 4,
+                                              height: 10,
+                                            ),
+                                            GestureDetector(
+                                              onTap: () {
+                                                _showImageModal(markerData[
+                                                    "dot_hint_image"]); // 모달 열기
+                                              },
+                                              child: Center(
+                                                child: Stack(
+                                                  children: [
+                                                    Container(
+                                                      width: deviceWidth * 0.5,
+                                                      height: deviceWidth * 0.5,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white
+                                                            .withOpacity(0.3),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(15),
+                                                      ),
+                                                      child: markerData[
+                                                                      "dot_hint_image"] !=
+                                                                  null &&
+                                                              markerData[
+                                                                      "dot_hint_image"]
+                                                                  .isNotEmpty
+                                                          ? ClipRRect(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          15),
+                                                              child:
+                                                                  Image.network(
+                                                                markerData[
+                                                                    "dot_hint_image"],
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            )
+                                                          : const Icon(
+                                                              Icons.add,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 50,
+                                                            ),
+                                                    ),
+                                                    Positioned(
+                                                      top: 8,
+                                                      right: 8,
+                                                      child: Opacity(
+                                                        opacity: 0.7,
+                                                        child: Container(
+                                                          width: 32,
+                                                          height: 32,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.black
+                                                                .withOpacity(
+                                                                    0.5),
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          child: const Icon(
+                                                            Icons.search,
+                                                            color: Colors.white,
+                                                            size: 18,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -731,37 +760,42 @@ class _MapScreenState extends State<MapScreen>
                                   padding: const EdgeInsets.only(
                                     bottom: 10,
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          ),
-                                        ),
-                                        onPressed: () async {
-                                          // setState(() {
-                                          //   _isVerifyLoading = true;
-                                          // });
+                                  alignment: Alignment.center,
+                                  child:
+                                      selectedOption == MenuItem.viewHiddenStars
+                                          ? const Text(
+                                              "아직 발견되지 않았어요.",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )
+                                          : ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(30),
+                                                ),
+                                              ),
+                                              onPressed: () async {
+                                                setState(() {
+                                                  _isVerifyLoading = true;
+                                                });
 
-                                          await _takePhoto(markerData);
+                                                await _takePhoto(markerData);
 
-                                          // setState(() {
-                                          //   _isVerifyLoading = false;
-                                          // });
-                                        },
-                                        child: const Text(
-                                          "사진 찍기",
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                                setState(() {
+                                                  _isVerifyLoading = false;
+                                                });
+                                              },
+                                              child: const Text(
+                                                "사진 속 장소 맞추기",
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                ),
+                                              ),
+                                            ),
                                 ),
                               ],
                             ),
@@ -771,13 +805,13 @@ class _MapScreenState extends State<MapScreen>
                     ),
                   ),
                 ),
-                // if (_isVerifyLoading)
-                //   Container(
-                //     color: Colors.black.withOpacity(0.5),
-                //     child: const Center(
-                //       child: CircularProgressIndicator(),
-                //     ),
-                //   ),
+                if (_isVerifyLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
               ],
             );
           },
@@ -798,40 +832,41 @@ class _MapScreenState extends State<MapScreen>
     final deviceHeight = UIhelper.deviceHeight(context);
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (BuildContext context) {
-        return Container(
-          color: Colors.black.withOpacity(0.8),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: SizedBox(
-                    width: deviceWidth * 0.8,
-                    height: deviceHeight * 0.35,
-                    child: Image.network(
-                      imageUrl,
-                      fit: BoxFit.contain,
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop(); // 모달 닫기
+          },
+          child: Container(
+            color: Colors.black.withOpacity(0.8), // 배경 색 설정
+            child: GestureDetector(
+              onTap: () {}, // 내부 클릭 시 닫히지 않도록 방지
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: SizedBox(
+                        width: deviceWidth * 0.8,
+                        height: deviceHeight * 0.5,
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    // ElevatedButton(
+                    //   onPressed: () {
+                    //     Navigator.of(context).pop(); // 명시적으로 모달 닫기
+                    //   },
+                    //   child: const Text("확인"),
+                    // ),
+                  ],
                 ),
-                const SizedBox(
-                  height: 16,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text(
-                    "확인",
-                    style: TextStyle(
-                      fontSize: 24,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );
