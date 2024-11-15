@@ -54,19 +54,19 @@ public class PushNotificationService {
             hint = "힌트가 없어요ㅠ0ㅠ";
         }
 
-//        Notification notification = Notification.builder()
-//                .setTitle(title)
-//                .setBody(content + "\n힌트 : " + hint)
-//                .setImage(image)
-//                .build();
+        Notification notification = Notification.builder()
+                .setTitle(title)
+                .setBody(content + "\n힌트 : " + hint)
+                .setImage(image)
+                .build();
 
         Message message = Message.builder()
                 .setToken(token)
                 .putData("notificationId", id)
-                .putData("title", title)
-                .putData("content", content)
-                .putData("image", image)
-//                .setNotification(notification)
+//                .putData("title", title)
+//                .putData("content", content)
+//                .putData("image", image)
+                .setNotification(notification)
                 .setAndroidConfig(AndroidConfig.builder()
                         .setTtl(Duration.ofMinutes(5).toMillis())
                         .build())
