@@ -63,7 +63,7 @@ public class NotificationController {
     @PostMapping("/receiver-push")
     public ResponseEntity<ApiResponse<?>> receiverPush(@AuthenticationPrincipal CustomUserDetails user,
                                                        @RequestBody ReceiverPushRequest request) {
-        notificationService.receiveMessage(user.getId(), request.getReceiverId(), request.getMessageId());
+        notificationService.receiveMessage(request.getReceiverId(), request.getMessageId());
         return ResponseEntity.ok().body(new ApiResponse<>("200", "알림 전송 완료"));
     }
 
