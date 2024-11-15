@@ -38,18 +38,31 @@ void onNotificationTap(NotificationResponse notificationResponse) {
             listen: false)
         .isLoggedIn;
     if (isLoggedIn) {
-      if (messageId != null) {
-        logger.d("알림 messageId: $messageId");
-        AppGlobal.navigatorKey.currentState!.pushNamed(
-          '/star_received_detail',
-          arguments: int.tryParse(messageId), // messageId 전달
-        );
-        return;
+      // if (messageId != null) {
+      //   logger.d("알림 messageId: $messageId");
+      //   AppGlobal.navigatorKey.currentState!.pushNamed(
+      //     '/star_received_detail',
+      //     arguments: int.tryParse(messageId), // messageId 전달
+      //   );
+      //   return;
+      // }
+      final currentState = AppGlobal.navigatorKey.currentState;
+      if (currentState != null) {
+        String? currentPath;
+        currentState.popUntil((route) {
+          currentPath = route.settings.name;
+          return true;
+        });
+        logger.d("현재 화면 url: $currentPath");
+
+        // 현재 화면이 '/notification'인 경우 fetchNotifications 호출
+        if (currentPath != '/notification') {
+          AppGlobal.navigatorKey.currentState!.pushNamed(
+            '/notification',
+            arguments: int.tryParse(notificationId), // notificationId를 전달
+          );
+        }
       }
-      AppGlobal.navigatorKey.currentState!.pushNamed(
-        '/notification',
-        arguments: int.tryParse(notificationId), // notificationId를 전달
-      );
     } else {
       AppGlobal.navigatorKey.currentState!.pushNamed(
         '/signin',

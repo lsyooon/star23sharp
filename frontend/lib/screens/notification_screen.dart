@@ -14,6 +14,8 @@ class PushAlarmScreen extends StatefulWidget {
 }
 
 class PushAlarmScreenState extends State<PushAlarmScreen> {
+  static PushAlarmScreenState? instance;
+
   final ScrollController _scrollController = ScrollController();
 
   List<NotificationModel> notifications = [];
@@ -29,6 +31,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
   @override
   void initState() {
     super.initState();
+    instance = this;
 
     // ModalRoute에서 arguments 가져오기
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -43,6 +46,14 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
       // fetchNotifications 호출
       fetchNotifications();
     });
+  }
+
+  @override
+  void dispose() {
+    // 비동기 작업이나 리스너 정리
+    instance = null;
+    _scrollController.dispose(); // 스크롤 컨트롤러도 정리
+    super.dispose();
   }
 
   Future<void> fetchNotifications() async {
@@ -63,11 +74,10 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
         logger.d("가야할 notificationId: $_notificationId");
         final index = notifications
             .indexWhere((n) => n.notificationId == _notificationId);
+        logger.d("index: $index");
         if (index != -1) {
           // 데이터를 모두 설정한 뒤에 알림 확장
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollToNotification(_notificationId!);
-          });
+          _scrollToNotification(_notificationId!, index);
         } else {
           logger.e("Invalid notificationId: $_notificationId");
         }
@@ -94,23 +104,22 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
     }
   }
 
-  void _scrollToNotification(int notificationId) {
-    final index =
-        notifications.indexWhere((n) => n.notificationId == notificationId);
-
+  void _scrollToNotification(int notificationId, int index) {
     if (index != -1) {
-      // 스크롤 이동
-      _scrollController
-          .animateTo(
-        index * 72.0, // 각 항목의 높이를 기준으로 계산 (필요에 따라 조정)
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      )
-          .then((_) {
-        // 스크롤 완료 후 ExpansionTile을 펼침
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          setState(() {
-            expansionStates[notificationId] = true;
+      // _fetchNotificationDetail(notificationId);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController
+            .animateTo(
+          index * 72.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        )
+            .then((_) {
+          Future.microtask(() {
+            setState(() {
+              expansionStates[notificationId] = true;
+            });
           });
         });
       });
@@ -183,6 +192,9 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
                                       notification.notificationId] ??
                                   false;
                               return ExpansionTile(
+                                key: Key(
+                                    'notification-${notification.notificationId}'), // 고유 키 추가
+
                                 title: Text(
                                   notification.title,
                                   maxLines: isExpanded ? null : 1,
@@ -202,8 +214,9 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
                                 subtitle: Text(notification.createdDate),
                                 initiallyExpanded: expansionStates[
                                         notification.notificationId] ??
-                                    false, // 상태 동기화
-                                onExpansionChanged: (isExpanded) async {
+                                    false,
+                                // 상태 동기화
+                                onExpansionChanged: (bool isExpanded) async {
                                   setState(() {
                                     expansionStates[notification
                                         .notificationId] = isExpanded;
@@ -279,15 +292,11 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
           style: const TextStyle(fontSize: 14.0, color: Colors.black),
         ),
         const SizedBox(height: 8),
-        detail.hint != null
-            ? Text(
-                "${detail.hint}",
-                style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
-              )
-            : Text(
-                "힌트가 없어요 ㅠ0ㅠ",
-                style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
-              ),
+        if (detail.hint != null)
+          Text(
+            "${detail.hint}",
+            style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+          ),
         if (detail.image != null) ...[
           const SizedBox(height: 8),
           Image.network(detail.image!),

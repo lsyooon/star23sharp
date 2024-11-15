@@ -158,19 +158,16 @@ void main() async {
           currentPath = route.settings.name;
           return true;
         });
-        logger.d("현재 화면 url2: $currentPath");
+        logger.d("현재 화면 url: $currentPath");
 
         // 현재 화면이 '/notification'인 경우 fetchNotifications 호출
         if (currentPath == '/notification') {
-          final alarmScreenState = currentState.context
-              .findRootAncestorStateOfType<PushAlarmScreenState>();
-
-          if (alarmScreenState != null) {
-            logger.d("알림 화면 상태 감지, fetchNotifications 호출");
-            alarmScreenState.fetchNotifications();
-          } else {
-            logger.e("알림 화면 상태를 찾을 수 없음.");
+          if (PushAlarmScreenState.instance != null) {
+            logger.d("PushAlarmScreenState 인스턴스 감지");
+            PushAlarmScreenState.instance!.fetchNotifications();
           }
+        } else {
+          logger.e("알림 화면 상태를 찾을 수 없음.");
         }
       } else {
         logger.e("현재 Navigator 상태를 찾을 수 없음.");
