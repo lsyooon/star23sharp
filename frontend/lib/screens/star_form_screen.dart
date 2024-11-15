@@ -206,315 +206,382 @@ class _StarFormScreenState extends State<StarFormScreen> {
           controller: _scrollController,
           child: Form(
             key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Container(
-                  //   height: 20,
-                  //   color: const Color(0xffA292EC),
-                  //   child: const Text("별 만들기"),
-                  // ),
-                  GestureDetector(
-                    onTap: _pickImage,
+            child: Column(
+              children: [
+                Container(
+                    color: const Color(0xFFA292EC),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 20.0),
                     child: Container(
-                      height: 100,
-                      width: 100,
-                      color: Colors.grey[300],
-                      child: Stack(
-                        children: [
-                          if (_selectedImage != null)
-                            Positioned.fill(
-                              child: Image.file(
-                                _selectedImage!,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          if (_selectedImage != null)
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                icon: Icon(
-                                  Icons.close,
-                                  color: Colors.red[700],
-                                ),
-                                onPressed: _removeImage,
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      WidgetStateProperty.all<Color>(
-                                          Colors.white38),
-                                ),
-                              ),
-                            )
-                          else
-                            const Center(child: Icon(Icons.add)),
-                        ],
+                      width: UIhelper.deviceWidth(context) * 0.85,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        '쪽지 보내기',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // "모든 사용자에게 보내기" 체크박스
-                  if (isTreasureStar)
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _sendToAll,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _sendToAll = value ?? false;
-                              if (_sendToAll) {
-                                _nicknameController.clear();
-                              }
-                            });
-                          },
-                        ),
-                        const Text('모든 사용자에게 보내기'),
-                      ],
-                    ),
-                  Autocomplete<Map<String, dynamic>>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text.isEmpty) {
-                        return nicBook.where((option) {
-                          return !_recipients.contains(option['nickname']);
-                        }).cast<Map<String, dynamic>>();
-                      }
-
-                      return nicBook.where((option) {
-                        final nickname =
-                            option['nickname']?.toLowerCase() ?? '';
-                        final name = option['name']?.toLowerCase() ?? '';
-                        final input = textEditingValue.text.toLowerCase();
-
-                        return (!_recipients.contains(option['nickname'])) &&
-                            (nickname.contains(input) || name.contains(input));
-                      }).cast<Map<String, dynamic>>();
-                    },
-                    displayStringForOption: (option) => option['nickname'],
-                    onSelected: (Map<String, dynamic> selection) {
-                      if (!_recipients.contains(selection['nickname'])) {
-                        logger.d(
-                            "Autocomplete 선택된 닉네임: ${selection['nickname']}");
-                        _addRecipient(selection['nickname'].trim());
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _nicknameController.text = ''; // 입력 필드 초기화
-                        });
-                      }
-                    },
-                    fieldViewBuilder: (BuildContext context,
-                        TextEditingController textEditingController,
-                        FocusNode focusNode,
-                        VoidCallback onFieldSubmitted) {
-                      // 동기화: 컨트롤러 내용을 수정
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (_nicknameController != textEditingController) {
-                          textEditingController.text = _nicknameController.text;
-                        }
-                      });
-
-                      return TextFormField(
-                        controller: textEditingController,
-                        focusNode: focusNode,
-                        enabled: !_sendToAll,
-                        onFieldSubmitted: (value) {
-                          if (value.isNotEmpty &&
-                              !_recipients.contains(value)) {
-                            logger.d("TextFormField 입력된 값 추가: $value");
-                            _addRecipient(value.trim());
-                            textEditingController.clear();
-                          }
-                        },
-                        decoration: InputDecoration(
-                          labelText: '받는 사람',
-                          suffixIcon: Row(
-                            mainAxisSize: MainAxisSize.min,
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          height: 90,
+                          width: 90,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[300]!, width: 1), // 테두리 색과 두께 설정
+                            borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                          ),
+                          child: Stack(
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () {
-                                  if (textEditingController.text.isNotEmpty &&
-                                      !_recipients.contains(
-                                          textEditingController.text)) {
-                                    logger.d(
-                                        "TextFormField 추가: ${textEditingController.text.trim()}");
-                                    _addRecipient(
-                                        textEditingController.text.trim());
-                                    textEditingController.clear();
-                                  }
-                                },
-                              ),
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () {},
-                                child: const Tooltip(
-                                  message: '''받는 사람의 닉네임을 입력하세요.
-친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
-                                  ''',
-                                  waitDuration: Duration(milliseconds: 0),
-                                  showDuration: Duration(seconds: 3),
-                                  margin: EdgeInsets.only(left: 97),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 10),
-                                  triggerMode: TooltipTriggerMode.tap,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
-                                  ),
-                                  textStyle: TextStyle(
-                                      color: Colors.white), // 툴팁 텍스트 스타일
-
-                                  child: Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.info_outline,
-                                      color: Colors.grey,
-                                    ),
+                              if (_selectedImage != null)
+                                Positioned.fill(
+                                  child: Image.file(
+                                    _selectedImage!,
+                                    fit: BoxFit.cover,
+                
                                   ),
                                 ),
-                              ),
+                              if (_selectedImage != null)
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: Icon(
+                                      Icons.close,
+                                      color: Colors.red[700],
+                                    ),
+                                    onPressed: _removeImage,
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          WidgetStateProperty.all<Color>(
+                                              Colors.white38),
+                                    ),
+                                  ),
+                                )
+                              else
+                                const Center(child: Icon(Icons.add)),
                             ],
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      // "모든 사용자에게 보내기" 체크박스
+                      if (isTreasureStar)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              value: _sendToAll,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  _sendToAll = value ?? false;
+                                  if (_sendToAll) {
+                                    _nicknameController.clear();
+                                  }
+                                });
+                              },
+                            ),
+                            const Text('모든 사용자에게 보내기'),
+                          ],
+                        ),
+                      Row(
+                        children: [
+                          const Text("받는 사람", style: TextStyle(fontSize: FontSizes.body, color: Color(0xff747474)),),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {},
+                            child: Tooltip(
+                              message: '''받는 사람의 닉네임을 입력하세요.
+                친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
+                              ''',
+                              showDuration: const Duration(seconds: 3),
+                              margin: const EdgeInsets.only(left: 90),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              triggerMode: TooltipTriggerMode.tap,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.8),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                              ),
+                              textStyle: const TextStyle(
+                                  color: Colors.white), // 툴팁 텍스트 스타일
+                
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.info_outline,
+                                  color: Colors.grey[500]!,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Autocomplete<Map<String, dynamic>>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text.isEmpty) {
+                            return nicBook.where((option) {
+                              return !_recipients.contains(option['nickname']);
+                            }).cast<Map<String, dynamic>>();
+                          }
+                
+                          return nicBook.where((option) {
+                            final nickname =
+                                option['nickname']?.toLowerCase() ?? '';
+                            final name = option['name']?.toLowerCase() ?? '';
+                            final input = textEditingValue.text.toLowerCase();
+                
+                            return (!_recipients.contains(option['nickname'])) &&
+                                (nickname.contains(input) || name.contains(input));
+                          }).cast<Map<String, dynamic>>();
+                        },
+                        displayStringForOption: (option) => option['nickname'],
+                        onSelected: (Map<String, dynamic> selection) {
+                          if (!_recipients.contains(selection['nickname'])) {
+                            logger.d(
+                                "Autocomplete 선택된 닉네임: ${selection['nickname']}");
+                            _addRecipient(selection['nickname'].trim());
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _nicknameController.text = ''; // 입력 필드 초기화
+                            });
+                          }
+                        },
+                        fieldViewBuilder: (BuildContext context,
+                            TextEditingController textEditingController,
+                            FocusNode focusNode,
+                            VoidCallback onFieldSubmitted) {
+                          // 동기화: 컨트롤러 내용을 수정
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (_nicknameController != textEditingController) {
+                              textEditingController.text = _nicknameController.text;
+                            }
+                          });
+                
+                          return TextFormField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            enabled: !_sendToAll,
+                            onFieldSubmitted: (value) {
+                              if (value.isNotEmpty &&
+                                  !_recipients.contains(value)) {
+                                logger.d("TextFormField 입력된 값 추가: $value");
+                                _addRecipient(value.trim());
+                                textEditingController.clear();
+                              }
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12), // 둥근 테두리
+                                borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 연한 회색 테두리
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey[500]!, width: 1), // 포커스 상태에서의 테두리 색상
+                              ),
+                              // 활성화 상태에서 테두리 설정
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 활성화 상태에서의 테두리 색상
+                              ),
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.add),
+                                    onPressed: () {
+                                      if (textEditingController.text.isNotEmpty &&
+                                          !_recipients.contains(
+                                              textEditingController.text)) {
+                                        logger.d(
+                                            "TextFormField 추가: ${textEditingController.text.trim()}");
+                                        _addRecipient(
+                                            textEditingController.text.trim());
+                                        textEditingController.clear();
+                                      }
+                                    },
+                                  ),
+                                  
+                                ],
+                              ),
+                            ),
+                            validator: (value) {
+                              if (_recipients.isEmpty && !_sendToAll) {
+                                return '받는 사람은 한명 이상이어야 합니다.';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                        optionsViewBuilder: (BuildContext context,
+                            AutocompleteOnSelected<Map<String, dynamic>> onSelected,
+                            Iterable<Map<String, dynamic>> options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: UIhelper.deviceWidth(context) * 0.7,
+                                  maxHeight: options.isNotEmpty
+                                      ? (options.length * 67.0)
+                                          .clamp(0.0, 240.0) // 동적 높이 설정
+                                      : 0.0,
+                                ),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: options.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    final option = options.elementAt(index);
+                                    return ListTile(
+                                      title: Text(option['nickname']),
+                                      subtitle: Text(
+                                        option['name'],
+                                        style: const TextStyle(
+                                            fontSize: 12, color: Colors.grey),
+                                      ),
+                                      onTap: () {
+                                        onSelected(option);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      Wrap(
+                        spacing: 8.0,
+                        children: _recipients.map((nickname) {
+                          return Chip(
+                            label: Text(nickname),
+                            onDeleted: () => _removeRecipient(nickname),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 5,),
+                      // 제목 입력
+                      const Text("제목", style: TextStyle(fontSize: FontSizes.body, color: Color(0xff747474)),),
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12), // 둥근 테두리
+                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 연한 회색 테두리
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[500]!, width: 1), // 포커스 상태에서의 테두리 색상
+                          ),
+                          // 활성화 상태에서 테두리 설정
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 활성화 상태에서의 테두리 색상
+                          ),
+                        ),
                         validator: (value) {
-                          if (_recipients.isEmpty && !_sendToAll) {
-                            return '받는 사람은 한명 이상이어야 합니다.';
+                          if (value == null || value.isEmpty) {
+                            return '제목을 입력해주세요.';
+                          }
+                
+                          if (value.length > 15) {
+                            return '제목은 15자 이하로 입력해주세요.';
                           }
                           return null;
                         },
-                      );
-                    },
-                    optionsViewBuilder: (BuildContext context,
-                        AutocompleteOnSelected<Map<String, dynamic>> onSelected,
-                        Iterable<Map<String, dynamic>> options) {
-                      return Align(
-                        alignment: Alignment.topLeft,
-                        child: Material(
-                          elevation: 4.0,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: UIhelper.deviceWidth(context) * 0.7,
-                              maxHeight: options.isNotEmpty
-                                  ? (options.length * 67.0)
-                                      .clamp(0.0, 240.0) // 동적 높이 설정
-                                  : 0.0,
+                      ),
+                      const SizedBox(height: 5),
+                      // 메시지 입력
+                      const Text("내용", style: TextStyle(fontSize: FontSizes.body, color: Color(0xff747474)),),
+                      TextFormField(
+                        controller: _messageController,
+                        focusNode: _messageFocusNode, // 포커스 노드 설정
+                        maxLines: 5,
+                        maxLength: maxCharacters,
+                        decoration: InputDecoration(
+                          hintText: '메시지를 입력해주세요',
+                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 16),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12), // 둥근 테두리
+                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 연한 회색 테두리
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[500]!, width: 1), // 포커스 상태에서의 테두리 색상
+                          ),
+                          // 활성화 상태에서 테두리 설정
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:  BorderSide(color: Colors.grey[300]!, width: 1), // 활성화 상태에서의 테두리 색상
+                          ),
+                          floatingLabelBehavior: _messageController.text.isEmpty
+                              ? FloatingLabelBehavior.always
+                              : FloatingLabelBehavior.never,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '메시지를 입력해주세요.';
+                          }
+                          return null;
+                        },
+                        onChanged: (text) {
+                          setState(() {});
+                        },
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          _messageController.text.length > maxCharacters
+                              ? '최대 글자수를 초과했습니다.'
+                              : '남은 글자 수: ${maxCharacters - _messageController.text.length}',
+                          style: TextStyle(
+                            color: _messageController.text.length > maxCharacters
+                                ? const Color.fromARGB(255, 174, 57, 49)
+                                : Colors.black,
+                          ),
+                        ),
+                      ),
+                
+                      const SizedBox(height: 16),
+                      // 버튼
+                
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 30),
+                        child: SizedBox(
+                          width: UIhelper.deviceWidth(context) * 0.85,
+                          child: ElevatedButton(
+                            onPressed: _saveMessage,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFA292EC),
+                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
                             ),
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              padding: EdgeInsets.zero,
-                              itemCount: options.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                final option = options.elementAt(index);
-                                return ListTile(
-                                  title: Text(option['nickname']),
-                                  subtitle: Text(
-                                    option['name'],
-                                    style: const TextStyle(
-                                        fontSize: 12, color: Colors.grey),
-                                  ),
-                                  onTap: () {
-                                    onSelected(option);
-                                  },
-                                );
-                              },
+                            child: const Text(
+                              '다음',
+                              style: TextStyle(fontSize: 16.0, color: Colors.white),
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                  Wrap(
-                    spacing: 8.0,
-                    children: _recipients.map((nickname) {
-                      return Chip(
-                        label: Text(nickname),
-                        onDeleted: () => _removeRecipient(nickname),
-                      );
-                    }).toList(),
-                  ),
-                  // 제목 입력
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: '제목',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '제목을 입력해주세요.';
-                      }
-
-                      if (value.length > 15) {
-                        return '제목은 15자 이하로 입력해주세요.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  // 메시지 입력
-                  TextFormField(
-                    controller: _messageController,
-                    focusNode: _messageFocusNode, // 포커스 노드 설정
-
-                    maxLines: 5,
-                    maxLength: maxCharacters,
-                    decoration: InputDecoration(
-                      labelText: '메시지를 입력해주세요',
-                      floatingLabelBehavior: _messageController.text.isEmpty
-                          ? FloatingLabelBehavior.always
-                          : FloatingLabelBehavior.never,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '메시지를 입력해주세요.';
-                      }
-                      return null;
-                    },
-                    onChanged: (text) {
-                      setState(() {});
-                    },
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      _messageController.text.length > maxCharacters
-                          ? '최대 글자수를 초과했습니다.'
-                          : '남은 글자 수: ${maxCharacters - _messageController.text.length}',
-                      style: TextStyle(
-                        color: _messageController.text.length > maxCharacters
-                            ? const Color.fromARGB(255, 174, 57, 49)
-                            : Colors.black,
                       ),
-                    ),
+                    ],
                   ),
-
-                  const SizedBox(height: 16),
-                  // 버튼
-
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 30),
-                    child: SizedBox(
-                      width: UIhelper.deviceWidth(context) * 0.85,
-                      child: ElevatedButton(
-                        onPressed: _saveMessage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFA292EC),
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text(
-                          '다음',
-                          style: TextStyle(fontSize: 16.0, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

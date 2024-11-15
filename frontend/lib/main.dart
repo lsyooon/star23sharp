@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import 'package:provider/provider.dart';
+import 'package:star23sharp/utilities/snackbar_route_observer.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -175,12 +176,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           primaryColor: themeProvider.backgroundColor,
           fontFamily: 'Hakgyoansim Chilpanjiugae'),
-      navigatorObservers: <NavigatorObserver>[observer],
+      navigatorObservers: <NavigatorObserver>[
+        observer,
+        AppGlobal.routeObserver,
+        SnackbarRouteObserver(),
+        RouteObserver<PageRoute>()
+      ],
       initialRoute: '/home',
       routes: {
         '/home': (context) => const MainLayout(child: HomeScreen()),
         '/map': (context) => const MainLayout(child: MapScreen()),
-        '/starstorage': (context) => MainLayout(child: StarStoragebox()),
+        '/starstorage': (context) => const MainLayout(child: StarStoragebox()),
         '/starwriteform': (context) =>
             const MainLayout(child: StarFormScreen()),
         '/profile': (context) => const MainLayout(child: ProfileScreen()),

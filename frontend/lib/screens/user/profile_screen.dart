@@ -14,9 +14,8 @@ class ProfileScreen extends StatelessWidget {
     UserService.getMemberInfo();
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
-      {'text':'닉네임 변경', 'goto': '/modify_nickname'}, 
-      {'text':'테마 변경', 'goto': '/modify_pwd'}, 
-      {'text':'사용법 보러가기', 'goto': '/modify_theme'}
+      {'text':'친구 목록'}, 
+      {'text':'사용법 보러가기'}
     ];
 
     return Stack(
@@ -42,17 +41,17 @@ class ProfileScreen extends StatelessWidget {
                     fontSize: FontSizes.title, 
                     fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Text(
                 "안녕하세요 $nickname님!",
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: FontSizes.body),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 30),
               Container(
                 width: UIhelper.deviceWidth(context) * 0.8,
-                height: UIhelper.deviceHeight(context) * 0.3,
+                height: UIhelper.deviceHeight(context) * 0.2,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE3E1E1).withOpacity(0.4),
                   borderRadius: BorderRadius.circular(10),
@@ -67,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
 
                       return InkWell(
                         onTap: () async {
-                          if(index == 2){
+                          if(index == 1){
                             final Uri uri = Uri.parse("https://k11b104.p.ssafy.io/manual");
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(uri, mode: LaunchMode.externalApplication);

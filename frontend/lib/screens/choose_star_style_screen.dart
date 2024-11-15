@@ -110,15 +110,10 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
           const SnackBar(content: Text('별 전송 완료!')),
         );
       }
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => isTreasureStar
-              ? const MainLayout(child: MapScreen()) // 보물: MapScreen으로 이동
-              : MainLayout(child: StarStoragebox()), // 일반: StarStoragebox로 이동
-        ),
-        (route) => false, // 모든 이전 라우트를 제거
-      );
+
+        Navigator.pushNamed(context, isTreasureStar ? '/map' : '/starstorage').then((_) {
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+        });
     } catch (e) {
       // 에러 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
@@ -154,7 +149,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                     width: UIhelper.deviceWidth(context) * 0.85,
                     alignment: Alignment.center,
                     child: const Text(
-                      '별 문체 바꾸기',
+                      '문체 바꾸기',
                       style: TextStyle(
                         fontSize: 20.0,
                         color: Colors.white,
