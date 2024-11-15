@@ -152,13 +152,18 @@ void main() async {
       // 현재 라우트 확인
       final currentState = AppGlobal.navigatorKey.currentState;
       if (currentState != null) {
-        final currentRoute = ModalRoute.of(currentState.context);
-        logger.d("현재 화면 url: ${currentRoute?.settings.name}");
+        String? currentPath;
+        currentState.popUntil((route) {
+          currentPath = route.settings.name;
+          return true;
+        });
+        logger.d("현재 화면 url2: $currentPath");
 
         // 현재 화면이 '/notification'인 경우 fetchNotifications 호출
-        if (currentRoute?.settings.name == '/notification') {
+        if (currentPath == '/notification') {
           final alarmScreenState = currentState.context
-              .findAncestorStateOfType<PushAlarmScreenState>();
+              .findRootAncestorStateOfType<PushAlarmScreenState>();
+
           if (alarmScreenState != null) {
             logger.d("알림 화면 상태 감지, fetchNotifications 호출");
             alarmScreenState.fetchNotifications();
@@ -218,7 +223,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => const MainLayout(child: HomeScreen()),
         '/map': (context) => const MainLayout(child: MapScreen()),
-        '/starstorage': (context) => MainLayout(child: StarStoragebox()),
+        '/starstorage': (context) => const MainLayout(child: StarStoragebox()),
         '/starwriteform': (context) =>
             const MainLayout(child: StarFormScreen()),
         '/profile': (context) => const MainLayout(child: ProfileScreen()),

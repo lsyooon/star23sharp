@@ -57,7 +57,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
         };
       });
       logger.d("fetchNotifications 완료");
-
+      logger.d(_notificationId);
       // 알림 ID가 주어졌으면 해당 위치로 스크롤하고 펼치기
       if (_notificationId != null) {
         logger.d("가야할 notificationId: $_notificationId");
@@ -100,15 +100,19 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
 
     if (index != -1) {
       // 스크롤 이동
-      _scrollController.animateTo(
+      _scrollController
+          .animateTo(
         index * 72.0, // 각 항목의 높이를 기준으로 계산 (필요에 따라 조정)
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-      );
-
-      // 해당 ExpansionTile을 펼침
-      setState(() {
-        expansionStates[notificationId] = true;
+      )
+          .then((_) {
+        // 스크롤 완료 후 ExpansionTile을 펼침
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() {
+            expansionStates[notificationId] = true;
+          });
+        });
       });
     } else {
       logger.e("Notification ID not found in the list.");
@@ -118,7 +122,6 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
   @override
   Widget build(BuildContext context) {
     final data = ModalRoute.of(context)!.settings.arguments;
-    logger.d("전달받은 arguments: $data, 타입: ${data.runtimeType}");
 // 알림 ID 할당
     if (data is int) {
       _notificationId = data; // 상태 변수에 할당
@@ -197,6 +200,9 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
                                   ),
                                 ),
                                 subtitle: Text(notification.createdDate),
+                                initiallyExpanded: expansionStates[
+                                        notification.notificationId] ??
+                                    false, // 상태 동기화
                                 onExpansionChanged: (isExpanded) async {
                                   setState(() {
                                     expansionStates[notification
@@ -218,8 +224,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
                                               notification.notificationId)
                                           : const Center(
                                               child:
-                                                  CircularProgressIndicator(),
-                                            ),
+                                                  CircularProgressIndicator()),
                                     ),
                                 ],
                               );
@@ -273,13 +278,16 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
           detail.content,
           style: const TextStyle(fontSize: 14.0, color: Colors.black),
         ),
-        if (detail.hint != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            "${detail.hint}",
-            style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
-          ),
-        ],
+        const SizedBox(height: 8),
+        detail.hint != null
+            ? Text(
+                "${detail.hint}",
+                style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+              )
+            : Text(
+                "힌트가 없어요 ㅠ0ㅠ",
+                style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+              ),
         if (detail.image != null) ...[
           const SizedBox(height: 8),
           Image.network(detail.image!),

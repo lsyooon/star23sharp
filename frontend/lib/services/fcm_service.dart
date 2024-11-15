@@ -136,7 +136,6 @@ class FCMService {
             ticker: 'ticker');
     const NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
-    logger.d("showSimpleNotification 찍는 로그!! $notificationId");
 
     await _flutterLocalNotificationsPlugin.show(
       notificationId,
