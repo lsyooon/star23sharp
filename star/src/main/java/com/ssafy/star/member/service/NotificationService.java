@@ -122,7 +122,7 @@ public class NotificationService {
     }
 
     // 보물쪽지 수신자에게 알림 전송
-    public void receiveMessage(Long senderId, Long receiverId, Long messageId) {
+    public void receiveMessage(Long receiverId, Long messageId) {
         Member member = memberRepository.findMemberById(receiverId);
         String receiverName = member.getMemberName();
 
