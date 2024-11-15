@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/services/index.dart';
@@ -186,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Stack(
           children: [
             const Positioned(
-              top: 30,
+              top: 100,
               left: 0,
               right: 0,
               child: Logo(),
@@ -195,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 250),
 
                   // 로그인 여부에 따른 UI 변경
                   authProvider.isLoggedIn
@@ -257,35 +258,68 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         )
                       : Column(
-                          children: buttons.map((button) {
-                            return Column(
-                              children: [
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(
-                                        MediaQuery.of(context).size.width * 0.5,
-                                        50),
-                                    backgroundColor:
-                                        Colors.white.withOpacity(0.2),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 60, vertical: 15),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                          children: [
+                            ...buttons.map((button) {
+                              return Column(
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(
+                                          MediaQuery.of(context).size.width *
+                                              0.5,
+                                          50),
+                                      backgroundColor:
+                                          Colors.white.withOpacity(0.2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 60, vertical: 15),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    onPressed: button['onPressed'],
+                                    child: Text(
+                                      button['text'],
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: FontSizes.label),
                                     ),
                                   ),
-                                  onPressed: button['onPressed'],
-                                  child: Text(
-                                    button['text'],
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: FontSizes.label),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                              ],
-                            );
-                          }).toList(),
+                                  const SizedBox(height: 20),
+                                ],
+                              );
+                            }),
+                          ],
                         ),
+                  TextButton(
+                    onPressed: () async {
+                      final Uri uri =
+                          Uri.parse("https://k11b104.p.ssafy.io/manual");
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("페이지를 이동할 수 없습니다.")),
+                        );
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero, // 버튼 패딩 제거
+                      tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
+                    ),
+                    child: const Text(
+                      "사용법 보러가기",
+                      style: TextStyle(
+                        color: Colors.white, // 텍스트 색상
+                        fontSize: 16.0, // 텍스트 크기
+                        decoration: TextDecoration.underline, // 밑줄 추가
+                        decorationColor: Colors.white, // 밑줄 색상
+                        decorationThickness: 1.5, // 밑줄 두께 조정
+                        height: 3, // 텍스트 높이를 늘려 간격 확보
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
