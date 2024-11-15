@@ -38,14 +38,14 @@ void onNotificationTap(NotificationResponse notificationResponse) {
             listen: false)
         .isLoggedIn;
     if (isLoggedIn) {
-      // if (messageId != null) {
-      //   logger.d("알림 messageId: $messageId");
-      //   AppGlobal.navigatorKey.currentState!.pushNamed(
-      //     '/star_received_detail',
-      //     arguments: int.tryParse(messageId), // messageId 전달
-      //   );
-      //   return;
-      // }
+      if (messageId != null) {
+        logger.d("알림 messageId: $messageId");
+        AppGlobal.navigatorKey.currentState!.pushNamed(
+          '/star_received_detail',
+          arguments: int.tryParse(messageId), // messageId 전달
+        );
+        return;
+      }
       final currentState = AppGlobal.navigatorKey.currentState;
       if (currentState != null) {
         String? currentPath;
