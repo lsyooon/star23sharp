@@ -206,7 +206,7 @@ class NickbookScreenState extends State<NickbookScreen> {
           child: Column(
             children: [
               const Text(
-                "닉네임 즐겨찾기",
+                "친구 즐겨찾기",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: FontSizes.title,

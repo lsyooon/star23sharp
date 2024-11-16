@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
+import 'package:star23sharp/utilities/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/models/index.dart';
 import 'package:star23sharp/services/index.dart';
@@ -562,7 +563,7 @@ class _MapScreenState extends State<MapScreen>
       _showCustomSnackbar(context, "해당 마커의 정보를 가져올 수 없습니다.");
       return;
     }
-
+    logger.d(markerData);
     if (markerData['isFound'] == true) {
       _showCustomSnackbar(context, "이미 찾은 쪽지입니다.");
       _fetchTreasuresInBounds(
@@ -583,7 +584,8 @@ class _MapScreenState extends State<MapScreen>
         showDialog(
           context: context,
           builder: (BuildContext dialogContext) {
-            final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+            final themeProvider =
+                Provider.of<ThemeProvider>(context, listen: false);
             final deviceWidth = UIhelper.deviceWidth(dialogContext);
             final deviceHeight = UIhelper.deviceHeight(dialogContext);
             return Stack(
@@ -640,7 +642,7 @@ class _MapScreenState extends State<MapScreen>
                                 Center(
                                   child: Container(
                                     width: deviceWidth * 0.65,
-                                    height: deviceHeight * 0.35,
+                                    height: deviceHeight * 0.36,
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(10),
@@ -677,7 +679,8 @@ class _MapScreenState extends State<MapScreen>
                                             ),
                                             const SizedBox(height: 8),
                                             Divider(
-                                              color: Colors.white.withOpacity(0.3),
+                                              color:
+                                                  Colors.white.withOpacity(0.3),
                                               thickness: 1,
                                             ),
                                             const SizedBox(
@@ -755,13 +758,41 @@ class _MapScreenState extends State<MapScreen>
                                                 ),
                                               ),
                                             ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  " ${formatDate(markerData["created_at"])}",
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                  ),
+                                                ),
+                                                // const SizedBox(width: 10),
+                                                // selectedOption ==
+                                                //         MenuItem.viewHiddenStars
+                                                //     ? Text(
+                                                //         "To ${markerData["receiver_names"]}",
+                                                //         style: const TextStyle(
+                                                //           color: Colors.white,
+                                                //           fontSize: 20,
+                                                //         ),
+                                                //       )
+                                                //     : const Text(
+                                                //         "From ${"sender_nickname"}",
+                                                //         style: const TextStyle(
+                                                //           color: Colors.white,
+                                                //           fontSize: 20,
+                                                //         ),
+                                                //       ),
+                                              ],
+                                            )
                                           ],
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 20),
                                 Container(
                                   padding: const EdgeInsets.only(
                                     bottom: 10,
@@ -788,7 +819,7 @@ class _MapScreenState extends State<MapScreen>
                                                 await _takePhoto(markerData);
                                               },
                                               child: const Text(
-                                                "사진 속 장소 맞추기",
+                                                "사진 속 장소 맞히기",
                                                 style: TextStyle(
                                                   fontSize: 20,
                                                 ),
@@ -904,6 +935,7 @@ class _MapScreenState extends State<MapScreen>
         "content": treasure.content,
         "hint_image_first": treasure.hintImageFirst,
         "sender_nickname": treasure.senderNickname,
+        'created_at': treasure.createdAt.toString(),
       };
     } else {
       logger.d("서버에서 Treasure Detail 데이터를 가져오지 못했습니다.");
@@ -972,6 +1004,7 @@ class _MapScreenState extends State<MapScreen>
             "content": treasure.content,
             "hint_image_first": treasure.hintImageFirst,
             "sender_nickname": treasure.senderNickname,
+            'created_at': treasure.createdAt.toString(),
           };
 
           return Marker(

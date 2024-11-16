@@ -69,7 +69,7 @@ class TreasureModel {
       'lng': lng,
       'is_treasure': isTreasure,
       'is_found': isFound,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toString(),
       'image': image,
       'content': content,
       'hintImageFirst': hintImageFirst,

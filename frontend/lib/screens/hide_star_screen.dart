@@ -344,7 +344,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
                   child: Column(
                     children: [
                       const Text(
-                        "힌트 사진은 이렇게 전달되요!",
+                        "힌트 사진은 이렇게 전달돼요!",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,

@@ -61,8 +61,8 @@ class MapService {
           'ids': id,
         },
       );
-
       var result = FastResponseModel.fromJson(response.data);
+      logger.d(result.data);
       if (result.code == '200') {
         return result.data as List<dynamic>;
       } else {
