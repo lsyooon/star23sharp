@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:star23sharp/services/location_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:star23sharp/main.dart';
@@ -70,6 +71,12 @@ class _HomeScreenState extends State<HomeScreen> {
       themeProvider.setTheme(AppTheme.red);
     }else{
       themeProvider.setTheme(AppTheme.black);
+    }
+
+    // 위치 권한 요청
+    bool hasLocationPermission = await requestLocationPermission(context);
+    if(!hasLocationPermission){
+      showPermissionDialog(context);
     }
   }
 
@@ -196,7 +203,6 @@ class _HomeScreenState extends State<HomeScreen> {
             height: UIhelper.deviceHeight(context) * 0.7,
             child: Image.asset(
               themeProvider.mainBg,
-              // 'assets/img/home_bg.png',
               fit: BoxFit.cover,
             ),
           ),

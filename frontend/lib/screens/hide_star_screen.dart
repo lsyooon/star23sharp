@@ -274,7 +274,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
               );
             }
           },
-          child: Text(
+          child: const Text(
             "사진 찍기",
           ),
         ),
@@ -516,7 +516,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
         Center(
           child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.85,
-            height: MediaQuery.of(context).size.height * 0.67,
+            height: MediaQuery.of(context).size.height * 0.68,
             child: Image.asset(
               themeProvider.subBg,
               fit: BoxFit.cover,

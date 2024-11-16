@@ -193,7 +193,7 @@ class NickbookScreenState extends State<NickbookScreen> {
         Center(
           child: SizedBox(
             width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            height: UIhelper.deviceHeight(context) * 0.68,
             child: Image.asset(
               themeProvider.subBg,
               fit: BoxFit.cover,
