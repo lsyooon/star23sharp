@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as path;
 import 'package:dio/dio.dart';
+
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
 import 'package:star23sharp/services/index.dart';
+import 'package:star23sharp/utilities/index.dart';
 
 class MapService {
   // 마커 정보 가져오기
@@ -80,11 +83,23 @@ class MapService {
   }) async {
     try {
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path,
-            filename: file.path.split('/').last),
+        // 'file': await MultipartFile.fromFile(file.path,
+        //     filename: file.path.split('/').last),
         'kernel_size': kernelSize,
         'pixel_size': pixelSize,
       });
+
+      final compressedFile = await compressImage(file);
+      formData.files.add(MapEntry(
+        'file',
+        await MultipartFile.fromFile(
+          compressedFile.path,
+          filename: path.basename(compressedFile.path),
+          contentType: MediaType.parse(
+              'multipart/form-data'), // Content-Type: multipart/form-data
+        ),
+      ));
+      logger.d("파일 이미지 압축 및 추가 완료");
 
       final response = await DioService.fastAuthDio.post(
         '/fastapi_ec2/image/pixelize',

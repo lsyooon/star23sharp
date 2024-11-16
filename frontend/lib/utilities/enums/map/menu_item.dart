@@ -1,7 +1,7 @@
 enum MenuItem {
-  viewHiddenStars('내가 숨긴 별 보기'),
-  viewStarsForEveryone('모두에게 별 보기'),
-  viewStarsForMe('나에게만 별 보기');
+  viewHiddenStars('보낸 보물 쪽지'),
+  viewStarsForEveryone('단체 보물 쪽지'),
+  viewStarsForMe('받은 보물 쪽지');
 
   final String displayText;
   const MenuItem(this.displayText);

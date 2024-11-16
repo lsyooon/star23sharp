@@ -31,7 +31,7 @@ class _LogoState extends State<Logo> with SingleTickerProviderStateMixin {
         // 텍스트 로고
         Transform.translate(
           offset: Offset(
-            -UIhelper.deviceWidth(context) * 0.15, // 디바이스 너비의 15% 만큼 왼쪽으로 이동
+            -UIhelper.deviceWidth(context) * 0.2, // 디바이스 너비의 15% 만큼 왼쪽으로 이동
             0,
           ),
           child: Image.asset(
