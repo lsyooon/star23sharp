@@ -105,6 +105,54 @@ class ThemeProvider with ChangeNotifier {
     }
   }
 
+  String get mail {
+    switch (_currentTheme) {
+      case AppTheme.blue:
+        return 'assets/img/blueTheme/mail.png';
+      case AppTheme.red:
+        return 'assets/img/redTheme/mail.png';
+      case AppTheme.black:
+      default:
+        return 'assets/img/blackTheme/mail.png';
+    }
+  }
+
+  String get profile {
+    switch (_currentTheme) {
+      case AppTheme.blue:
+        return 'assets/img/blueTheme/profile.png';
+      case AppTheme.red:
+        return 'assets/img/redTheme/profile.png';
+      case AppTheme.black:
+      default:
+        return 'assets/img/blackTheme/profile.png';
+    }
+  }
+
+  String get bell {
+    switch (_currentTheme) {
+      case AppTheme.blue:
+        return 'assets/img/blueTheme/bell.png';
+      case AppTheme.red:
+        return 'assets/img/redTheme/bell.png';
+      case AppTheme.black:
+      default:
+        return 'assets/img/blackTheme/bell.png';
+    }
+  }
+
+  String get back {
+    switch (_currentTheme) {
+      case AppTheme.blue:
+        return 'assets/img/blueTheme/back.png';
+      case AppTheme.red:
+        return 'assets/img/redTheme/back.png';
+      case AppTheme.black:
+      default:
+        return 'assets/img/blackTheme/back.png';
+    }
+  }
+
   // 테마 전환 메서드
   void setTheme(AppTheme theme) {
     logger.d(theme);
