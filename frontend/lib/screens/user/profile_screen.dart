@@ -146,7 +146,7 @@ class ProfileScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        themeProvider.mainColor.withOpacity(0.4), // 배경색 설정
+                        Colors.white.withOpacity(0.4), // 배경색 설정
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12), // 모서리 둥글게 설정
                     ),

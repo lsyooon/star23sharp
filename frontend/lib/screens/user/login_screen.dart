@@ -73,7 +73,7 @@ class LoginScreen extends StatelessWidget {
                       controller: memberIdController,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: themeProvider.mainColor.withOpacity(0.4),
+                        fillColor: Colors.white.withOpacity(0.4),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
@@ -100,7 +100,7 @@ class LoginScreen extends StatelessWidget {
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: themeProvider.mainColor.withOpacity(0.4),
+                        fillColor: Colors.white.withOpacity(0.4),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
@@ -117,7 +117,7 @@ class LoginScreen extends StatelessWidget {
                       width: double.infinity,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: themeProvider.mainColor.withOpacity(0.4),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextButton(
