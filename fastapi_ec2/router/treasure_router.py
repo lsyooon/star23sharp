@@ -71,6 +71,7 @@ from service.notification_service import (
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from utils.connection_pool import get_db
+from utils.datetime_util import illegal_adjust_time_to_gmt
 from utils.distance_util import (
     RADIUS_EARTH,
     assert_lat_lng_validity,
@@ -262,6 +263,8 @@ async def insert_new_treasure(
         # 송신 시각 처리
         if created_at is None:
             created_at = datetime.datetime.now()
+        # else:
+        #     created_at = illegal_adjust_time_to_gmt(created_at)
 
         # 입력값 검증
         if len(title) > VarcharLimit.TITLE.value:

@@ -3,13 +3,17 @@ from typing import List, Literal, Optional, Union, override
 
 from entity.message import Message
 from entity.message_box import MessageDirections
+from pydantic import field_serializer
 from response.response_model import ResponseModel
+from utils.datetime_util import LocalTimeZone
 
 from .base_dto import BaseDTO
 
 
 class BaseTreasureDTOWithMemberInfo(BaseDTO):
     sender_nickname: Optional[str] = None
+
+    created_at: datetime.datetime
 
     @override
     @classmethod
@@ -18,6 +22,10 @@ class BaseTreasureDTOWithMemberInfo(BaseDTO):
         if orm.member is not None:
             dto.sender_nickname = orm.member.nickname
         return dto
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, created_at: datetime.datetime) -> str:
+        return created_at.astimezone(LocalTimeZone).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 class TreasureDTO_Own(BaseTreasureDTOWithMemberInfo):
@@ -36,7 +44,7 @@ class TreasureDTO_Own(BaseTreasureDTOWithMemberInfo):
     lng: float
     is_treasure: Literal[True]
     is_found: bool
-    created_at: datetime.datetime
+
     image: Optional[str]
 
     # Non-ORM fields
@@ -76,7 +84,6 @@ class TreasureDTO_Opened(BaseTreasureDTOWithMemberInfo):
     lng: float
     is_treasure: Literal[True]
     is_found: bool
-    created_at: datetime.datetime
     image: Optional[str]
 
 
@@ -92,7 +99,6 @@ class TreasureDTO_Undiscovered(BaseTreasureDTOWithMemberInfo):
     lng: float
     is_treasure: Literal[True]
     is_found: bool
-    created_at: datetime.datetime
 
 
 class ResponseTreasureDTO_Own(ResponseModel):

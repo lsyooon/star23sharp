@@ -70,7 +70,7 @@ async def proxy_file_request(
             raise InvalidInputException(
                 "GPU 서버에서 온 응답 관련 오류입니다. Client 와는 관계가 없을 수도 있습니다."
             )
-    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout) as e:
+    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ReadError) as e:
         logging.error(f"Connection error to main GPU server: {e}")
         # Try the backup GPU server
         if backup_url:
