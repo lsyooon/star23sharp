@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/date_formatter.dart';
 import 'package:star23sharp/utilities/image_zoom_dialog.dart';
@@ -12,6 +14,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final int messageId = ModalRoute.of(context)!.settings.arguments as int;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
     return Center(
       child: FutureBuilder<ReceivedStarModel?>(
@@ -48,20 +51,20 @@ class StarReceivedDetailScreen extends StatelessWidget {
             
             return Container(
               width: UIhelper.deviceWidth(context) * 0.85,
-              height: UIhelper.deviceHeight(context) * 0.67,
+              height: UIhelper.deviceHeight(context) * 0.68,
               color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    color: const Color(0xFFA292EC),
+                    color: themeProvider.mainColor,
                     padding:
                         const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
                     child: Container(
                       width: UIhelper.deviceWidth(context) * 0.85,
                       alignment: Alignment.center,
                       child: const Text(
-                        "받은 별 보기",
+                        "받은 쪽지 보기",
                         style: TextStyle(
                           fontSize: FontSizes.body,
                           color: Colors.white,
@@ -132,15 +135,20 @@ class StarReceivedDetailScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   Padding(
-                    padding: const EdgeInsets.only(left: 5.0, bottom: 2),
+                    padding: const EdgeInsets.only(left: 5.0, bottom: 10),
                     child:  Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('👥 ${item.senderName.first}', style: const TextStyle(fontSize: FontSizes.small),),
+                        Divider(
+                          color: Colors.grey.withOpacity(0.2), // 수평선 색상
+                          thickness: 1, // 수평선 두께
+                          endIndent: 5, // 오른쪽 여백
+                        ),
+                        Text('👥 보낸 사람 : ${item.senderName.first}', style: const TextStyle(fontSize: FontSizes.small),),
                         Text('📅 ${formatDate(item.createdAt)}', style: const TextStyle(fontSize: FontSizes.small)),
                         if(!item.kind) // 일반쪽지이면 답장버튼 생성
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 35.0, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 35.0),
                             child: SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -148,7 +156,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
                                   Navigator.pushNamed(context, '/starwriteform', arguments: item.senderName.first);
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFA292EC),
+                                  backgroundColor: themeProvider.mainColor,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),

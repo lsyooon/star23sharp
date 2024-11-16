@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:star23sharp/models/star_list_item_model.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
@@ -10,7 +12,8 @@ class StarStoragebox extends StatefulWidget with RouteAware {
   _StarStorageboxState createState() => _StarStorageboxState();
 }
 
-class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
+class _StarStorageboxState extends State<StarStoragebox> with RouteAware, SingleTickerProviderStateMixin {
+  late int initialIndex;
   int selectedIndex = 0;
   final List<String> dropdownItems = ['전체', '보물 쪽지', '일반 쪽지'];
   String selectedItem = '전체';
@@ -20,6 +23,15 @@ class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
   @override
   void initState() {
     super.initState();
+    sent = StarService.getStarList(true, selectedIndex);
+    received = StarService.getStarList(false, selectedIndex);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ModalRoute에서 arguments를 받아서 초기 인덱스를 설정
+    initialIndex = ModalRoute.of(context)!.settings.arguments as int? ?? 0;
     sent = StarService.getStarList(true, selectedIndex);
     received = StarService.getStarList(false, selectedIndex);
   }
@@ -42,14 +54,15 @@ class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Stack(
       children: [
         Center(
           child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.85,
-            height: MediaQuery.of(context).size.height * 0.67,
+            height: MediaQuery.of(context).size.height * 0.68,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),
@@ -104,10 +117,11 @@ class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
                 ],
               ),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.5,
+                width: UIhelper.deviceWidth(context) * 0.8,
+                height: UIhelper.deviceHeight(context) * 0.5,
                 child: DefaultTabController(
                   length: 2,
+                  initialIndex: initialIndex,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -130,6 +144,7 @@ class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
                       ),
                       Expanded(
                         child: TabBarView(
+                          // controller: _tabController,  // TabController 적용
                           children: [
                             Container(
                               decoration: BoxDecoration(

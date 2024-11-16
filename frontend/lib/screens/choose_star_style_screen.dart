@@ -114,9 +114,18 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         );
       }
 
-        Navigator.pushNamed(context, isTreasureStar ? '/map' : '/starstorage').then((_) {
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+        Navigator.pushNamed(
+          context,
+          isTreasureStar ? '/map' : '/starstorage',
+          arguments: 1, // arguments를 전달
+        ).then((_) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (Route<dynamic> route) => false,
+          );
         });
+
     } catch (e) {
       // 에러 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
@@ -131,6 +140,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final messageProvider = Provider.of<MessageFormProvider>(context);
     String? content = messageProvider.content;
 
@@ -139,13 +149,13 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         Center(
           child: Container(
             width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            height: UIhelper.deviceHeight(context) * 0.68,
             color: Colors.white,
             child: Column(
               children: [
                 // 커스텀 헤더
                 Container(
-                  color: const Color(0xFFA292EC),
+                  color: themeProvider.mainColor,
                   padding: const EdgeInsets.symmetric(
                       vertical: 16.0, horizontal: 20.0),
                   child: Container(
@@ -226,7 +236,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                     child: ElevatedButton(
                       onPressed: () => _onSendButtonPressed(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFA292EC),
+                        backgroundColor: themeProvider.mainColor,
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
@@ -234,7 +244,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                       ),
                       child: const Text(
                         '별 전달하기',
-                        style: TextStyle(fontSize: 16.0, color: Colors.white),
+                        style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                   ),
@@ -247,9 +257,9 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
           Positioned.fill(
             child: Container(
               color: Colors.white.withOpacity(0.8), // 불투명 하얀 배경
-              child: const Center(
+              child: Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFA292EC), // 스피너 색상
+                  color: themeProvider.mainColor, // 스피너 색상
                 ),
               ),
             ),

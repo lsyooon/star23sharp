@@ -11,6 +11,8 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     // TextEditingController를 생성하여 아이디와 비밀번호 필드의 입력 값을 관리
     final TextEditingController memberIdController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
@@ -24,9 +26,9 @@ class LoginScreen extends StatelessWidget {
         Center(
           child: SizedBox(
             width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            height: UIhelper.deviceHeight(context) * 0.68,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),
@@ -69,9 +71,12 @@ class LoginScreen extends StatelessWidget {
                     ),
                     TextField(
                       controller: memberIdController,
+                      style: const TextStyle(
+                        fontSize: 22, // 텍스트 크기 설정
+                      ),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: const Color(0xFFA292EC).withOpacity(0.4),
+                        fillColor: Colors.white.withOpacity(0.4),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
@@ -95,10 +100,13 @@ class LoginScreen extends StatelessWidget {
                     ),
                     TextField(
                       controller: passwordController,
+                      style: const TextStyle(
+                        fontSize: 20, // 텍스트 크기 설정
+                      ),
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: const Color(0xFFA292EC).withOpacity(0.4),
+                        fillColor: Colors.white.withOpacity(0.4),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
@@ -115,7 +123,7 @@ class LoginScreen extends StatelessWidget {
                       width: double.infinity,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFFA292EC).withOpacity(0.4),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextButton(

@@ -47,7 +47,12 @@ class ShowLocationPermission extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context); // 화면이 있다면 뒤로가기
+                          } 
+                        },
                         child: const Text("취소"),
                       ),
                       TextButton(

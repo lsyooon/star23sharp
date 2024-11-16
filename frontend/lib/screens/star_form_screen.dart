@@ -196,15 +196,15 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTreasureStar =
-        Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final messageProvider =
         Provider.of<MessageFormProvider>(context, listen: false);
+    final isTreasureStar = messageProvider.isTeasureStar;
 
     return Center(
       child: Container(
         width: UIhelper.deviceWidth(context) * 0.85,
-        height: UIhelper.deviceHeight(context) * 0.67,
+        height: UIhelper.deviceHeight(context) * 0.68,
         color: Colors.white, // 배경색 추가
 
         child: SingleChildScrollView(
@@ -214,7 +214,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
             child: Column(
               children: [
                 Container(
-                  color: const Color(0xFFA292EC),
+                  color: themeProvider.mainColor,
                   padding: const EdgeInsets.symmetric(
                       vertical: 16.0, horizontal: 20.0),
                   child: Container(
@@ -313,22 +313,20 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             behavior: HitTestBehavior.opaque,
                             onTap: () {},
                             child: Tooltip(
-                              message: '''받는 사람의 닉네임을 입력하세요.
-친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
-                              ''',
+                              message:
+                                  '''받는 사람의 닉네임을 입력해주세요.\n친구 목록에 닉네임을 추가하면 \n좀 더 쉽게 닉네임을 검색할 수 있어요!''',
                               showDuration: const Duration(seconds: 3),
                               margin: const EdgeInsets.only(left: 90),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 10),
                               triggerMode: TooltipTriggerMode.tap,
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.8),
+                                color: Colors.black.withOpacity(0.7),
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(10)),
                               ),
                               textStyle: const TextStyle(
                                   color: Colors.white), // 툴팁 텍스트 스타일
-
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Icon(
@@ -613,7 +611,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                           child: ElevatedButton(
                             onPressed: _saveMessage,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFA292EC),
+                              backgroundColor: themeProvider.mainColor,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 16.0),
                               shape: RoundedRectangleBorder(
@@ -623,7 +621,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             child: const Text(
                               '다음',
                               style: TextStyle(
-                                  fontSize: 16.0, color: Colors.white),
+                                  fontSize: 18.0, color: Colors.white),
                             ),
                           ),
                         ),

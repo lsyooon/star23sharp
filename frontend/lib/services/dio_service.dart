@@ -82,6 +82,29 @@ class DioService {
               Navigator.pushNamed(
                   AppGlobal.navigatorKey.currentContext!, '/signin');
             }
+          } else if (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.sendTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.unknown) {
+            // 네트워크 연결 실패 처리
+            logger.e('Network connection failed or timeout occurred.');
+            ScaffoldMessenger.of(AppGlobal.navigatorKey.currentContext!)
+                .showSnackBar(
+              const SnackBar(content: Text('서버와 연결할 수 없습니다. 네트워크를 확인해주세요.')),
+            );
+            handler.reject(e);
+            return;
+          } else if (e.response?.statusCode == 500) {
+            // 500 Internal Server Error 처리
+            logger.e(
+              'Server error occurred: ${e.response?.data ?? 'No additional info'}',
+            );
+            ScaffoldMessenger.of(AppGlobal.navigatorKey.currentContext!)
+                .showSnackBar(
+              const SnackBar(content: Text('서버에서 오류가 발생했습니다. 나중에 다시 시도해주세요.')),
+            );
+            handler.reject(e);
+            return;
           } else {
             try {
               final failure = ErrorHandler.handle(e).failure;

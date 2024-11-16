@@ -5,8 +5,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:star23sharp/main.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/models/index.dart';
 import 'package:star23sharp/services/index.dart';
@@ -95,6 +97,7 @@ class _MapScreenState extends State<MapScreen>
 
     if (status.isDenied) {
       var result = await Permission.location.request();
+      logger.d(result);
       if (result.isGranted) {
         _goToCachedOrCurrentLocation();
       } else if (result.isPermanentlyDenied) {
@@ -390,6 +393,7 @@ class _MapScreenState extends State<MapScreen>
 
   // 모든 마커 리스트
   Future<void> _showMarkerList(BuildContext context) async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     Future.delayed(Duration.zero, () {
       if (mounted) {
         showDialog(
@@ -411,7 +415,7 @@ class _MapScreenState extends State<MapScreen>
                       width: deviceWidth,
                       height: deviceHeight * 0.5,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF9588E7).withOpacity(0.9),
+                        color: themeProvider.mainColor.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Stack(
@@ -579,6 +583,7 @@ class _MapScreenState extends State<MapScreen>
         showDialog(
           context: context,
           builder: (BuildContext dialogContext) {
+            final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
             final deviceWidth = UIhelper.deviceWidth(dialogContext);
             final deviceHeight = UIhelper.deviceHeight(dialogContext);
             return Stack(
@@ -595,7 +600,7 @@ class _MapScreenState extends State<MapScreen>
                       width: deviceWidth,
                       height: deviceHeight * 0.58,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF9588E7).withOpacity(0.8),
+                        color: themeProvider.mainColor.withOpacity(0.8),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Stack(
@@ -671,8 +676,8 @@ class _MapScreenState extends State<MapScreen>
                                               ],
                                             ),
                                             const SizedBox(height: 8),
-                                            const Divider(
-                                              color: Colors.grey,
+                                            Divider(
+                                              color: Colors.white.withOpacity(0.3),
                                               thickness: 1,
                                             ),
                                             const SizedBox(
@@ -1001,7 +1006,7 @@ class _MapScreenState extends State<MapScreen>
         Center(
           child: SizedBox(
             width: deviceWidth * 0.85,
-            height: deviceHeight * 0.67,
+            height: deviceHeight * 0.68,
             child: KakaoMap(
               onMapCreated: (controller) async {
                 mapController = controller;

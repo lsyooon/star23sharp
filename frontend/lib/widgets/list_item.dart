@@ -55,14 +55,15 @@ class ListItem extends StatelessWidget {
             ),
           ),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min, // Column 크기를 내용물에 맞게 축소
             children: [
               Text(
                 item.senderNickname,
                 style: const TextStyle(
                   fontSize: FontSizes.body,
                   color: Colors.white,
+                  height: 1.0,
                 ),
                 textAlign: TextAlign.end, // 오른쪽 정렬
                 overflow: TextOverflow.ellipsis,
@@ -71,7 +72,8 @@ class ListItem extends StatelessWidget {
                 item.createdDate,
                 style: TextStyle(
                   fontSize: FontSizes.small,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withOpacity(0.7),
+                  height: 1.0, // 텍스트 간 간격 최소화
                 ),
               )
             ],
