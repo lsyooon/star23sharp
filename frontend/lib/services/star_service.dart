@@ -119,7 +119,6 @@ class StarService {
         formData = FormData.fromMap(processedData);
       } else {
         dio = DioService.authDio;
-        logger.d("일바편지@");
         formData = FormData.fromMap({
           'request': MultipartFile.fromString(
             jsonEncode(processedData),
@@ -149,9 +148,17 @@ class StarService {
       }
 
       // contentImage 처리
-      // if (data.contentImage != null && data.contentImage is File) {
-      //   await addCompressedImage('contentImage', data.contentImage);
-      // }
+      if (data.contentImage != null && data.contentImage is File) {
+        formData.files.add(MapEntry(
+          'contentImage',
+          await MultipartFile.fromFile(
+            data.contentImage.path,
+            filename: path.basename(data.contentImage.path),
+            contentType: MediaType.parse(
+                'multipart/form-data'), // Content-Type: multipart/form-data
+          ),
+        ));
+      }
       if (isTreasureStar) {
         logger.d("Treasure 이미지 추가 전 FormData: ${formData.fields}");
         await addCompressedImage('hint_image_first', data.hintImageFirst);

@@ -272,8 +272,16 @@ class NickbookScreenState extends State<NickbookScreen> {
                                   vertical: 8.0, horizontal: 16.0),
                               child: ListTile(
                                 tileColor: Colors.transparent,
-                                title: Text(nic['name']),
-                                subtitle: Text(nic['nickname']),
+                                title: Text(
+                                  nic['name'],
+                                  style: TextStyle(fontSize: FontSizes.body),
+                                ),
+                                subtitle: Text(
+                                  nic['nickname'],
+                                  style: TextStyle(
+                                      fontSize: FontSizes.small,
+                                      color: Colors.black54),
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
