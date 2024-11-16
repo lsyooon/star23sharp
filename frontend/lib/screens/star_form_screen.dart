@@ -314,7 +314,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             onTap: () {},
                             child: Tooltip(
                               message: '''받는 사람의 닉네임을 입력하세요.
-                친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
+친구 목록에 닉네임을 추가하면 좀 더 쉽게 닉네임을 검색할 수 있습니다!
                               ''',
                               showDuration: const Duration(seconds: 3),
                               margin: const EdgeInsets.only(left: 90),

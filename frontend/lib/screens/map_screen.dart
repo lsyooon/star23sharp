@@ -236,7 +236,13 @@ class _MapScreenState extends State<MapScreen>
       source: ImageSource.camera,
     );
     if (image != null) {
+      setState(() {
+        _isVerifyLoading = true;
+      });
       _verifyPicture(image, markerData);
+      setState(() {
+        _isVerifyLoading = false;
+      });
     } else {
       setState(() {
         message = "사진 촬영이 취소되었습니다.";
@@ -279,13 +285,8 @@ class _MapScreenState extends State<MapScreen>
 
   // 사진 검증 후 성공/실패 모달 분기
   void _verifyPicture(XFile image, Map<String, dynamic> markerData) async {
-    // setState(() {
-    //   _isVerifyLoading = true;
-    // });
     bool isCorrect = await isCorrectPicture(image, markerData);
-    // setState(() {
-    //   _isVerifyLoading = false;
-    // });
+
     if (isCorrect) {
       Navigator.pop(context);
       CorrectMessageModal.show(
@@ -439,7 +440,7 @@ class _MapScreenState extends State<MapScreen>
                                 const SizedBox(height: 32),
                                 const Center(
                                   child: Text(
-                                    "별똥별",
+                                    "보물 쪽지",
                                     style: TextStyle(
                                       fontSize: 32,
                                       fontWeight: FontWeight.bold,
@@ -779,15 +780,7 @@ class _MapScreenState extends State<MapScreen>
                                                 ),
                                               ),
                                               onPressed: () async {
-                                                setState(() {
-                                                  _isVerifyLoading = true;
-                                                });
-
                                                 await _takePhoto(markerData);
-
-                                                setState(() {
-                                                  _isVerifyLoading = false;
-                                                });
                                               },
                                               child: const Text(
                                                 "사진 속 장소 맞추기",
@@ -806,10 +799,23 @@ class _MapScreenState extends State<MapScreen>
                   ),
                 ),
                 if (_isVerifyLoading)
-                  Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: const Center(
-                      child: CircularProgressIndicator(),
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text(
+                              "이미지를 검증 중입니다...",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 18),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
               ],
