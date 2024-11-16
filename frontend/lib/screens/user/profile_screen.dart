@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:star23sharp/main.dart';
 import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/app_global.dart';
@@ -11,11 +12,12 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    UserService.getMemberInfo();
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
-      {'text': '친구 목록'},
-      {'text': '사용법 보러가기'}
+      {'text': '친구 목록', 'goto': '/nickbooks'},
+      {'text': '테마 바꾸기', 'goto': '/modify_profile'},
+      {'text': '사용법 보러가기', 'goto': '/'}
     ];
 
     return Stack(
@@ -25,7 +27,7 @@ class ProfileScreen extends StatelessWidget {
             width: UIhelper.deviceWidth(context) * 0.85,
             height: UIhelper.deviceHeight(context) * 0.67,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),
@@ -50,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 30),
               Container(
                 width: UIhelper.deviceWidth(context) * 0.8,
-                height: UIhelper.deviceHeight(context) * 0.2,
+                height: UIhelper.deviceHeight(context) * 0.3,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE3E1E1).withOpacity(0.4),
                   borderRadius: BorderRadius.circular(10),
@@ -66,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
 
                       return InkWell(
                         onTap: () async {
-                          if (index == 1) {
+                          if (index == 2) {
                             final Uri uri =
                                 Uri.parse("https://k11b104.p.ssafy.io/manual");
                             if (await canLaunchUrl(uri)) {
@@ -77,9 +79,10 @@ class ProfileScreen extends StatelessWidget {
                                   Exception("페이지를 이동할 수 없습니다."));
                             }
                           } else {
+                            logger.d(items[index]['goto']!);
                             Navigator.pushNamed(
                                 AppGlobal.navigatorKey.currentContext!,
-                                '/nickbooks');
+                                items[index]['goto']!);
                           }
                         },
                         child: Container(
@@ -143,7 +146,7 @@ class ProfileScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        const Color(0xFFA292EC).withOpacity(0.4), // 배경색 설정
+                        Colors.white.withOpacity(0.4), // 배경색 설정
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12), // 모서리 둥글게 설정
                     ),

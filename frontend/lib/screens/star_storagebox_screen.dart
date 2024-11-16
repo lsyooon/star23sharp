@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:star23sharp/models/star_list_item_model.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
@@ -42,6 +44,7 @@ class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Stack(
       children: [
         Center(
@@ -49,7 +52,7 @@ class _StarStorageboxState extends State<StarStoragebox> with RouteAware {
             width: MediaQuery.of(context).size.width * 0.85,
             height: MediaQuery.of(context).size.height * 0.67,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),

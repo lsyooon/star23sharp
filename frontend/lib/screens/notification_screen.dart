@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
@@ -131,6 +133,8 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
   @override
   Widget build(BuildContext context) {
     final data = ModalRoute.of(context)!.settings.arguments;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
 // 알림 ID 할당
     if (data is int) {
       _notificationId = data; // 상태 변수에 할당
@@ -146,7 +150,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
           child: Column(
             children: [
               Container(
-                color: const Color(0xFFA292EC),
+                color: themeProvider.mainColor,
                 padding: const EdgeInsets.symmetric(
                     vertical: 10.0, horizontal: 20.0),
                 child: Stack(

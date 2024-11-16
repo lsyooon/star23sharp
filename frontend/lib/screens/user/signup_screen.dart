@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 import 'package:star23sharp/widgets/modals/error_snackbar.dart';
@@ -48,6 +50,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Stack(
       children: [
         // 배경 이미지
@@ -56,7 +59,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             width: UIhelper.deviceWidth(context) * 0.85,
             height: UIhelper.deviceHeight(context) * 0.67,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),
@@ -117,6 +120,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildTextFieldWithBtn(String label, String hintText, TextEditingController controller,
       bool isAvailable, Function onPressed) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -153,7 +158,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   hintText: hintText,
                   hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
                   filled: true,
-                  fillColor: const Color(0xFFA292EC).withOpacity(0.4),
+                  fillColor: themeProvider.mainColor.withOpacity(0.4),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
@@ -167,7 +172,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             TextButton(
               onPressed: () => onPressed(), // 중복 검사 함수 호출
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFA292EC).withOpacity(0.4),
+                backgroundColor: themeProvider.mainColor.withOpacity(0.4),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
@@ -187,6 +192,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildTextField(String label, String hintText, TextEditingController controller,
       {bool obscureText = false}) {
+        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -207,7 +214,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             hintText: hintText,
             hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
             filled: true,
-            fillColor: const Color(0xFFA292EC).withOpacity(0.4),
+            fillColor: themeProvider.mainColor.withOpacity(0.4),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -223,11 +230,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildSignUpButton(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     return SizedBox(
       width: double.infinity,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFA292EC).withOpacity(0.4),
+          color: themeProvider.mainColor.withOpacity(0.4),
           borderRadius: BorderRadius.circular(10),
         ),
         child: TextButton(
