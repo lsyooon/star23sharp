@@ -25,7 +25,7 @@ class BaseTreasureDTOWithMemberInfo(BaseDTO):
 
     @field_serializer("created_at")
     def serialize_created_at(self, created_at: datetime.datetime) -> str:
-        return created_at.astimezone(LocalTimeZone).strftime("%Y-%m-%dT%H:%M:%S")
+        return created_at.isoformat()
 
 
 class TreasureDTO_Own(BaseTreasureDTOWithMemberInfo):

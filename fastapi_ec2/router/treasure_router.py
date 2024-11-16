@@ -263,8 +263,7 @@ async def insert_new_treasure(
         # 송신 시각 처리
         if created_at is None:
             created_at = datetime.datetime.now()
-        # else:
-        #     created_at = illegal_adjust_time_to_gmt(created_at)
+        # created_at = illegal_adjust_time_to_gmt(created_at)
 
         # 입력값 검증
         if len(title) > VarcharLimit.TITLE.value:
