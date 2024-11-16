@@ -26,7 +26,7 @@ class LoginScreen extends StatelessWidget {
         Center(
           child: SizedBox(
             width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            height: UIhelper.deviceHeight(context) * 0.68,
             child: Image.asset(
               themeProvider.subBg,
               fit: BoxFit.cover,
@@ -71,6 +71,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                     TextField(
                       controller: memberIdController,
+                      style: const TextStyle(
+                        fontSize: 22, // 텍스트 크기 설정
+                      ),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.4),
@@ -97,6 +100,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                     TextField(
                       controller: passwordController,
+                      style: const TextStyle(
+                        fontSize: 20, // 텍스트 크기 설정
+                      ),
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,

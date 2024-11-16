@@ -214,8 +214,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: AppGlobal.navigatorKey,
       theme: ThemeData(
-          primaryColor: themeProvider.backgroundColor,
-          fontFamily: 'Hakgyoansim Chilpanjiugae'),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: themeProvider.mainColor, // 주요 색상
+          ),
+        primaryColor: themeProvider.backgroundColor,
+        fontFamily: 'Hakgyoansim Chilpanjiugae',
+      ),
       navigatorObservers: <NavigatorObserver>[
         observer,
         AppGlobal.routeObserver,

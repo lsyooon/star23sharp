@@ -87,23 +87,24 @@ class MainLayout extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
-                            iconSize: 30.0,
+                            iconSize: 35.0,
                             icon: Image.asset(
                               themeProvider.bell,
-                              width: 30.0,
-                              height: 30.0,
+                              width: 35.0,
+                              height: 35.0,
                             ),
                             color: const Color(0xFF868686),
                             onPressed: () {
                               navigateToScreen(context, "/notification");
                             },
                           ),
+                          const SizedBox(height: 8,),
                           IconButton(
-                            iconSize: 30.0,
+                            iconSize: 35.0,
                             icon: Image.asset(
                               themeProvider.mail,
-                              width: 30.0,
-                              height: 30.0,
+                              width: 35.0,
+                              height: 35.0,
                             ),
                             color: const Color(0xFF868686),
                             onPressed: () {
@@ -132,13 +133,6 @@ class MainLayout extends StatelessWidget {
                       },
                     ),
                   ),
-                  //  IconButton(
-                  //   iconSize: 50.0,
-                  //   icon: Image.asset('assets/img/blackTheme/compass.png'),
-                  //   onPressed: () {
-                  //     navigateToScreen(context, "/map");
-                  //   },
-                  // ),
                   // 오른쪽 Column의 배경 이미지 추가
                   Stack(
                     alignment: Alignment.center,
@@ -155,23 +149,24 @@ class MainLayout extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
-                            iconSize: 35.0,
+                            iconSize: 40.0,
                             icon: Image.asset(
                               themeProvider.profile,
-                              width: 35.0,
-                              height: 35.0,
+                              width: 40.0,
+                              height: 40.0,
                             ),
                             color: const Color(0xFF868686),
                             onPressed: () {
                               navigateToScreen(context, "/profile");
                             },
                           ),
+                          const SizedBox(height: 5,),
                           IconButton(
-                            iconSize: 30.0,
+                            iconSize: 35.0,
                             icon: Image.asset(
                               themeProvider.back,
-                              width: 30.0,
-                              height: 30.0,
+                              width: 35.0,
+                              height: 35.0,
                             ),
                             color: const Color(0xFF868686),
                             onPressed: () {

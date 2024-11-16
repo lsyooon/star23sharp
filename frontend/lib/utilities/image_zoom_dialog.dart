@@ -3,6 +3,8 @@ import 'package:star23sharp/widgets/index.dart';
 
 void showImageModal(BuildContext context, String  image) {
   final deviceWidth = UIhelper.deviceWidth(context);
+  final deviceHeight = UIhelper.deviceHeight(context);
+
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -16,6 +18,7 @@ void showImageModal(BuildContext context, String  image) {
                 ClipRRect(
                   child: SizedBox(
                     width: deviceWidth * 0.9,
+                    height: deviceHeight * 0.8,
                     child: InteractiveViewer(
                       maxScale: 5.0, // 최대 확대 배율
                       minScale: 1.0,

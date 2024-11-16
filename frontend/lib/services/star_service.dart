@@ -149,9 +149,9 @@ class StarService {
       }
 
       // contentImage 처리
-      // if (data.contentImage != null && data.contentImage is File) {
-      //   await addCompressedImage('contentImage', data.contentImage);
-      // }
+      if (data.contentImage != null && data.contentImage is File) {
+        await addCompressedImage('contentImage', data.contentImage);
+      }
       if (isTreasureStar) {
         logger.d("Treasure 이미지 추가 전 FormData: ${formData.fields}");
         await addCompressedImage('hint_image_first', data.hintImageFirst);

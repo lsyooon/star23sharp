@@ -97,6 +97,7 @@ class _MapScreenState extends State<MapScreen>
 
     if (status.isDenied) {
       var result = await Permission.location.request();
+      logger.d(result);
       if (result.isGranted) {
         _goToCachedOrCurrentLocation();
       } else if (result.isPermanentlyDenied) {
@@ -999,7 +1000,7 @@ class _MapScreenState extends State<MapScreen>
         Center(
           child: SizedBox(
             width: deviceWidth * 0.85,
-            height: deviceHeight * 0.67,
+            height: deviceHeight * 0.68,
             child: KakaoMap(
               onMapCreated: (controller) async {
                 mapController = controller;

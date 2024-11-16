@@ -205,7 +205,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
     return Center(
       child: Container(
         width: UIhelper.deviceWidth(context) * 0.85,
-        height: UIhelper.deviceHeight(context) * 0.67,
+        height: UIhelper.deviceHeight(context) * 0.68,
         color: Colors.white, // 배경색 추가
 
         child: SingleChildScrollView(

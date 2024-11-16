@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:star23sharp/services/location_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:star23sharp/main.dart';
@@ -18,58 +19,58 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = true; // 로딩 상태를 위한 플래그
+  bool isunRead = false;
+
   BoxDecoration _commonContainerDecoration() {
     return BoxDecoration(
       color: Colors.black.withOpacity(0.5),
-      borderRadius: BorderRadius.circular(12), // 둥근 모서리
+      borderRadius: BorderRadius.circular(12),
     );
   }
 
-  bool isunRead = false;
-
   Future<bool> checkNetworkConnectivity() async {
-    // Check network connection status
     var connectivityResult = await Connectivity().checkConnectivity();
-    // No network connection
-    if (connectivityResult.contains(ConnectivityResult.none)) {
-      return false;
-    } else {
-      return true;
-    }
+    return !connectivityResult.contains(ConnectivityResult.none);
   }
 
-  // 비동기 초기화 작업을 위한 별도 메서드
   Future<void> _initialize() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
-    await loadAccessToken(authProvider); // Secure Storage에서 토큰 불러오기
+    await loadAccessToken(authProvider);
     if (authProvider.accessToken != null && authProvider.refreshToken != null) {
-      // 회원정보
       Map<String, dynamic>? user = await UserService.getMemberInfo();
-      logger.d(user);
-      if(user != null){
-        Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,listen: false)
-          .setUserDetails(
-            id: user['memberId'],
-            name: user['nickname'],
-            isPushEnabled: user['pushNotificationEnabled']);
+      if (user != null) {
+        Provider.of<UserProvider>(AppGlobal.navigatorKey.currentContext!,
+                listen: false)
+            .setUserDetails(
+                id: user['memberId'],
+                name: user['nickname'],
+                isPushEnabled: user['pushNotificationEnabled']);
       }
-      
       isunRead = await StarService.getIsUnreadMessage();
     }
-    if (mounted) {
-      setState(() {});
+
+    String? theme = await storage.read(key: 'theme');
+    if (theme == 'AppTheme.blue') {
+      themeProvider.setTheme(AppTheme.blue);
+    } else if (theme == 'AppTheme.red') {
+      themeProvider.setTheme(AppTheme.red);
+    } else {
+      themeProvider.setTheme(AppTheme.black);
     }
 
-    // 테마 불러오기
-    String? theme = await storage.read(key: 'theme');
-    if(theme == 'AppTheme.blue'){
-      themeProvider.setTheme(AppTheme.blue);
-    }else if(theme == 'AppTheme.red'){
-      themeProvider.setTheme(AppTheme.red);
-    }else{
-      themeProvider.setTheme(AppTheme.black);
+    bool hasLocationPermission = await requestLocationPermission(context);
+    if (!hasLocationPermission) {
+      showPermissionDialog(context);
+    }
+
+    // 로딩 완료 처리
+    if (mounted) {
+      setState(() {
+        isLoading = false; // 로딩 상태 종료
+      });
     }
   }
 
@@ -79,7 +80,28 @@ class _HomeScreenState extends State<HomeScreen> {
     _initialize();
   }
 
-  // 네트워크 연결 실패 화면
+  Widget buildLoadingScreen() {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              "assets/img/logo/loading_logo.gif",
+              height: UIhelper.deviceHeight(context) *
+                  0.3,
+            ),          
+            const Text(
+              "잠시만 기다려 주세요...",
+              style: TextStyle(fontSize: 18, color: Colors.black87),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
   Widget buildErrorScreen(BuildContext context) {
     return Scaffold(
       body: Center(
@@ -102,13 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                bool isConnected =
-                    await checkNetworkConnectivity(); // 네트워크 상태 재확인
+                bool isConnected = await checkNetworkConnectivity();
                 if (isConnected) {
-                  // 네트워크 연결이 복구되었을 경우 상태 업데이트
-                  setState(() {
-                    // 상태를 변경하면 FutureBuilder가 다시 빌드됨
-                  });
+                  setState(() {}); // 상태를 변경하면 FutureBuilder가 다시 빌드됨
                 } else {
                   // 네트워크 연결이 여전히 없는 경우 사용자에게 알림
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -196,7 +214,6 @@ class _HomeScreenState extends State<HomeScreen> {
             height: UIhelper.deviceHeight(context) * 0.7,
             child: Image.asset(
               themeProvider.mainBg,
-              // 'assets/img/home_bg.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -285,35 +302,40 @@ class _HomeScreenState extends State<HomeScreen> {
                       : Column(
                           children: [
                             const SizedBox(height: 100),
-                            ...buttons.map((button) {
-                              return Column(
-                                children: [
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      minimumSize: Size(
-                                          MediaQuery.of(context).size.width *
-                                              0.5,
-                                          50),
-                                      backgroundColor:
-                                          Colors.white.withOpacity(0.2),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 60, vertical: 15),
-                                      shape: RoundedRectangleBorder(
+                            ...buttons.asMap().map((index, button) {
+                              return MapEntry(
+                                index,
+                                Column(
+                                  children: [
+                                    Container(
+                                      width: UIhelper.deviceWidth(context) * 0.5,
+                                      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
+                                      child: InkWell(
+                                        onTap: button['onPressed'],
+                                        splashColor: Colors.white.withOpacity(0.3), // 클릭 시 효과
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Center(
+                                          child: Text(
+                                            button['text'],
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: FontSizes.label,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    onPressed: button['onPressed'],
-                                    child: Text(
-                                      button['text'],
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: FontSizes.label),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                ],
+                                    // 마지막 아이템이 아닐 경우에만 SizedBox 추가
+                                    if (index < buttons.length - 1) const SizedBox(height: 20),
+                                  ],
+                                ),
                               );
-                            }),
+                            }).values
+
                           ],
                         ),
                   TextButton(
@@ -334,16 +356,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       tapTargetSize:
                           MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
                     ),
-                    child: const Text(
-                      "사용법 보러가기",
-                      style: TextStyle(
-                        color: Colors.white, // 텍스트 색상
-                        fontSize: 16.0, // 텍스트 크기
-                        decoration: TextDecoration.underline, // 밑줄 추가
-                        decorationColor: Colors.white, // 밑줄 색상
-                        decorationThickness: 1.5, // 밑줄 두께 조정
-                        height: 3, // 텍스트 높이를 늘려 간격 확보
-                      ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.help_outline, // 물음표 아이콘
+                          color: Colors.white, // 아이콘 색상
+                          size: 20, // 아이콘 크기
+                        ),
+                        Text(
+                          " 사용법 보러가기",
+                          style: TextStyle(
+                            color: Colors.white, // 텍스트 색상
+                            fontSize: 18.0, // 텍스트 크기
+                            // decoration: TextDecoration.underline, // 밑줄 추가
+                            // decorationColor: Colors.white, // 밑줄 색상
+                            // decorationThickness: 1.5, // 밑줄 두께 조정
+                            height: 3, // 텍스트 높이를 늘려 간격 확보
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -355,11 +387,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
       future: checkNetworkConnectivity(),
       builder: (context, snapshot) {
+        if (isLoading) {
+          return buildLoadingScreen(); // 초기 로딩 화면
+        }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError || (snapshot.data == false)) {

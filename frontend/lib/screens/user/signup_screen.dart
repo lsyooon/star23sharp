@@ -57,7 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         Center(
           child: SizedBox(
             width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            height: UIhelper.deviceHeight(context) * 0.68,
             child: Image.asset(
               themeProvider.subBg,
               fit: BoxFit.cover,
@@ -120,8 +120,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildTextFieldWithBtn(String label, String hintText, TextEditingController controller,
       bool isAvailable, Function onPressed) {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -154,11 +152,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Expanded(
               child: TextField(
                 controller: controller,
+                style: const TextStyle(
+                  fontSize: 20, // 텍스트 크기 설정
+                ),
                 decoration: InputDecoration(
                   hintText: hintText,
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
                   filled: true,
-                  fillColor: themeProvider.mainColor.withOpacity(0.4),
+                  fillColor: Colors.white.withOpacity(0.3),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
@@ -172,7 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             TextButton(
               onPressed: () => onPressed(), // 중복 검사 함수 호출
               style: TextButton.styleFrom(
-                backgroundColor: themeProvider.mainColor.withOpacity(0.4),
+                backgroundColor: Colors.white.withOpacity(0.2),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
@@ -192,8 +193,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildTextField(String label, String hintText, TextEditingController controller,
       {bool obscureText = false}) {
-        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,12 +208,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         TextField(
           controller: controller,
+          style: const TextStyle(
+                  fontSize: 20, // 텍스트 크기 설정
+                ),
           obscureText: obscureText,
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
             filled: true,
-            fillColor: themeProvider.mainColor.withOpacity(0.4),
+            fillColor: Colors.white.withOpacity(0.3),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -230,13 +232,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildSignUpButton(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-
     return SizedBox(
       width: double.infinity,
       child: Container(
         decoration: BoxDecoration(
-          color: themeProvider.mainColor.withOpacity(0.4),
+          color: Colors.white.withOpacity(0.4),
           borderRadius: BorderRadius.circular(10),
         ),
         child: TextButton(

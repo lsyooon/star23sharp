@@ -66,16 +66,17 @@ class NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Scaffold(
       body: Center(
         child: Container(
           width: UIhelper.deviceWidth(context) * 0.85,
-          height: UIhelper.deviceHeight(context) * 0.67,
+          height: UIhelper.deviceHeight(context) * 0.68,
           color: Colors.white,
           child: Column(
             children: [
               Container(
-                color: const Color(0xFFA292EC),
+                color: themeProvider.mainColor,
                 padding: const EdgeInsets.symmetric(
                     vertical: 16.0, horizontal: 20.0),
                 child: Container(
