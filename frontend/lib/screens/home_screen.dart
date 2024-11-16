@@ -309,9 +309,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     Container(
                                       width: UIhelper.deviceWidth(context) * 0.5,
-                                      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
+                                        color: Colors.white.withOpacity(0.3),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: InkWell(
