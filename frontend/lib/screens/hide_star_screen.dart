@@ -111,8 +111,8 @@ class _HideStarScreenState extends State<HideStarScreen> {
             hintImageFirst: File(images[0]!.path),
             hintImageSecond: File(images[1]!.path),
             dotHintImage: dotHintImageFile,
-            lat: lat!,
-            lng: lng!,
+            lat: lat,
+            lng: lng,
           );
           return true;
         } else {
@@ -489,6 +489,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Stack(
       children: [
         Center(
@@ -496,7 +497,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
             width: MediaQuery.of(context).size.width * 0.85,
             height: MediaQuery.of(context).size.height * 0.67,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),

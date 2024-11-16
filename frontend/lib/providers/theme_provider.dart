@@ -68,6 +68,43 @@ class ThemeProvider with ChangeNotifier {
         return 'assets/img/blackTheme/black_center_button.png';
     }
   }
+
+  Color get mainColor {
+    switch (_currentTheme) {
+      case AppTheme.blue:
+        return const Color(0xFF69ABF4);
+      case AppTheme.red:
+        return const Color(0xFFD67772);
+      case AppTheme.black:
+      default:
+        return const Color(0xFFA292EC);
+    }
+  }
+
+  String get mainBg {
+    switch (_currentTheme) {
+      case AppTheme.blue:
+        return 'assets/img/blueTheme/bg_main.png';
+      case AppTheme.red:
+        return 'assets/img/redTheme/bg_main.png';
+      case AppTheme.black:
+      default:
+        return 'assets/img/blackTheme/bg_main.png';
+    }
+  }
+
+  String get subBg {
+    switch (_currentTheme) {
+      case AppTheme.blue:
+        return 'assets/img/blueTheme/bg_sub.png';
+      case AppTheme.red:
+        return 'assets/img/redTheme/bg_sub.png';
+      case AppTheme.black:
+      default:
+        return 'assets/img/blackTheme/bg_sub.png';
+    }
+  }
+
   // 테마 전환 메서드
   void setTheme(AppTheme theme) {
     logger.d(theme);

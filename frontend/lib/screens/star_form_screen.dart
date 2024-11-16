@@ -196,10 +196,11 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTreasureStar =
-        Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final messageProvider =
         Provider.of<MessageFormProvider>(context, listen: false);
+    final isTreasureStar = messageProvider.isTeasureStar;
+    
 
     return Center(
       child: Container(
@@ -214,7 +215,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
             child: Column(
               children: [
                 Container(
-                  color: const Color(0xFFA292EC),
+                  color: themeProvider.mainColor,
                   padding: const EdgeInsets.symmetric(
                       vertical: 16.0, horizontal: 20.0),
                   child: Container(
@@ -610,7 +611,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                           child: ElevatedButton(
                             onPressed: _saveMessage,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFA292EC),
+                              backgroundColor: themeProvider.mainColor,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 16.0),
                               shape: RoundedRectangleBorder(
@@ -620,7 +621,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             child: const Text(
                               '다음',
                               style: TextStyle(
-                                  fontSize: 16.0, color: Colors.white),
+                                  fontSize: 18.0, color: Colors.white),
                             ),
                           ),
                         ),

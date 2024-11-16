@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:star23sharp/main.dart';
 import 'package:star23sharp/models/index.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/services/index.dart';
 import 'package:star23sharp/utilities/date_formatter.dart';
 import 'package:star23sharp/utilities/image_zoom_dialog.dart';
@@ -12,6 +14,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final int messageId = ModalRoute.of(context)!.settings.arguments as int;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
     return Center(
       child: FutureBuilder<ReceivedStarModel?>(
@@ -54,7 +57,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    color: const Color(0xFFA292EC),
+                    color: themeProvider.mainColor,
                     padding:
                         const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
                     child: Container(
@@ -153,7 +156,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
                                   Navigator.pushNamed(context, '/starwriteform', arguments: item.senderName.first);
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFA292EC),
+                                  backgroundColor: themeProvider.mainColor,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
