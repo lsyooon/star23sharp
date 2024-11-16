@@ -114,9 +114,18 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         );
       }
 
-        Navigator.pushNamed(context, isTreasureStar ? '/map' : '/starstorage').then((_) {
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
+        Navigator.pushNamed(
+          context,
+          isTreasureStar ? '/map' : '/starstorage',
+          arguments: 1, // arguments를 전달
+        ).then((_) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (Route<dynamic> route) => false,
+          );
         });
+
     } catch (e) {
       // 에러 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
