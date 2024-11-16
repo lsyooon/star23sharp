@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class CorrectModal extends StatelessWidget {
@@ -19,6 +21,7 @@ class CorrectModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final deviceWidth = UIhelper.deviceWidth(context);
     final deviceHeight = UIhelper.deviceHeight(context);
     return Stack(
@@ -35,7 +38,7 @@ class CorrectModal extends StatelessWidget {
               width: deviceWidth,
               height: deviceHeight * 0.5,
               decoration: BoxDecoration(
-                color: const Color(0xFF9588E7).withOpacity(0.9),
+                color: themeProvider.mainColor.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Stack(
@@ -66,7 +69,7 @@ class CorrectModal extends StatelessWidget {
                           child: Text(
                             markerData['title'],
                             style: const TextStyle(
-                              color: Colors.white70,
+                              color: Colors.white,
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
@@ -85,7 +88,7 @@ class CorrectModal extends StatelessWidget {
                                     DateTime.parse(markerData['created_at'])),
                                 style: const TextStyle(
                                   color: Colors.white70,
-                                  fontSize: 22,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

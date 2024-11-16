@@ -89,7 +89,7 @@ class MainLayout extends StatelessWidget {
                           IconButton(
                             iconSize: 30.0,
                             icon: Image.asset(
-                              'assets/img/blackTheme/bell.png',
+                              themeProvider.bell,
                               width: 30.0,
                               height: 30.0,
                             ),
@@ -101,7 +101,7 @@ class MainLayout extends StatelessWidget {
                           IconButton(
                             iconSize: 30.0,
                             icon: Image.asset(
-                              'assets/img/blackTheme/mailbox.png',
+                              themeProvider.mail,
                               width: 30.0,
                               height: 30.0,
                             ),
@@ -157,7 +157,7 @@ class MainLayout extends StatelessWidget {
                           IconButton(
                             iconSize: 35.0,
                             icon: Image.asset(
-                              'assets/img/blackTheme/profile.png',
+                              themeProvider.profile,
                               width: 35.0,
                               height: 35.0,
                             ),
@@ -169,7 +169,7 @@ class MainLayout extends StatelessWidget {
                           IconButton(
                             iconSize: 30.0,
                             icon: Image.asset(
-                              'assets/img/blackTheme/back.png',
+                              themeProvider.back,
                               width: 30.0,
                               height: 30.0,
                             ),

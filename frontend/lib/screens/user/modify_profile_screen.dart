@@ -22,6 +22,8 @@ class _ModifyProfileScreenState extends State<ModifyProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     return Stack(
       children: [
         Center(
@@ -29,7 +31,7 @@ class _ModifyProfileScreenState extends State<ModifyProfileScreen> {
             width: UIhelper.deviceWidth(context) * 0.85,
             height: UIhelper.deviceHeight(context) * 0.67,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),
@@ -86,6 +88,12 @@ class _ModifyProfileScreenState extends State<ModifyProfileScreen> {
                             }else{
                               Provider.of<ThemeProvider>(context, listen: false).setTheme(AppTheme.red);
                             }
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              '/home', // 네임드 라우트 사용
+                              (Route<dynamic> route) =>
+                                  false, // 모든 이전 화면 제거
+                            );
                           }
                         },
                         child: SizedBox(
@@ -93,7 +101,7 @@ class _ModifyProfileScreenState extends State<ModifyProfileScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 16.0),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFA292EC).withOpacity(0.6),
+                              color: themeProvider.mainColor.withOpacity(0.6),
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: const Center(
@@ -121,15 +129,17 @@ class _ModifyProfileScreenState extends State<ModifyProfileScreen> {
   }
 
   Widget _buildThemeOption(int index, String imagePath) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     return GestureDetector(
       onTap: () => _selectTheme(index),
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: const Color(0xFFA292EC).withOpacity(0.3),
+          color: themeProvider.mainColor.withOpacity(0.3),
           borderRadius: BorderRadius.circular(20),
           border: selectedThemeIndex == index
-              ? Border.all(color: const Color(0xFFA292EC), width: 3) // 선택된 테마에 테두리 추가
+              ? Border.all(color: themeProvider.mainColor, width: 3) // 선택된 테마에 테두리 추가
               : null,
         ),
         child: Image.asset(

@@ -131,6 +131,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final messageProvider = Provider.of<MessageFormProvider>(context);
     String? content = messageProvider.content;
 
@@ -145,7 +146,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
               children: [
                 // 커스텀 헤더
                 Container(
-                  color: const Color(0xFFA292EC),
+                  color: themeProvider.mainColor,
                   padding: const EdgeInsets.symmetric(
                       vertical: 16.0, horizontal: 20.0),
                   child: Container(
@@ -226,7 +227,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                     child: ElevatedButton(
                       onPressed: () => _onSendButtonPressed(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFA292EC),
+                        backgroundColor: themeProvider.mainColor,
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
@@ -234,7 +235,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                       ),
                       child: const Text(
                         '별 전달하기',
-                        style: TextStyle(fontSize: 16.0, color: Colors.white),
+                        style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                   ),

@@ -125,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildHomeScreen(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context);
 
     void onLoginPressed() {
@@ -194,7 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
             width: UIhelper.deviceWidth(context) * 0.9,
             height: UIhelper.deviceHeight(context) * 0.7,
             child: Image.asset(
-              'assets/img/home_bg.png',
+              themeProvider.mainBg,
+              // 'assets/img/home_bg.png',
               fit: BoxFit.cover,
             ),
           ),

@@ -12,6 +12,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     var nickname = Provider.of<UserProvider>(context, listen: false).nickname;
     List<Map<String, String>> items = [
       {'text': '친구 목록', 'goto': '/nickbooks'},
@@ -26,7 +27,7 @@ class ProfileScreen extends StatelessWidget {
             width: UIhelper.deviceWidth(context) * 0.85,
             height: UIhelper.deviceHeight(context) * 0.67,
             child: Image.asset(
-              'assets/img/main_bg.png',
+              themeProvider.subBg,
               fit: BoxFit.cover,
             ),
           ),
@@ -145,7 +146,7 @@ class ProfileScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        const Color(0xFFA292EC).withOpacity(0.4), // 배경색 설정
+                        Colors.white.withOpacity(0.4), // 배경색 설정
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12), // 모서리 둥글게 설정
                     ),
