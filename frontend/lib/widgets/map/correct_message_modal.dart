@@ -154,37 +154,33 @@ class CorrectMessageModal extends StatelessWidget {
                                     },
                                     child: Container(
                                       width: deviceWidth * 0.65,
-                                      height: deviceHeight * 0.28,
+                                      height: deviceHeight * 0.3,
                                       decoration: BoxDecoration(
                                         color: Colors.white.withOpacity(0.2),
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 20.0, right: 20.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 15,),
                                         child: SingleChildScrollView(
                                           child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [
                                               const SizedBox(
                                                 height: 8,
                                               ),
-                                              const Text(
-                                                "정답사진",
-                                                style: TextStyle(
+                                              Text(
+                                                "${markerData['sender_nickname']}님이 이곳에 쪽지를 숨겼어요!",
+                                                style: const TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 20,
+                                                  fontSize: 18,
                                                 ),
                                               ),
+                                              const SizedBox(height: 12,),
                                               if (markerData[
                                                       'hint_image_first'] !=
                                                   null)
                                                 Center(
                                                   child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15),
                                                     child: SizedBox(
                                                       width: deviceWidth * 0.5,
                                                       height:
@@ -192,10 +188,39 @@ class CorrectMessageModal extends StatelessWidget {
                                                       child: markerData[
                                                                   "hint_image_first"] !=
                                                               null
-                                                          ? Image.network(
-                                                              markerData[
-                                                                  "hint_image_first"],
-                                                              fit: BoxFit.cover,
+                                                          ? Stack(
+                                                              children: [
+                                                                Image.network(
+                                                                  markerData["hint_image_first"],
+                                                                  fit: BoxFit.cover,
+                                                                  width: double.infinity,
+                                                                  height: double.infinity,
+                                                                ),
+                                                                Positioned(
+                                                                  top: 8, // 이미지의 상단에서 떨어진 거리
+                                                                  right: 8, // 이미지의 우측에서 떨어진 거리
+                                                                  child: Opacity(
+                                                                    opacity: 0.7,
+                                                                    child: Container(
+                                                                      width: 32,
+                                                                      height: 32,
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        color: Colors.black
+                                                                            .withOpacity(
+                                                                                0.5),
+                                                                        shape:
+                                                                            BoxShape.circle,
+                                                                      ),
+                                                                      child: const Icon(
+                                                                        Icons.search,
+                                                                        color: Colors.white,
+                                                                        size: 18,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             )
                                                           : const Icon(
                                                               Icons.image,
@@ -208,19 +233,6 @@ class CorrectMessageModal extends StatelessWidget {
                                                 ),
                                               const SizedBox(
                                                 height: 4,
-                                              ),
-                                              const Center(
-                                                child: Text(
-                                                  "사진을 누르면 크게 볼 수 있어요!",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 16,
-                                                    // fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(
-                                                height: 8,
                                               ),
                                             ],
                                           ),
