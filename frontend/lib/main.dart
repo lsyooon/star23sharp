@@ -121,7 +121,7 @@ void main() async {
 //firebase setting
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //FCM 푸시 알림 관련 초기화
-  FCMService.init();
+  await FCMService.init();
   //flutter_local_notifications 패키지 관련 초기화
   FCMService.localNotiInit();
   //백그라운드 알림 수신 리스너
