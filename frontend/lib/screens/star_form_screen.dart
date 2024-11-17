@@ -55,12 +55,20 @@ class _StarFormScreenState extends State<StarFormScreen> {
     fetchNicbooks();
   }
 
+  bool _isInitialLoad = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    String? nickname = ModalRoute.of(context)!.settings.arguments as String?;
-    if (nickname != null) {
-      _recipients.add(nickname);
+    if (_isInitialLoad) {
+      // 최초 한 번만 실행
+      String? nickname = ModalRoute.of(context)!.settings.arguments as String?;
+      if (nickname != null) {
+        setState(() {
+          _recipients.add(nickname);
+        });
+      }
+      _isInitialLoad = false; // 이후에는 실행되지 않도록 플래그 변경
     }
   }
 
@@ -113,6 +121,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                 _recipients.add(nickname);
                 _nicknameController.clear();
               });
+              FocusScope.of(context).unfocus();
             } else {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -181,7 +190,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
         receiverType = 0;
       }
 
-      //TODO - group 지정
       Provider.of<MessageFormProvider>(context, listen: false).saveMessageData(
         title: _titleController.text,
         content: _messageController.text,
@@ -200,7 +208,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
     final messageProvider =
         Provider.of<MessageFormProvider>(context, listen: false);
     final isTreasureStar = messageProvider.isTeasureStar;
-    
 
     return Center(
       child: Container(
@@ -314,7 +321,8 @@ class _StarFormScreenState extends State<StarFormScreen> {
                             behavior: HitTestBehavior.opaque,
                             onTap: () {},
                             child: Tooltip(
-                              message: '''받는 사람의 닉네임을 입력해주세요.\n친구 목록에 닉네임을 추가하면 \n좀 더 쉽게 닉네임을 검색할 수 있어요!''',
+                              message:
+                                  '''받는 사람의 닉네임을 입력해주세요.\n친구 목록에 닉네임을 추가하면 \n좀 더 쉽게 닉네임을 검색할 수 있어요!''',
                               showDuration: const Duration(seconds: 3),
                               margin: const EdgeInsets.only(left: 90),
                               padding: const EdgeInsets.symmetric(
@@ -372,7 +380,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                         },
                         fieldViewBuilder: (BuildContext context,
                             TextEditingController textEditingController,
-                            FocusNode focusNode,
+                            FocusNode nicknameFocusNode,
                             VoidCallback onFieldSubmitted) {
                           // 동기화: 컨트롤러 내용을 수정
                           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -384,7 +392,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
                           return TextFormField(
                             controller: textEditingController,
-                            focusNode: focusNode,
+                            focusNode: nicknameFocusNode,
                             enabled: !_sendToAll,
                             onFieldSubmitted: (value) {
                               if (value.isNotEmpty &&

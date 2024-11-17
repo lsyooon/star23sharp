@@ -177,7 +177,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
           child: Column(
             children: [
               const Text(
-                "힌트 사진을 두 장 찍어주세요",
+                "장소 사진을 두 장 찍어주세요",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -198,6 +198,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
                   },
                   itemBuilder: (context, index) {
                     return Container(
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(10),
@@ -210,7 +211,14 @@ class _HideStarScreenState extends State<HideStarScreen> {
                                 fit: BoxFit.cover,
                               ),
                             )
-                          : null,
+                          : Text(
+                              "${index + 1}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 50,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                     );
                   },
                 ),
@@ -257,7 +265,9 @@ class _HideStarScreenState extends State<HideStarScreen> {
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                 );
-              } else if (_currentIndex == 1 && images[0] != null) {
+              } else if (_currentIndex == 1 &&
+                  images[0] != null &&
+                  images[1] != null) {
                 // 두 번째 사진까지 찍었으면 픽셀화 진행
                 setState(() {
                   isPreviewMode = true;
@@ -334,7 +344,7 @@ class _HideStarScreenState extends State<HideStarScreen> {
                   child: Column(
                     children: [
                       const Text(
-                        "힌트 사진은 이렇게 전달되요!",
+                        "힌트 사진은 이렇게 전달돼요!",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,

@@ -298,7 +298,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
         const SizedBox(height: 8),
         if (detail.hint != null)
           Text(
-            "${detail.hint}",
+            "힌트 : ${detail.hint}",
             style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
           ),
         if (detail.image != null) ...[

@@ -88,9 +88,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Image.asset(
               "assets/img/logo/loading_logo.gif",
-              height: UIhelper.deviceHeight(context) *
-                  0.3,
-            ),          
+              height: UIhelper.deviceHeight(context) * 0.3,
+            ),
             const Text(
               "잠시만 기다려 주세요...",
               style: TextStyle(fontSize: 18, color: Colors.black87),
@@ -100,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 
   Widget buildErrorScreen(BuildContext context) {
     return Scaffold(
@@ -168,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
     final List<Map<String, dynamic>> menuList = [
       {
-        'text': '친구 목록',
+        'text': '즐겨찾기',
         'goto': '/nickbooks',
         'position': Offset(
           UIhelper.deviceWidth(context) * 0.6,
@@ -223,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Positioned(
               top: 30,
               left: 0,
-              right: 10,
+              // right: UIhelper.deviceWidth(context) * 0.3,
               child: Logo(),
             ),
             Center(
@@ -263,12 +261,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 Positioned(
                                                   top: -6, // -10, 85
                                                   right: -5, // -10, -10, 0
-                                                  child: 
-                                                    Lottie.asset(
-                                                      'assets/icon/alert.json',
-                                                      width: 25,
-                                                      height: 25,
-                                                    ),
+                                                  child: Lottie.asset(
+                                                    'assets/icon/alert.json',
+                                                    width: 25,
+                                                    height: 25,
+                                                  ),
                                                   // top: -10,
                                                   // right: -10,
                                                   // child: Image.asset(
@@ -308,15 +305,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Column(
                                   children: [
                                     Container(
-                                      width: UIhelper.deviceWidth(context) * 0.5,
-                                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                                      width:
+                                          UIhelper.deviceWidth(context) * 0.5,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 50, vertical: 15),
                                       decoration: BoxDecoration(
                                         color: Colors.white.withOpacity(0.3),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: InkWell(
                                         onTap: button['onPressed'],
-                                        splashColor: Colors.white.withOpacity(0.3), // 클릭 시 효과
+                                        splashColor: Colors.white
+                                            .withOpacity(0.3), // 클릭 시 효과
                                         borderRadius: BorderRadius.circular(10),
                                         child: Center(
                                           child: Text(
@@ -330,12 +330,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                     // 마지막 아이템이 아닐 경우에만 SizedBox 추가
-                                    if (index < buttons.length - 1) const SizedBox(height: 20),
+                                    if (index < buttons.length - 1)
+                                      const SizedBox(height: 20),
                                   ],
                                 ),
                               );
                             }).values
-
                           ],
                         ),
                   TextButton(
@@ -386,7 +386,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

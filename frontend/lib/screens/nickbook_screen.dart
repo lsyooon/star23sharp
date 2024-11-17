@@ -204,16 +204,50 @@ class NickbookScreenState extends State<NickbookScreen> {
           padding: const EdgeInsets.only(top: 100.0),
           alignment: Alignment.topCenter,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const Text(
-                "닉네임 즐겨찾기",
+                "친구 즐겨찾기",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: FontSizes.title,
                     fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {},
+                    child: Tooltip(
+                      message: '''별이삼샵에서는 자주 쪽지를 주고 받는 친구를 즐겨찾기로 등록할 수 있습니다.
+즐겨찾기를 하면 쪽지 작성시 닉네임을 빠르게 추가할 수 있습니다.''',
+                      preferBelow: false,
+                      showDuration: const Duration(seconds: 7),
+                      margin: const EdgeInsets.only(left: 90),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 10),
+                      triggerMode: TooltipTriggerMode.tap,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.8),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
+                      ),
+                      textStyle: const TextStyle(color: Colors.white),
+                      child: const Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          color: Colors.black45,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 50,
+                  ),
+                ],
+              ),
               Container(
                 width: UIhelper.deviceWidth(context) * 0.8,
                 height: UIhelper.deviceHeight(context) * 0.4,
@@ -239,8 +273,16 @@ class NickbookScreenState extends State<NickbookScreen> {
                                   vertical: 8.0, horizontal: 16.0),
                               child: ListTile(
                                 tileColor: Colors.transparent,
-                                title: Text(nic['name']),
-                                subtitle: Text(nic['nickname']),
+                                title: Text(
+                                  nic['name'],
+                                  style: TextStyle(fontSize: FontSizes.body),
+                                ),
+                                subtitle: Text(
+                                  nic['nickname'],
+                                  style: TextStyle(
+                                      fontSize: FontSizes.small,
+                                      color: Colors.black54),
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
