@@ -246,6 +246,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: GestureDetector(
                                       onTap: () async {
                                         String url = menu['goto'];
+                                        if (menu['text'] == "일반 쪽지") {
+                                          Provider.of<MessageFormProvider>(
+                                                  context,
+                                                  listen: false)
+                                              .isTeasureStar = false;
+                                        }
                                         Navigator.pushNamed(context, url);
                                       },
                                       child: Column(
