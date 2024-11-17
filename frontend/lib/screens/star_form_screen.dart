@@ -55,12 +55,20 @@ class _StarFormScreenState extends State<StarFormScreen> {
     fetchNicbooks();
   }
 
+  bool _isInitialLoad = true;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    String? nickname = ModalRoute.of(context)!.settings.arguments as String?;
-    if (nickname != null) {
-      _recipients.add(nickname);
+    if (_isInitialLoad) {
+      // 최초 한 번만 실행
+      String? nickname = ModalRoute.of(context)!.settings.arguments as String?;
+      if (nickname != null) {
+        setState(() {
+          _recipients.add(nickname);
+        });
+      }
+      _isInitialLoad = false; // 이후에는 실행되지 않도록 플래그 변경
     }
   }
 
@@ -113,6 +121,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                 _recipients.add(nickname);
                 _nicknameController.clear();
               });
+              FocusScope.of(context).unfocus();
             } else {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -181,7 +190,6 @@ class _StarFormScreenState extends State<StarFormScreen> {
         receiverType = 0;
       }
 
-      //TODO - group 지정
       Provider.of<MessageFormProvider>(context, listen: false).saveMessageData(
         title: _titleController.text,
         content: _messageController.text,
@@ -204,7 +212,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
     return Center(
       child: Container(
         width: UIhelper.deviceWidth(context) * 0.85,
-        height: UIhelper.deviceHeight(context) * 0.67,
+        height: UIhelper.deviceHeight(context) * 0.68,
         color: Colors.white, // 배경색 추가
 
         child: SingleChildScrollView(
@@ -372,7 +380,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
                         },
                         fieldViewBuilder: (BuildContext context,
                             TextEditingController textEditingController,
-                            FocusNode focusNode,
+                            FocusNode nicknameFocusNode,
                             VoidCallback onFieldSubmitted) {
                           // 동기화: 컨트롤러 내용을 수정
                           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -384,7 +392,7 @@ class _StarFormScreenState extends State<StarFormScreen> {
 
                           return TextFormField(
                             controller: textEditingController,
-                            focusNode: focusNode,
+                            focusNode: nicknameFocusNode,
                             enabled: !_sendToAll,
                             onFieldSubmitted: (value) {
                               if (value.isNotEmpty &&

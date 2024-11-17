@@ -193,7 +193,7 @@ class NickbookScreenState extends State<NickbookScreen> {
         Center(
           child: SizedBox(
             width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            height: UIhelper.deviceHeight(context) * 0.68,
             child: Image.asset(
               themeProvider.subBg,
               fit: BoxFit.cover,
@@ -206,7 +206,7 @@ class NickbookScreenState extends State<NickbookScreen> {
           child: Column(
             children: [
               const Text(
-                "닉네임 즐겨찾기",
+                "친구 즐겨찾기",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: FontSizes.title,
@@ -273,8 +273,16 @@ class NickbookScreenState extends State<NickbookScreen> {
                                   vertical: 8.0, horizontal: 16.0),
                               child: ListTile(
                                 tileColor: Colors.transparent,
-                                title: Text(nic['name']),
-                                subtitle: Text(nic['nickname']),
+                                title: Text(
+                                  nic['name'],
+                                  style: TextStyle(fontSize: FontSizes.body),
+                                ),
+                                subtitle: Text(
+                                  nic['nickname'],
+                                  style: TextStyle(
+                                      fontSize: FontSizes.small,
+                                      color: Colors.black54),
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

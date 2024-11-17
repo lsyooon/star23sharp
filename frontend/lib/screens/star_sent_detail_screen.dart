@@ -32,7 +32,7 @@ class StarSentDetailScreen extends StatelessWidget {
             
             return Container(
               width: UIhelper.deviceWidth(context) * 0.85,
-              height: UIhelper.deviceHeight(context) * 0.67,
+              height: UIhelper.deviceHeight(context) * 0.68,
               color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,11 +126,11 @@ class StarSentDetailScreen extends StatelessWidget {
                         ),
                         if(item.recipient != null)
                           Text(
-                            '🎉 ${item.recipient}',
+                            '🎉 찾은 사람 : ${item.recipient}',
                             style: const TextStyle(fontSize: FontSizes.small),
                           ),
                         Text(
-                          '👥 ${item.receiverNames.join(', ')}',
+                          '👥 받은 사람 : ${item.receiverNames.join(', ')}',
                           style: const TextStyle(fontSize: FontSizes.small),
                         ),
                         Text(

@@ -72,9 +72,9 @@ class ThemeProvider with ChangeNotifier {
   Color get mainColor {
     switch (_currentTheme) {
       case AppTheme.blue:
-        return const Color(0xFF69ABF4);
+        return const Color(0xFF89BBF1);
       case AppTheme.red:
-        return const Color(0xFFD67772);
+        return const Color(0xFFED847E);
       case AppTheme.black:
       default:
         return const Color(0xFFA292EC);

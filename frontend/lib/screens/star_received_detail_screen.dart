@@ -51,7 +51,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
             
             return Container(
               width: UIhelper.deviceWidth(context) * 0.85,
-              height: UIhelper.deviceHeight(context) * 0.67,
+              height: UIhelper.deviceHeight(context) * 0.68,
               color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +64,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
                       width: UIhelper.deviceWidth(context) * 0.85,
                       alignment: Alignment.center,
                       child: const Text(
-                        "받은 별 보기",
+                        "받은 쪽지 보기",
                         style: TextStyle(
                           fontSize: FontSizes.body,
                           color: Colors.white,
@@ -144,7 +144,7 @@ class StarReceivedDetailScreen extends StatelessWidget {
                           thickness: 1, // 수평선 두께
                           endIndent: 5, // 오른쪽 여백
                         ),
-                        Text('👥 ${item.senderName.first}', style: const TextStyle(fontSize: FontSizes.small),),
+                        Text('👥 보낸 사람 : ${item.senderName.first}', style: const TextStyle(fontSize: FontSizes.small),),
                         Text('📅 ${formatDate(item.createdAt)}', style: const TextStyle(fontSize: FontSizes.small)),
                         if(!item.kind) // 일반쪽지이면 답장버튼 생성
                           Padding(

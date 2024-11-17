@@ -84,8 +84,7 @@ class CorrectModal extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(right: 16.0),
                               child: Text(
-                                DateFormat('yy.MM.d').format(
-                                    DateTime.parse(markerData['created_at'])),
+                                "${markerData['sender_nickname']}",
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 20,
@@ -117,22 +116,15 @@ class CorrectModal extends StatelessWidget {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 10),
                                           Text(
-                                            "내용 : ${markerData['content']}",
+                                            "${markerData['content']}",
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 20,
                                             ),
                                           ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            markerData["image"] == null ? "" : "사진: ",
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                            ),
-                                          ),
+                                          const SizedBox(height: 10),
                                           Center(
                                             child: SizedBox(
                                               width: deviceWidth * 0.5,
@@ -144,7 +136,6 @@ class CorrectModal extends StatelessWidget {
                                                   : const SizedBox(),
                                             ),
                                           ),
-                                          const SizedBox(height: 16),
                                         ],
                                       ),
                                     ),
@@ -155,7 +146,7 @@ class CorrectModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(
-                          height: 16,
+                          height: 20,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -163,7 +154,8 @@ class CorrectModal extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(right: 16.0),
                               child: Text(
-                                "${markerData['sender_nickname']}",
+                                DateFormat('yy.MM.d').format(
+                                    DateTime.parse(markerData['created_at'])),
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 24,
@@ -173,7 +165,6 @@ class CorrectModal extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
                       ],
                     ),
                   ),

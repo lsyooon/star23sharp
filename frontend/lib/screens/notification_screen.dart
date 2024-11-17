@@ -145,7 +145,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
       body: Center(
         child: Container(
           width: UIhelper.deviceWidth(context) * 0.85,
-          height: UIhelper.deviceHeight(context) * 0.67,
+          height: UIhelper.deviceHeight(context) * 0.68,
           color: Colors.white,
           child: Column(
             children: [
@@ -298,7 +298,7 @@ class PushAlarmScreenState extends State<PushAlarmScreen> {
         const SizedBox(height: 8),
         if (detail.hint != null)
           Text(
-            "${detail.hint}",
+            "힌트 : ${detail.hint}",
             style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
           ),
         if (detail.image != null) ...[

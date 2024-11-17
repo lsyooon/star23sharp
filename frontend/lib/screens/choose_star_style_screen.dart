@@ -110,17 +110,25 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
       if (response) {
         // 성공 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('별 전송 완료!')),
+          const SnackBar(content: Text('쪽지 전송 완료!')),
         );
       }
 
-        Navigator.pushNamed(context, isTreasureStar ? '/map' : '/starstorage').then((_) {
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
-        });
+      Navigator.pushNamed(
+        context,
+        isTreasureStar ? '/map' : '/starstorage',
+        arguments: 1, // arguments를 전달
+      ).then((_) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (Route<dynamic> route) => false,
+        );
+      });
     } catch (e) {
       // 에러 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('메시지 전송 실패: $e')),
+        SnackBar(content: Text('쪽지 전송 실패: $e')),
       );
     } finally {
       setState(() {
@@ -140,7 +148,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
         Center(
           child: Container(
             width: UIhelper.deviceWidth(context) * 0.85,
-            height: UIhelper.deviceHeight(context) * 0.67,
+            height: UIhelper.deviceHeight(context) * 0.68,
             color: Colors.white,
             child: Column(
               children: [
@@ -234,7 +242,7 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
                         ),
                       ),
                       child: const Text(
-                        '별 전달하기',
+                        '쪽지 보내기',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
@@ -248,9 +256,9 @@ class _ChooseStarStyleScreenState extends State<ChooseStarStyleScreen> {
           Positioned.fill(
             child: Container(
               color: Colors.white.withOpacity(0.8), // 불투명 하얀 배경
-              child: const Center(
+              child: Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFA292EC), // 스피너 색상
+                  color: themeProvider.mainColor, // 스피너 색상
                 ),
               ),
             ),

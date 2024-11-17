@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:star23sharp/providers/index.dart';
 import 'package:star23sharp/widgets/index.dart';
 
 class CorrectMessageModal extends StatelessWidget {
@@ -71,6 +73,7 @@ class CorrectMessageModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final deviceWidth = UIhelper.deviceWidth(context);
     final deviceHeight = UIhelper.deviceHeight(context);
 
@@ -88,7 +91,7 @@ class CorrectMessageModal extends StatelessWidget {
               width: deviceWidth,
               height: deviceHeight * 0.5,
               decoration: BoxDecoration(
-                color: const Color(0xFF9588E7),
+                color: themeProvider.mainColor,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Stack(
