@@ -521,6 +521,8 @@ class _HideStarScreenState extends State<HideStarScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    Provider.of<MessageFormProvider>(context, listen: false).isTeasureStar =
+        false;
     return Stack(
       children: [
         Center(
