@@ -1,0 +1,65 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.11'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.ssafy'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	testImplementation 'org.springframework.security:spring-security-test'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'org.postgresql:postgresql'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	// 벡터
+	implementation group: 'org.hibernate.orm', name: 'hibernate-vector', version: '6.4.10.Final'
+
+	// firebase-admin
+	implementation group: 'com.google.firebase', name: 'firebase-admin', version: '9.4.1'
+
+	implementation 'org.json:json:20210307'
+
+	/* S3 */
+	implementation 'software.amazon.awssdk:s3:2.20.40'
+	implementation 'software.amazon.awssdk:auth:2.20.40'
+	implementation 'software.amazon.awssdk:core:2.20.40'
+
+
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.8.3'
+
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
