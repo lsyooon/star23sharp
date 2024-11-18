@@ -156,14 +156,38 @@ class _MapScreenState extends State<MapScreen>
         )
       }.toSet();
 
-      _fetchTreasuresInBounds(
-        currentBounds,
-        false,
-        true,
-        true,
-        false,
-        false,
-      );
+      switch (selectedOption) {
+        case MenuItem.viewHiddenStars:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            false,
+            true,
+            true,
+            true,
+          );
+          break;
+        case MenuItem.viewStarsForEveryone:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            true,
+            true,
+            false,
+            false,
+          );
+          break;
+        case MenuItem.viewStarsForMe:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            true,
+            false,
+            false,
+            true,
+          );
+          break;
+      }
     } else {
       logger.d("캐시된 위치가 없습니다. 현재 위치를 가져옵니다.");
     }
@@ -173,14 +197,38 @@ class _MapScreenState extends State<MapScreen>
       await _goToCurrentLocation();
       currentBounds = await mapController!.getBounds();
 
-      _fetchTreasuresInBounds(
-        currentBounds,
-        false,
-        true,
-        true,
-        false,
-        false,
-      );
+      switch (selectedOption) {
+        case MenuItem.viewHiddenStars:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            false,
+            true,
+            true,
+            true,
+          );
+          break;
+        case MenuItem.viewStarsForEveryone:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            true,
+            true,
+            false,
+            false,
+          );
+          break;
+        case MenuItem.viewStarsForMe:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            true,
+            false,
+            false,
+            true,
+          );
+          break;
+      }
     } catch (e) {
       logger.d("현재 위치를 가져오는 데 실패했습니다: $e");
     }
@@ -566,14 +614,38 @@ class _MapScreenState extends State<MapScreen>
     logger.d(markerData);
     if (markerData['isFound'] == true) {
       _showCustomSnackbar(context, "이미 찾은 쪽지입니다.");
-      _fetchTreasuresInBounds(
-        currentBounds,
-        false,
-        true,
-        true,
-        false,
-        false,
-      );
+      switch (selectedOption) {
+        case MenuItem.viewHiddenStars:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            false,
+            true,
+            true,
+            true,
+          );
+          break;
+        case MenuItem.viewStarsForEveryone:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            true,
+            true,
+            false,
+            false,
+          );
+          break;
+        case MenuItem.viewStarsForMe:
+          _fetchTreasuresInBounds(
+            currentBounds,
+            false,
+            true,
+            false,
+            false,
+            true,
+          );
+          break;
+      }
       return;
     }
 
