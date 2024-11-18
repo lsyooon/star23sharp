@@ -3,7 +3,9 @@ package com.ssafy.star.security.service;
 import com.ssafy.star.exception.CustomErrorCode;
 import com.ssafy.star.exception.CustomException;
 import com.ssafy.star.member.entity.Member;
+import com.ssafy.star.member.entity.NickBook;
 import com.ssafy.star.member.repository.MemberRepository;
+import com.ssafy.star.member.repository.NickBookRepository;
 import com.ssafy.star.security.dto.JoinDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 public class JoinService {
 
     private final MemberRepository memberRepository;
+    private final NickBookRepository nickBookRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -41,7 +44,8 @@ public class JoinService {
                 .build();
 
         try {
-            memberRepository.save(data);
+            Member member = memberRepository.save(data);
+            nickBookRepository.save(NickBook.builder().member(member).nickname("별이삼샵").name("팀 별이삼샵").build());
         } catch (DataIntegrityViolationException e) {
             // 중복 키 오류 처리
             throw new CustomException(CustomErrorCode.MEMBER_ALREADY_EXISTS);
