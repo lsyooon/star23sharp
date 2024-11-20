@@ -11,9 +11,8 @@
             - 3만 5천개의 장소
             - 5만 2천개의 이미지
     - [Cosine Distance](https://en.wikipedia.org/wiki/Cosine_similarity#Cosine_distance) Distribution
-        - 히스토그램
-        <br/>
-        <img src="readme_images/histogram.png" height="500px" > <br/>
+        - 히스토그램<br/>
+        <img src="readme_images/histogram.png" height="500px" ><br/>
         - Cosine distance 통계
             - Same-label cosine distance
                 - Mean: 0.6880
@@ -24,8 +23,7 @@
 
         - 같은 장소에 대한 사진의 벡터간의 Cosine distance와, 다른 장소에 대한 사진의 벡터간의 Cosine distance가 **잘 구분되는 Distribution을 가짐을 알 수 있음**
     - Classification 성능 지표
-        - Precision-Recall Curve
-            <br/>
+        - Precision-Recall Curve<br/>
             <img src="readme_images/PR_curve.png" height="500px" > <br/>
         - Classification Threshold 0.8491 에서 F1 Score 0.9365
 #### 보물 쪽지 저장
