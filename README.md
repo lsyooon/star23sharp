@@ -231,9 +231,9 @@
 
 ### **'줄게마갤럭시'** 팀 소개
 
-|                                                                    [전영주(팀장)]()                                                                    |                        [김민호]()                         |                           [목요빈]()                           |                           [이동준]()                            |                        [이수현](https://github.com/lshyunee)                         |                            [윤진섭]()                            |
+|                                                                    [전영주(팀장)](https://github.com/Jeon-YJ1004)                                                                    |                        [김민호](https://github.com/km9404)                         |                           [목요빈](https://github.com/yobinmok)                           |                           [이동준](https://github.com/djleeasi)                            |                        [이수현](https://github.com/lshyunee)                         |                            [윤진섭]https://github.com/jinseobYun)                            |
 | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
-| <img src="" width="100" height="100"> | <img src="" width="100" height="100"> | <img src="" width="100" height="100"> | <img src="" width="100" height="100"> | <img src="" width="100" height="100"> | <img src="" width="100" height="100"> |
+| <img src="https://avatars.githubusercontent.com/u/69620036?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/83632436?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/90735948?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/110724067?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/147044110?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/109848753?v=4" width="100" height="100"> |
 |                                                                               **Frontend**                                                                                |                                        **Frontend**                                        |                                        **Frontend**                                        |                                       **AI / BE**                                        |                                      **Infra / BE**                                       |                                        **Backend**                                         |
 
 ### 팀원 역할
@@ -244,7 +244,10 @@
   - 팀장
   - 쓰세욥
 - 김민호
-  - 쓰세욥
+  - 보물쪽지
+	  - 쪽지 작성 이미지 처리 부분 화면
+	  - 지도 부분 화면
+	  - 보물쪽지 힌트, 검증, 상세 보기
 - 목요빈
 	- 회원 및 토큰 관리 API 연결
 	- 로그인 및 회원가입 화면 구현, API 연결
