@@ -226,7 +226,7 @@
 - **Postman**
 
 ## 프로젝트 산출물
-
+[산출물 폴더](https://lab.ssafy.com/s11-final/S11P31B104/-/tree/master/docs?ref_type=heads)
 ## 😊 팀원
 
 ### **'줄게마갤럭시'** 팀 소개
