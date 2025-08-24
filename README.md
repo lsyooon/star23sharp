@@ -231,68 +231,7 @@
 
 ### **'줄게마갤럭시'** 팀 소개
 
-|                                                                    [전영주(팀장)](https://github.com/Jeon-YJ1004)                                                                    |                        [김민호](https://github.com/km9404)                         |                           [목요빈](https://github.com/yobinmok)                           |                           [이동준](https://github.com/djleeasi)                            |                        [이수현](https://github.com/lshyunee)                         |                            [윤진섭](https://github.com/jinseobYun)                            |
-| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
-| <img src="https://avatars.githubusercontent.com/u/69620036?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/83632436?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/90735948?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/110724067?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/147044110?v=4" width="100" height="100"> | <img src="https://avatars.githubusercontent.com/u/103829767?v=4" width="100" height="100"> |
-|                                                                               **Frontend**                                                                                |                                        **Frontend**                                        |                                        **Frontend**                                        |                                       **AI / BE**                                        |                                      **Infra / BE**                                       |                                        **Backend**                                         |
-
-### 팀원 역할
-
-**FrontEnd**
-
-- 전영주
-  - 팀장
-	- 서비스 컨셉 및 UI/UX
-  - 컴포넌트 구조 설계
-  - 쪽지 작성 구현
-  - fcm을 통한 알림, 알림함 구현
-  - 에러 핸들링 코드 구현
-  - 닉북 추가 및 삭제 구현
-  - 웹사이트 분석(GA4)
-- 김민호
-  - 보물쪽지
-	  - 쪽지 작성 이미지 처리 부분 화면
-	  - 지도 부분 화면
-	  - 보물쪽지 힌트, 검증, 상세 보기
-- 목요빈
-	- 회원 및 토큰 관리 API 연결
-	- 로그인 및 회원가입 화면 구현, API 연결
-	- 쪽지 리스트 및 개별 조회 화면 구현, API 연결
-	- 프로필 및 테마 화면 구현
-
-**BackEnd**
-
-- 이동준
-   - FastAPI 서버 REST API 개발
-	  - 보물 쪽지 작성
-	  - 주변의 보물 쪽지 조회
-	  - 보물 쪽지 인증
-  - 벡터 Database 구축
-	  - AI 와 함께 활용
-	  - 위/경도를 직교좌표 벡터로 변환하여 주변의 보물 쪽지 검색 최적화
-  
-- 이수현
-  - Spring Boot 서버 REST API 개발
-    - 일반 쪽지 작성
-    - 수신 & 발신 쪽지 리스트
-    - 수신 & 발신 쪽지 상세보기
-    - 안 읽은 쪽지 여부 확인
-    - 쪽지 삭제
-    - push 알림 (알림 전송 & 알림 리스트 & 알림 상세보기 & 알림 on/off 토글)
-  - 카카오 지도 API 사용하여 위•경도 주소로 변환
-  - S3 버킷 관리 & 이미지 업로드 처리 서비스 작성
-  
-- 윤진섭
-  - Spring Boot 서버 REST API 개발
-	  - Spring Security와 JWT를 활용한 로그인, 로그아웃 및 인증/인가 구현
-	  - Redis 를 활용한 JWT Token 관리
-    - 회원가입 및 회원 정보 조회
-    - 친구 즐겨찾기 관리 (닉네임 및 별칭 저장, 수정, 삭제)
-    - 수신 & 발신 쪽지 리스트
-	  
-**Infra**
-
-- 이수현
+|                                                                    [전영주(팀장)](https://github.com/Jeon-YJ1004)                                                                    |                        [김민호](https://github.com/km9404)                         |                           [목요빈](https://github.com/yobinmok)                           |                           [이동준](https://github.com/djleeasi)                            |                        [이서윤](https://github.com/lshyunee)                         |              윤
   - Jenkins CI/CD Pipeline를 통한 SpringBoot & FastAPI 빌드/배포 자동화 시스템 구축
   - AWS EC2 환경설정 (Nginx, Docker, Postgresql, Redis 등)
   - Docker Compose를 사용하여 애플리케이션 환경 컨테이너화
@@ -306,3 +245,4 @@
 
 
 ## 회고
+
